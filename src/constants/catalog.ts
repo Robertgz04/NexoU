@@ -1,4 +1,4 @@
-import type {Category, ReportStatus} from '../types';
+import type { Category, ReportStatus } from '../types';
 
 /**
  * Áreas/edificios de la universidad (F04).
@@ -31,13 +31,33 @@ export interface StatusMeta {
   label: string;
   color: string;
   soft: string;
+  /** Glifo del estado (mockups: reloj, ciclo, palomita). */
+  icon: string;
 }
 
 /** Estados del reporte (F06/F08) con su semáforo visual. */
 export const STATUSES: StatusMeta[] = [
-  {value: 'pendiente', label: 'Pendiente', color: '#F59E0B', soft: '#FEF3C7'},
-  {value: 'revision', label: 'En revisión', color: '#3B82F6', soft: '#DBEAFE'},
-  {value: 'solucionado', label: 'Solucionado', color: '#10B981', soft: '#D1FAE5'},
+  {
+    value: 'pendiente',
+    label: 'Pendiente',
+    color: '#F59E0B',
+    soft: '#FEF3C7',
+    icon: '◷',
+  },
+  {
+    value: 'revision',
+    label: 'En revisión',
+    color: '#3B82F6',
+    soft: '#DBEAFE',
+    icon: '↻',
+  },
+  {
+    value: 'solucionado',
+    label: 'Solucionado',
+    color: '#10B981',
+    soft: '#D1FAE5',
+    icon: '✓',
+  },
 ];
 
 export function statusMeta(status: ReportStatus): StatusMeta {

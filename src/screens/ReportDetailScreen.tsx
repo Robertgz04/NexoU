@@ -1,29 +1,22 @@
-import React, {useCallback, useState} from 'react';
-import {
-  Alert,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import {useFocusEffect, useRoute} from '@react-navigation/native';
-import type {RouteProp} from '@react-navigation/native';
-import {useAuth} from '../context/AuthContext';
+import React, { useCallback, useState } from 'react';
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect, useRoute } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext';
 import EmptyList from '../components/EmptyList';
 import PrimaryButton from '../components/PrimaryButton';
 import StatusBadge from '../components/StatusBadge';
-import {STATUSES, statusMeta} from '../constants/catalog';
-import {getReportById, updateReportStatus} from '../data/reportRepository';
-import {colors, radius, spacing} from '../theme';
-import type {Report, ReportStatus} from '../types';
-import type {RootStackParamList} from '../navigation/types';
-import {formatFecha} from '../utils/dates';
-import {photoUri} from '../utils/photo';
+import { STATUSES, statusMeta } from '../constants/catalog';
+import { getReportById, updateReportStatus } from '../data/reportRepository';
+import { colors, radius, shadow, spacing } from '../theme';
+import type { Report, ReportStatus } from '../types';
+import type { RootStackParamList } from '../navigation/types';
+import { formatFecha } from '../utils/dates';
+import { photoUri } from '../utils/photo';
 
 type DetailRoute = RouteProp<RootStackParamList, 'ReportDetail'>;
 
-function InfoRow({label, value}: {label: string; value: string}) {
+function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.infoRow}>
       <Text style={styles.infoLabel}>{label}</Text>
@@ -38,7 +31,7 @@ function InfoRow({label, value}: {label: string; value: string}) {
  */
 export default function ReportDetailScreen() {
   const route = useRoute<DetailRoute>();
-  const {user} = useAuth();
+  const { user } = useAuth();
 
   const [report, setReport] = useState<Report | null>(null);
   const [notFound, setNotFound] = useState(false);
@@ -107,11 +100,9 @@ export default function ReportDetailScreen() {
   const meta = statusMeta(report.estado);
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {uri ? (
-        <Image source={{uri}} style={styles.photo} />
+        <Image source={{ uri }} style={styles.photo} />
       ) : (
         <View style={[styles.photo, styles.photoPlaceholder]}>
           <Text style={styles.photoEmoji}>📋</Text>
@@ -137,7 +128,10 @@ export default function ReportDetailScreen() {
         <Text style={styles.cardTitle}>Información</Text>
         <InfoRow label="Reportado por" value={report.ownerNombre} />
         <InfoRow label="Creado" value={formatFecha(report.createdAt)} />
-        <InfoRow label="Última actualización" value={formatFecha(report.updatedAt)} />
+        <InfoRow
+          label="Última actualización"
+          value={formatFecha(report.updatedAt)}
+        />
         <InfoRow label="Estado actual" value={meta.label} />
       </View>
 
@@ -145,8 +139,7 @@ export default function ReportDetailScreen() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Actualizar estado</Text>
           <Text style={styles.helper}>
-            El estudiante verá este cambio de inmediato en su lista de
-            reportes.
+            El estudiante verá este cambio de inmediato en su lista de reportes.
           </Text>
           {STATUSES.map(s => {
             const isCurrent = report.estado === s.value;
@@ -176,35 +169,34 @@ export default function ReportDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: colors.background},
-  content: {padding: spacing.md, paddingBottom: spacing.xl},
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.md, paddingBottom: spacing.xl },
   photo: {
     width: '100%',
     height: 230,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
     backgroundColor: colors.primarySoft,
     resizeMode: 'cover',
   },
   photoPlaceholder: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
+    borderWidth: 1.2,
     borderColor: colors.border,
   },
-  photoEmoji: {fontSize: 44},
-  photoText: {fontSize: 13, color: colors.textMuted, marginTop: spacing.xs},
+  photoEmoji: { fontSize: 44 },
+  photoText: { fontSize: 13, color: colors.textMuted, marginTop: spacing.xs },
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
     padding: spacing.md,
     marginTop: spacing.md,
+    ...shadow.card,
   },
   title: {
-    fontSize: 20,
+    fontSize: 21,
     fontWeight: '800',
-    color: colors.text,
+    color: colors.primary,
     marginTop: spacing.sm,
   },
   tagsRow: {
@@ -214,12 +206,12 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   tag: {
-    backgroundColor: colors.primarySoft,
+    backgroundColor: colors.accentSoft,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.sm + 4,
     paddingVertical: 6,
   },
-  tagText: {fontSize: 13, fontWeight: '600', color: colors.primaryDark},
+  tagText: { fontSize: 13, fontWeight: '700', color: colors.accentDark },
   description: {
     fontSize: 15,
     lineHeight: 22,
@@ -229,7 +221,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: colors.text,
+    color: colors.primary,
     marginBottom: spacing.xs,
   },
   helper: {
@@ -246,7 +238,7 @@ const styles = StyleSheet.create({
     borderTopColor: colors.border,
     gap: spacing.md,
   },
-  infoLabel: {fontSize: 13.5, color: colors.textMuted, fontWeight: '600'},
+  infoLabel: { fontSize: 13.5, color: colors.textMuted, fontWeight: '600' },
   infoValue: {
     fontSize: 13.5,
     color: colors.text,
@@ -254,6 +246,5 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     textAlign: 'right',
   },
-  statusButton: {marginTop: spacing.sm},
+  statusButton: { marginTop: spacing.sm },
 });
-

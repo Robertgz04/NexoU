@@ -1,14 +1,22 @@
 import React from 'react';
-import {ActivityIndicator, StyleSheet, Text, View} from 'react-native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {useAuth} from '../context/AuthContext';
-import {colors, spacing} from '../theme';
+import {
+  ActivityIndicator,
+  Image,
+  ImageBackground,
+  StyleSheet,
+  Text,
+} from 'react-native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useAuth } from '../context/AuthContext';
+import FondoSplash from '../assets/NexoU_Fondo_Splash.png';
+import Logo from '../assets/NexoU_Logo.png';
+import { colors, spacing } from '../theme';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import ReportDetailScreen from '../screens/ReportDetailScreen';
 import StudentTabs from './StudentTabs';
 import StaffTabs from './StaffTabs';
-import type {RootStackParamList} from './types';
+import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -16,37 +24,39 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
  * Navegación raíz (F01): decide qué árbol mostrar según la sesión y el rol.
  */
 export default function RootNavigator() {
-  const {user, initializing} = useAuth();
+  const { user, initializing } = useAuth();
 
   if (initializing) {
     return (
-      <View style={styles.splash}>
-        <Text style={styles.logo}>N</Text>
-        <Text style={styles.brand}>NexoU</Text>
-        <ActivityIndicator color={colors.textOnPrimary} style={styles.spinner} />
-      </View>
+      <ImageBackground source={FondoSplash} style={styles.splash}>
+        <Image source={Logo} style={styles.splashLogo} resizeMode="contain" />
+        <Text style={styles.brand}>Reporta y da seguimiento</Text>
+        <ActivityIndicator color={colors.primary} style={styles.spinner} />
+      </ImageBackground>
     );
   }
 
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: {backgroundColor: colors.primary},
-        headerTintColor: colors.textOnPrimary,
-        headerTitleStyle: {fontWeight: '700'},
-        contentStyle: {backgroundColor: colors.background},
-      }}>
+        headerStyle: { backgroundColor: colors.surface },
+        headerTintColor: colors.primary,
+        headerTitleStyle: { fontWeight: '800', color: colors.primary },
+        headerShadowVisible: false,
+        contentStyle: { backgroundColor: colors.background },
+      }}
+    >
       {user ? (
         <>
           <Stack.Screen
             name={user.rol === 'estudiante' ? 'StudentTabs' : 'StaffTabs'}
             component={user.rol === 'estudiante' ? StudentTabs : StaffTabs}
-            options={{headerShown: false}}
+            options={{ headerShown: false }}
           />
           <Stack.Screen
             name="ReportDetail"
             component={ReportDetailScreen}
-            options={{title: 'Detalle del reporte'}}
+            options={{ title: 'Detalle del reporte' }}
           />
         </>
       ) : (
@@ -54,12 +64,12 @@ export default function RootNavigator() {
           <Stack.Screen
             name="Login"
             component={LoginScreen}
-            options={{headerShown: false}}
+            options={{ headerShown: false }}
           />
           <Stack.Screen
             name="Register"
             component={RegisterScreen}
-            options={{headerShown: false}}
+            options={{ headerShown: false }}
           />
         </>
       )}
@@ -70,19 +80,18 @@ export default function RootNavigator() {
 const styles = StyleSheet.create({
   splash: {
     flex: 1,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logo: {
-    fontSize: 64,
-    fontWeight: '800',
-    color: colors.textOnPrimary,
+  splashLogo: {
+    width: 210,
+    height: 68,
   },
   brand: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: colors.textOnPrimary,
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.textMuted,
     marginTop: spacing.sm,
   },
   spinner: {

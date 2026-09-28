@@ -1,15 +1,26 @@
-import React, {useCallback, useState} from 'react';
-import {FlatList, RefreshControl, ScrollView, StyleSheet, Text, View} from 'react-native';
-import {useFocusEffect, useNavigation} from '@react-navigation/native';
-import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
+import React, { useCallback, useState } from 'react';
+import {
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useAuth } from '../../context/AuthContext';
 import Chip from '../../components/Chip';
 import EmptyList from '../../components/EmptyList';
 import ReportCard from '../../components/ReportCard';
-import {AREAS, STATUSES} from '../../constants/catalog';
-import {getAllReports} from '../../data/reportRepository';
-import {colors, radius, spacing} from '../../theme';
-import type {Report, ReportStatus} from '../../types';
-import type {RootStackParamList} from '../../navigation/types';
+import ScreenHeader from '../../components/ScreenHeader';
+import StatTiles from '../../components/StatTiles';
+import type { StatItem } from '../../components/StatTiles';
+import { AREAS, STATUSES } from '../../constants/catalog';
+import { getAllReports } from '../../data/reportRepository';
+import { colors, spacing } from '../../theme';
+import type { Report, ReportStatus } from '../../types';
+import type { RootStackParamList } from '../../navigation/types';
 
 type EstadoFilter = ReportStatus | 'todas';
 
@@ -20,6 +31,7 @@ type EstadoFilter = ReportStatus | 'todas';
 export default function AllReportsScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { user } = useAuth();
 
   const [reports, setReports] = useState<Report[]>([]);
   const [estadoFilter, setEstadoFilter] = useState<EstadoFilter>('todas');
@@ -50,33 +62,43 @@ export default function AllReportsScreen() {
   });
 
   const pendientes = reports.filter(r => r.estado === 'pendiente').length;
+  const enRevision = reports.filter(r => r.estado === 'revision').length;
+  const solucionados = reports.filter(r => r.estado === 'solucionado').length;
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.summary}>
-        <View style={styles.summaryItem}>
-          <Text style={styles.summaryNumber}>{reports.length}</Text>
-          <Text style={styles.summaryLabel}>Recibidos</Text>
-        </View>
-        <View style={styles.summaryItem}>
-          <Text style={[styles.summaryNumber, {color: colors.pendiente}]}>
-            {pendientes}
-          </Text>
-          <Text style={styles.summaryLabel}>Pendientes</Text>
-        </View>
-        <View style={styles.summaryItem}>
-          <Text style={[styles.summaryNumber, {color: colors.solucionado}]}>
-            {reports.filter(r => r.estado === 'solucionado').length}
-          </Text>
-          <Text style={styles.summaryLabel}>Solucionados</Text>
-        </View>
-      </View>
+  const tiles: StatItem[] = [
+    {
+      icon: '📄',
+      label: 'Pendientes',
+      value: pendientes,
+      color: colors.pendiente,
+      soft: colors.pendienteSoft,
+    },
+    {
+      icon: '↻',
+      label: 'En revisión',
+      value: enRevision,
+      color: colors.revision,
+      soft: colors.revisionSoft,
+    },
+    {
+      icon: '✓',
+      label: 'Solucionados',
+      value: solucionados,
+      color: colors.solucionado,
+      soft: colors.solucionadoSoft,
+    },
+  ];
+
+  const header = (
+    <View>
+      <StatTiles items={tiles} style={styles.tiles} />
 
       <Text style={styles.filterLabel}>Estado</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterRow}>
+        contentContainerStyle={styles.filterRow}
+      >
         <Chip
           label="Todos"
           selected={estadoFilter === 'todas'}
@@ -97,7 +119,8 @@ export default function AllReportsScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterRow}>
+        contentContainerStyle={styles.filterRow}
+      >
         <Chip
           label="Todas"
           selected={areaFilter === 'Todas'}
@@ -112,24 +135,35 @@ export default function AllReportsScreen() {
           />
         ))}
       </ScrollView>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <ScreenHeader
+        withImage
+        title={`Hola, ${user?.nombre?.split(' ')[0] ?? 'personal'}`}
+        subtitle="Revisa y administra los reportes de la comunidad universitaria."
+      />
 
       <FlatList
         data={filtered}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.list}
+        ListHeaderComponent={header}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={colors.primary}
+            tintColor={colors.accent}
           />
         }
-        renderItem={({item}) => (
+        renderItem={({ item }) => (
           <ReportCard
             report={item}
             showOwner
             onPress={() =>
-              navigation.navigate('ReportDetail', {reportId: item.id})
+              navigation.navigate('ReportDetail', { reportId: item.id })
             }
           />
         )}
@@ -146,30 +180,20 @@ export default function AllReportsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: colors.background},
-  summary: {
-    flexDirection: 'row',
-    backgroundColor: colors.surface,
-    marginHorizontal: spacing.md,
+  container: { flex: 1, backgroundColor: colors.background },
+  tiles: {
     marginTop: spacing.md,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingVertical: spacing.sm + 4,
   },
-  summaryItem: {flex: 1, alignItems: 'center'},
-  summaryNumber: {fontSize: 20, fontWeight: '800', color: colors.text},
-  summaryLabel: {fontSize: 11.5, color: colors.textMuted, marginTop: 2},
   filterLabel: {
     fontSize: 13,
-    fontWeight: '700',
-    color: colors.textMuted,
-    marginLeft: spacing.md,
+    fontWeight: '800',
+    color: colors.primary,
     marginTop: spacing.md,
     marginBottom: spacing.xs,
     textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
-  filterRow: {paddingHorizontal: spacing.md},
+  filterRow: {},
   list: {
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,

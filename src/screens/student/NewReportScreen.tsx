@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   Alert,
   Image,
@@ -11,19 +11,20 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
-import {useAuth} from '../../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import { useAuth } from '../../context/AuthContext';
 import Chip from '../../components/Chip';
 import FormField from '../../components/FormField';
 import PrimaryButton from '../../components/PrimaryButton';
-import {AREAS, CATEGORIES, LIMITS} from '../../constants/catalog';
-import {createReport} from '../../data/reportRepository';
-import {colors, radius, spacing} from '../../theme';
-import type {Category} from '../../types';
-import type {RootStackParamList} from '../../navigation/types';
-import {validateRequired} from '../../utils/validators';
+import { AREAS, CATEGORIES, LIMITS } from '../../constants/catalog';
+import { createReport } from '../../data/reportRepository';
+import ScreenHeader from '../../components/ScreenHeader';
+import { colors, radius, spacing } from '../../theme';
+import type { Category } from '../../types';
+import type { RootStackParamList } from '../../navigation/types';
+import { validateRequired } from '../../utils/validators';
 
 type Errors = {
   titulo?: string | null;
@@ -37,7 +38,7 @@ type Errors = {
  * título, descripción, área, categoría y evidencia fotográfica.
  */
 export default function NewReportScreen() {
-  const {user} = useAuth();
+  const { user } = useAuth();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -146,9 +147,9 @@ export default function NewReportScreen() {
           {
             text: 'Ver mis reportes',
             onPress: () =>
-              navigation.navigate('StudentTabs', {screen: 'MyReports'}),
+              navigation.navigate('StudentTabs', { screen: 'MyReports' }),
           },
-          {text: 'Cerrar', style: 'cancel'},
+          { text: 'Cerrar', style: 'cancel' },
         ],
       );
     } catch (e) {
@@ -164,13 +165,19 @@ export default function NewReportScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScreenHeader
+        withImage
+        title="Nuevo reporte"
+        subtitle="Reporta una incidencia en tu universidad para que pueda ser atendida."
+      />
       <ScrollView
         contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled">
-        <Text style={styles.sectionTitle}>1. Describe el problema</Text>
+        keyboardShouldPersistTaps="handled"
+      >
         <FormField
-          label="Título"
+          label="Título del problema"
           value={titulo}
           onChangeText={setTitulo}
           error={errors.titulo}
@@ -193,7 +200,7 @@ export default function NewReportScreen() {
           {descripcion.length}/{LIMITS.descripcion}
         </Text>
 
-        <Text style={styles.sectionTitle}>2. ¿Dónde ocurrió?</Text>
+        <Text style={styles.sectionTitle}>Área</Text>
         <View style={styles.chipWrap}>
           {AREAS.map(a => (
             <Chip
@@ -202,14 +209,14 @@ export default function NewReportScreen() {
               selected={area === a}
               onPress={() => {
                 setArea(a);
-                setErrors(prev => ({...prev, area: null}));
+                setErrors(prev => ({ ...prev, area: null }));
               }}
             />
           ))}
         </View>
         {errors.area ? <Text style={styles.error}>{errors.area}</Text> : null}
 
-        <Text style={styles.sectionTitle}>3. Tipo de incidencia</Text>
+        <Text style={styles.sectionTitle}>Tipo de incidencia</Text>
         <View style={styles.chipWrap}>
           {CATEGORIES.map(c => (
             <Chip
@@ -218,7 +225,7 @@ export default function NewReportScreen() {
               selected={categoria === c}
               onPress={() => {
                 setCategoria(c);
-                setErrors(prev => ({...prev, categoria: null}));
+                setErrors(prev => ({ ...prev, categoria: null }));
               }}
             />
           ))}
@@ -227,9 +234,9 @@ export default function NewReportScreen() {
           <Text style={styles.error}>{errors.categoria}</Text>
         ) : null}
 
-        <Text style={styles.sectionTitle}>4. Evidencia fotográfica</Text>
+        <Text style={styles.sectionTitle}>Evidencia fotográfica</Text>
         <Text style={styles.hint}>
-          Opcional pero recomendada: toma la foto o elígela de la galería.
+          Opcional: toma la foto o elígela de la galería.
         </Text>
 
         {photo ? (
@@ -248,7 +255,8 @@ export default function NewReportScreen() {
             <TouchableOpacity
               accessibilityRole="button"
               onPress={() => setPhoto(null)}
-              style={styles.removePhoto}>
+              style={styles.removePhoto}
+            >
               <Text style={styles.removePhotoText}>✕ Quitar foto</Text>
             </TouchableOpacity>
           </View>
@@ -270,7 +278,8 @@ export default function NewReportScreen() {
         )}
 
         <PrimaryButton
-          title="Publicar reporte"
+          title="Enviar reporte"
+          withArrow
           onPress={onSubmit}
           loading={saving}
           style={styles.submit}
@@ -285,7 +294,7 @@ export default function NewReportScreen() {
 }
 
 const styles = StyleSheet.create({
-  flex: {flex: 1},
+  flex: { flex: 1 },
   content: {
     padding: spacing.md,
     paddingBottom: spacing.xl,
@@ -294,7 +303,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16.5,
     fontWeight: '800',
-    color: colors.text,
+    color: colors.primary,
     marginTop: spacing.md,
     marginBottom: spacing.sm,
   },
@@ -305,7 +314,7 @@ const styles = StyleSheet.create({
     marginTop: -spacing.sm - 2,
     marginBottom: spacing.sm + 2,
   },
-  chipWrap: {flexDirection: 'row', flexWrap: 'wrap'},
+  chipWrap: { flexDirection: 'row', flexWrap: 'wrap' },
   error: {
     fontSize: 12.5,
     color: colors.danger,
@@ -323,16 +332,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  preview: {width: '100%', height: 200, resizeMode: 'cover'},
+  preview: { width: '100%', height: 200, resizeMode: 'cover' },
   removePhoto: {
     alignItems: 'center',
     paddingVertical: spacing.sm,
     backgroundColor: colors.dangerSoft,
   },
-  removePhotoText: {color: colors.danger, fontWeight: '700', fontSize: 14},
-  photoButtons: {flexDirection: 'row', gap: spacing.sm},
-  photoButton: {flex: 1},
-  submit: {marginTop: spacing.lg},
+  removePhotoText: { color: colors.danger, fontWeight: '700', fontSize: 14 },
+  photoButtons: { flexDirection: 'row', gap: spacing.sm },
+  photoButton: { flex: 1 },
+  submit: { marginTop: spacing.lg },
   footerHint: {
     fontSize: 12.5,
     color: colors.textMuted,
@@ -341,4 +350,3 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
 });
-

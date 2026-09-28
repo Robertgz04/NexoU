@@ -1,7 +1,7 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import PrimaryButton from './PrimaryButton';
-import {colors, spacing} from '../theme';
+import { colors, radius, spacing } from '../theme';
 
 interface Props {
   icon: string;
@@ -12,10 +12,18 @@ interface Props {
 }
 
 /** Estado vacío de las listas (F06/F07). */
-export default function EmptyList({icon, title, subtitle, actionLabel, onAction}: Props) {
+export default function EmptyList({
+  icon,
+  title,
+  subtitle,
+  actionLabel,
+  onAction,
+}: Props) {
   return (
     <View style={styles.container}>
-      <Text style={styles.icon}>{icon}</Text>
+      <View style={styles.iconBox}>
+        <Text style={styles.icon}>{icon}</Text>
+      </View>
       <Text style={styles.title}>{title}</Text>
       {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       {actionLabel && onAction ? (
@@ -36,14 +44,22 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xl,
     paddingHorizontal: spacing.lg,
   },
+  iconBox: {
+    width: 88,
+    height: 88,
+    borderRadius: radius.pill,
+    backgroundColor: colors.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.md,
+  },
   icon: {
-    fontSize: 44,
-    marginBottom: spacing.sm,
+    fontSize: 40,
   },
   title: {
     fontSize: 17,
-    fontWeight: '700',
-    color: colors.text,
+    fontWeight: '800',
+    color: colors.primary,
     textAlign: 'center',
   },
   subtitle: {

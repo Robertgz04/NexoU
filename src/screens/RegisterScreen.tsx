@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -8,15 +8,15 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {useNavigation} from '@react-navigation/native';
-import {useAuth} from '../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext';
 import Chip from '../components/Chip';
 import FormField from '../components/FormField';
 import PrimaryButton from '../components/PrimaryButton';
-import {LIMITS} from '../constants/catalog';
-import {colors, spacing} from '../theme';
-import type {Role} from '../types';
+import ScreenHeader from '../components/ScreenHeader';
+import { LIMITS } from '../constants/catalog';
+import { colors, spacing } from '../theme';
+import type { Role } from '../types';
 import {
   validateEmail,
   validatePassword,
@@ -39,7 +39,7 @@ interface FieldErrors {
  */
 export default function RegisterScreen() {
   const navigation = useNavigation();
-  const {register} = useAuth();
+  const { register } = useAuth();
 
   const [rol, setRol] = useState<Role>('estudiante');
   const [nombre, setNombre] = useState('');
@@ -69,12 +69,11 @@ export default function RegisterScreen() {
     setErrors({});
     setLoading(true);
     try {
-      await register({nombre, matricula, email, password, rol});
+      await register({ nombre, matricula, email, password, rol });
       // La sesión queda activa: RootNavigator cambia al panel del rol.
     } catch (e) {
       setErrors({
-        general:
-          e instanceof Error ? e.message : 'No se pudo crear la cuenta.',
+        general: e instanceof Error ? e.message : 'No se pudo crear la cuenta.',
       });
     } finally {
       setLoading(false);
@@ -82,17 +81,20 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.safe}>
+      <ScreenHeader
+        title="Crear cuenta"
+        subtitle="Elige tu tipo de usuario para continuar."
+      />
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <ScrollView
           contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled">
-          <Text style={styles.heading}>Crear cuenta</Text>
-          <Text style={styles.subheading}>
-            Elige tu tipo de usuario para continuar.
-          </Text>
+          keyboardShouldPersistTaps="handled"
+        >
+          <Text style={styles.heading}>Registro</Text>
 
           <View style={styles.roleRow}>
             <Chip
@@ -168,7 +170,8 @@ export default function RegisterScreen() {
           <TouchableOpacity
             accessibilityRole="button"
             onPress={() => navigation.goBack()}
-            style={styles.link}>
+            style={styles.link}
+          >
             <Text style={styles.linkText}>
               ¿Ya tienes cuenta?{' '}
               <Text style={styles.linkBold}>Inicia sesión</Text>
@@ -176,30 +179,33 @@ export default function RegisterScreen() {
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: {flex: 1, backgroundColor: colors.background},
-  flex: {flex: 1},
-  scroll: {padding: spacing.lg, paddingTop: spacing.lg},
-  heading: {fontSize: 24, fontWeight: '800', color: colors.text},
-  subheading: {
-    fontSize: 14.5,
-    color: colors.textMuted,
-    marginTop: spacing.xs,
+  safe: { flex: 1, backgroundColor: colors.background },
+  flex: { flex: 1 },
+  scroll: { padding: spacing.lg, paddingTop: spacing.sm },
+  heading: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: colors.primary,
     marginBottom: spacing.md,
   },
-  roleRow: {flexDirection: 'row', flexWrap: 'wrap', marginBottom: spacing.sm},
+  roleRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: spacing.sm },
   errorBox: {
     backgroundColor: colors.dangerSoft,
     borderRadius: 12,
     padding: spacing.sm + 4,
     marginBottom: spacing.md,
   },
-  errorText: {color: colors.danger, fontSize: 14},
-  link: {marginTop: spacing.md, alignItems: 'center', marginBottom: spacing.lg},
-  linkText: {fontSize: 14.5, color: colors.textMuted},
-  linkBold: {color: colors.primary, fontWeight: '700'},
+  errorText: { color: colors.danger, fontSize: 14 },
+  link: {
+    marginTop: spacing.md,
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  linkText: { fontSize: 14.5, color: colors.textMuted },
+  linkBold: { color: colors.primary, fontWeight: '700' },
 });

@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ViewStyle,
 } from 'react-native';
-import {colors, radius, spacing} from '../theme';
+import { colors, radius, shadow, spacing } from '../theme';
 
 interface Props {
   title: string;
@@ -14,16 +14,22 @@ interface Props {
   loading?: boolean;
   disabled?: boolean;
   variant?: 'primary' | 'outline' | 'danger';
+  /** Muestra la flecha "→" al final del título (mockups). */
+  withArrow?: boolean;
   style?: ViewStyle;
 }
 
-/** Botón principal de la app (alto táctil, estados loading/deshabilitado). */
+/**
+ * Botón principal de la app (alto táctil, estados loading/deshabilitado).
+ * Estilo de los mockups: píldora rellena en azul marino con sombra suave.
+ */
 export default function PrimaryButton({
   title,
   onPress,
   loading = false,
   disabled = false,
   variant = 'primary',
+  withArrow = false,
   style,
 }: Props) {
   const isDisabled = disabled || loading;
@@ -32,28 +38,33 @@ export default function PrimaryButton({
     variant === 'primary'
       ? colors.primary
       : variant === 'danger'
-        ? colors.danger
-        : 'transparent';
+      ? colors.danger
+      : colors.surface;
   const textColor =
-    variant === 'outline' ? colors.primary : colors.textOnPrimary;
+    variant === 'outline' ? colors.accent : colors.textOnPrimary;
 
   return (
     <TouchableOpacity
       accessibilityRole="button"
-      activeOpacity={0.8}
+      activeOpacity={0.85}
       disabled={isDisabled}
       onPress={onPress}
       style={[
         styles.button,
-        {backgroundColor: background},
+        { backgroundColor: background },
         variant === 'outline' && styles.outline,
+        variant === 'primary' && styles.filled,
         isDisabled && styles.disabled,
         style,
-      ]}>
+      ]}
+    >
       {loading ? (
         <ActivityIndicator color={textColor} />
       ) : (
-        <Text style={[styles.label, {color: textColor}]}>{title}</Text>
+        <Text style={[styles.label, { color: textColor }]}>
+          {title}
+          {withArrow ? '  →' : ''}
+        </Text>
       )}
     </TouchableOpacity>
   );
@@ -61,22 +72,26 @@ export default function PrimaryButton({
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 48,
-    borderRadius: radius.md,
+    minHeight: 52,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm + 4,
+  },
+  filled: {
+    ...shadow.floating,
   },
   outline: {
     borderWidth: 1.5,
-    borderColor: colors.primary,
+    borderColor: colors.accent,
   },
   disabled: {
     opacity: 0.55,
   },
   label: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
 });

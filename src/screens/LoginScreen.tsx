@@ -1,21 +1,25 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
+  Image,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {useNavigation} from '@react-navigation/native';
-import {useAuth} from '../context/AuthContext';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext';
 import FormField from '../components/FormField';
 import PrimaryButton from '../components/PrimaryButton';
-import {LIMITS} from '../constants/catalog';
-import {colors, spacing} from '../theme';
-import {validateEmail, validatePassword} from '../utils/validators';
+import { LIMITS } from '../constants/catalog';
+import FondoLogin from '../assets/NexoU_Fondo_Login.png';
+import FondoOndas from '../assets/NexoU_Fondo_Ondas.png';
+import Logo from '../assets/NexoU_Logo.png';
+import { colors, radius, shadow, spacing } from '../theme';
+import { validateEmail, validatePassword } from '../utils/validators';
 
 interface FieldErrors {
   email?: string | null;
@@ -26,7 +30,7 @@ interface FieldErrors {
 /** F01 – Inicio de sesión de estudiantes y personal universitario. */
 export default function LoginScreen() {
   const navigation = useNavigation();
-  const {login} = useAuth();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,7 +41,7 @@ export default function LoginScreen() {
     const emailError = validateEmail(email);
     const passwordError = validatePassword(password, LIMITS.passwordMin);
     if (emailError || passwordError) {
-      setErrors({email: emailError, password: passwordError});
+      setErrors({ email: emailError, password: passwordError });
       return;
     }
 
@@ -56,136 +60,173 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled">
-          <View style={styles.logoBox}>
-            <Text style={styles.logo}>N</Text>
-            <Text style={styles.brand}>NexoU</Text>
-            <Text style={styles.tagline}>
-              Reporta y da seguimiento a incidencias del campus
-            </Text>
-          </View>
+    <View style={styles.root}>
+      <ImageBackground source={FondoLogin} style={styles.hero} />
+      <SafeAreaView style={styles.safe} edges={['bottom']}>
+        <KeyboardAvoidingView
+          style={styles.flex}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <ScrollView
+            contentContainerStyle={styles.scroll}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.sheet}>
+              <Image source={Logo} style={styles.logo} resizeMode="contain" />
+              <Text style={styles.tagline}>
+                Reporta y da seguimiento a{'\n'}incidencias universitarias
+              </Text>
 
-          <Text style={styles.heading}>Iniciar sesión</Text>
+              <Text style={styles.heading}>Iniciar sesión</Text>
 
-          {errors.general ? (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{errors.general}</Text>
+              {errors.general ? (
+                <View style={styles.errorBox}>
+                  <Text style={styles.errorText}>{errors.general}</Text>
+                </View>
+              ) : null}
+
+              <FormField
+                testID="login-email"
+                label="Correo"
+                value={email}
+                onChangeText={t => setEmail(t)}
+                error={errors.email}
+                placeholder="tu.correo@universidad.edu"
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+              <FormField
+                testID="login-password"
+                label="Contraseña"
+                value={password}
+                onChangeText={t => setPassword(t)}
+                error={errors.password}
+                placeholder="Ingresa tu contraseña"
+                secureTextEntry
+                autoCapitalize="none"
+              />
+
+              <PrimaryButton
+                title="Iniciar sesión"
+                withArrow
+                onPress={onSubmit}
+                loading={loading}
+              />
+
+              <View style={styles.dividerRow}>
+                <View style={styles.divider} />
+                <Text style={styles.dividerText}>
+                  ¿Aún no tienes una cuenta?
+                </Text>
+                <View style={styles.divider} />
+              </View>
+
+              <PrimaryButton
+                title="Crear cuenta"
+                variant="outline"
+                onPress={() => navigation.navigate('Register')}
+              />
+
+              <View style={styles.demoBox}>
+                <Text style={styles.demoTitle}>Cuentas de demostración</Text>
+                <Text style={styles.demoText}>
+                  Estudiante: estudiante@nexou.mx {'\n'}
+                  Personal: personal@nexou.mx {'\n'}
+                  Contraseña: Demo1234
+                </Text>
+              </View>
             </View>
-          ) : null}
-
-          <FormField
-            testID="login-email"
-            label="Correo institucional"
-            value={email}
-            onChangeText={t => setEmail(t)}
-            error={errors.email}
-            placeholder="usuario@nexou.mx"
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <FormField
-            testID="login-password"
-            label="Contraseña"
-            value={password}
-            onChangeText={t => setPassword(t)}
-            error={errors.password}
-            placeholder="••••••••"
-            secureTextEntry
-            autoCapitalize="none"
-          />
-
-          <PrimaryButton
-            title="Ingresar"
-            onPress={onSubmit}
-            loading={loading}
-          />
-
-          <TouchableOpacity
-            accessibilityRole="button"
-            onPress={() => navigation.navigate('Register')}
-            style={styles.link}>
-            <Text style={styles.linkText}>
-              ¿No tienes cuenta?{' '}
-              <Text style={styles.linkBold}>Regístrate</Text>
-            </Text>
-          </TouchableOpacity>
-
-          <View style={styles.demoBox}>
-            <Text style={styles.demoTitle}>Cuentas de demostración</Text>
-            <Text style={styles.demoText}>
-              Estudiante: estudiante@nexou.mx {'\n'}
-              Personal: personal@nexou.mx {'\n'}
-              Contraseña: Demo1234
-            </Text>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+      <Image source={FondoOndas} style={styles.waves} resizeMode="cover" />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: {flex: 1, backgroundColor: colors.background},
-  flex: {flex: 1},
-  scroll: {padding: spacing.lg, paddingTop: spacing.xl},
-  logoBox: {alignItems: 'center', marginBottom: spacing.lg},
-  logo: {
-    width: 76,
-    height: 76,
-    borderRadius: 20,
-    backgroundColor: colors.primary,
-    color: colors.textOnPrimary,
-    fontSize: 42,
-    fontWeight: '800',
-    textAlign: 'center',
-    lineHeight: 76,
-    overflow: 'hidden',
+  root: { flex: 1, backgroundColor: colors.surface },
+  flex: { flex: 1 },
+  hero: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 320,
   },
-  brand: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: colors.text,
-    marginTop: spacing.sm,
+  safe: { flex: 1 },
+  scroll: {
+    paddingTop: 190,
+    paddingBottom: spacing.xl + 40,
+  },
+  sheet: {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    ...shadow.floating,
+  },
+  logo: {
+    height: 54,
+    alignSelf: 'center',
+    width: 190,
   },
   tagline: {
     fontSize: 14,
     color: colors.textMuted,
     textAlign: 'center',
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
+    lineHeight: 19,
   },
   heading: {
     fontSize: 20,
-    fontWeight: '700',
-    color: colors.text,
+    fontWeight: '800',
+    color: colors.primary,
+    marginTop: spacing.lg,
     marginBottom: spacing.md,
   },
   errorBox: {
     backgroundColor: colors.dangerSoft,
-    borderRadius: 12,
+    borderRadius: radius.md,
     padding: spacing.sm + 4,
     marginBottom: spacing.md,
   },
-  errorText: {color: colors.danger, fontSize: 14},
-  link: {marginTop: spacing.md, alignItems: 'center'},
-  linkText: {fontSize: 14.5, color: colors.textMuted},
-  linkBold: {color: colors.primary, fontWeight: '700'},
+  errorText: { color: colors.danger, fontSize: 14 },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginVertical: spacing.md,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border,
+  },
+  dividerText: {
+    fontSize: 13,
+    color: colors.textMuted,
+  },
   demoBox: {
-    marginTop: spacing.xl,
-    backgroundColor: colors.primarySoft,
-    borderRadius: 12,
+    marginTop: spacing.lg,
+    backgroundColor: colors.accentSoft,
+    borderRadius: radius.md,
     padding: spacing.md,
   },
   demoTitle: {
     fontSize: 13,
-    fontWeight: '700',
-    color: colors.primaryDark,
+    fontWeight: '800',
+    color: colors.accentDark,
     marginBottom: spacing.xs,
   },
-  demoText: {fontSize: 13, color: colors.primaryDark, lineHeight: 20},
+  demoText: { fontSize: 13, color: colors.accentDark, lineHeight: 20 },
+  waves: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: 96,
+  },
 });

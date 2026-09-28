@@ -6,7 +6,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import {colors, radius, spacing} from '../theme';
+import { colors, radius, spacing } from '../theme';
 
 interface Props {
   label: string;
@@ -70,18 +70,18 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: colors.primary,
     marginBottom: spacing.xs + 2,
   },
   input: {
     backgroundColor: colors.surface,
-    borderWidth: 1,
+    borderWidth: 1.2,
     borderColor: colors.border,
-    borderRadius: radius.md,
+    borderRadius: radius.md + 2,
     paddingHorizontal: spacing.md,
-    paddingVertical: 12,
+    paddingVertical: 14,
     fontSize: 15,
     color: colors.text,
   },
