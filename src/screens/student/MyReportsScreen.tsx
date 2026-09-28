@@ -1,5 +1,13 @@
 import React, { useCallback, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import {
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../context/AuthContext';
@@ -7,8 +15,6 @@ import Chip from '../../components/Chip';
 import EmptyList from '../../components/EmptyList';
 import ReportCard from '../../components/ReportCard';
 import ScreenHeader from '../../components/ScreenHeader';
-import StatTiles from '../../components/StatTiles';
-import type { StatItem } from '../../components/StatTiles';
 import { STATUSES, statusMeta } from '../../constants/catalog';
 import { getReportsByOwner } from '../../data/reportRepository';
 import { colors, spacing } from '../../theme';
@@ -16,6 +22,34 @@ import type { Report, ReportStatus } from '../../types';
 import type { RootStackParamList } from '../../navigation/types';
 
 type Filter = ReportStatus | 'todas';
+
+/** Nota de estado que se muestra al expandir una tarjeta (mockup F06). */
+function notaDe(reporte: Report): {
+  icon: string;
+  title: string;
+  text: string;
+} {
+  switch (reporte.estado) {
+    case 'revision':
+      return {
+        icon: '🔧',
+        title: 'Atendido por mantenimiento',
+        text: 'Se ha asignado al equipo de mantenimiento para su revisión.',
+      };
+    case 'solucionado':
+      return {
+        icon: '✅',
+        title: 'Problema solucionado',
+        text: 'Mantenimiento terminó el trabajo. ¡Gracias por reportar!',
+      };
+    default:
+      return {
+        icon: '🕐',
+        title: 'En espera de atención',
+        text: 'Tu reporte fue recibido y pronto será revisado por mantenimiento.',
+      };
+  }
+}
 
 /**
  * F06 – Consulta de los reportes propios del estudiante con su estado,
@@ -29,6 +63,7 @@ export default function MyReportsScreen() {
   const [reports, setReports] = useState<Report[]>([]);
   const [filter, setFilter] = useState<Filter>('todas');
   const [refreshing, setRefreshing] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!user) {
@@ -53,45 +88,53 @@ export default function MyReportsScreen() {
   const filtered =
     filter === 'todas' ? reports : reports.filter(r => r.estado === filter);
 
-  const count = (status: ReportStatus) =>
-    reports.filter(r => r.estado === status).length;
+  const goProfile = () =>
+    navigation.navigate('StudentTabs', { screen: 'Profile' });
 
-  const tiles: StatItem[] = [
-    { icon: '📋', label: 'Totales', value: reports.length },
-    ...STATUSES.map(s => ({
-      icon: s.icon,
-      label: s.label,
-      value: count(s.value),
-      color: s.color,
-      soft: s.soft,
-    })),
-  ];
+  const goDetail = (reportId: string) =>
+    navigation.navigate('ReportDetail', { reportId });
+
+  const toggleNote = (reportId: string) =>
+    setExpandedId(prev => (prev === reportId ? null : reportId));
+
+  const avatar = (
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel="Ir a mi perfil"
+      activeOpacity={0.85}
+      onPress={goProfile}
+      style={styles.avatarButton}
+    >
+      <Text style={styles.avatarIcon}>👤</Text>
+    </TouchableOpacity>
+  );
 
   const header = (
-    <View>
-      <StatTiles items={tiles} style={styles.tiles} />
-      <View style={styles.filters}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.filters}
+    >
+      <Chip
+        label="Todos"
+        selected={filter === 'todas'}
+        onPress={() => setFilter('todas')}
+      />
+      {STATUSES.map(s => (
         <Chip
-          label="Todas"
-          selected={filter === 'todas'}
-          onPress={() => setFilter('todas')}
+          key={s.value}
+          label={s.label}
+          color={s.color}
+          selected={filter === s.value}
+          onPress={() => setFilter(s.value)}
         />
-        {STATUSES.map(s => (
-          <Chip
-            key={s.value}
-            label={s.label}
-            color={s.color}
-            selected={filter === s.value}
-            onPress={() => setFilter(s.value)}
-          />
-        ))}
-      </View>
-    </View>
+      ))}
+    </ScrollView>
   );
 
   return (
     <View style={styles.container}>
-      <ScreenHeader title="Mis reportes" />
+      <ScreenHeader title="Mis reportes" right={avatar} />
 
       <FlatList
         data={filtered}
@@ -108,9 +151,10 @@ export default function MyReportsScreen() {
         renderItem={({ item }) => (
           <ReportCard
             report={item}
-            onPress={() =>
-              navigation.navigate('ReportDetail', { reportId: item.id })
-            }
+            note={notaDe(item)}
+            expanded={expandedId === item.id}
+            onToggleNote={() => toggleNote(item.id)}
+            onPress={() => goDetail(item.id)}
           />
         )}
         ListEmptyComponent={
@@ -141,17 +185,21 @@ export default function MyReportsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  tiles: {
-    marginTop: spacing.md,
+  avatarButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
+  avatarIcon: { fontSize: 19 },
   filters: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
     paddingTop: spacing.md,
+    paddingRight: spacing.md,
   },
   list: {
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
     paddingBottom: spacing.xl,
     flexGrow: 1,
   },

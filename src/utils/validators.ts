@@ -22,7 +22,10 @@ export function validateEmail(email: string): string | null {
   return isValidEmail(email) ? null : 'Ingresa un correo válido.';
 }
 
-export function validatePassword(password: string, minLength: number): string | null {
+export function validatePassword(
+  password: string,
+  minLength: number,
+): string | null {
   if (isBlank(password)) {
     return 'La contraseña es obligatoria.';
   }
@@ -32,11 +35,18 @@ export function validatePassword(password: string, minLength: number): string | 
   return null;
 }
 
+/** Folio corto y estable a partir del id del reporte (mockup: "NX-2031"). */
+export function folioDe(id: string): string {
+  let hash = 0;
+  for (let i = 0; i < id.length; i += 1) {
+    hash = (hash * 31 + id.charCodeAt(i)) % 100000;
+  }
+  return `NX-${1000 + (hash % 9000)}`;
+}
+
 /** Genera un identificador único corto sin librerías externas. */
 export function uid(prefix = ''): string {
   return (
-    prefix +
-    Date.now().toString(36) +
-    Math.random().toString(36).slice(2, 8)
+    prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
   );
 }

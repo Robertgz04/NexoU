@@ -15,13 +15,13 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { useAuth } from '../../context/AuthContext';
-import Chip from '../../components/Chip';
 import FormField from '../../components/FormField';
 import PrimaryButton from '../../components/PrimaryButton';
+import SelectField from '../../components/SelectField';
 import { AREAS, CATEGORIES, LIMITS } from '../../constants/catalog';
 import { createReport } from '../../data/reportRepository';
 import ScreenHeader from '../../components/ScreenHeader';
-import { colors, radius, spacing } from '../../theme';
+import { colors, radius, shadow, spacing } from '../../theme';
 import type { Category } from '../../types';
 import type { RootStackParamList } from '../../navigation/types';
 import { validateRequired } from '../../utils/validators';
@@ -168,7 +168,8 @@ export default function NewReportScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScreenHeader
-        withImage
+        hero
+        centered
         title="Nuevo reporte"
         subtitle="Reporta una incidencia en tu universidad para que pueda ser atendida."
       />
@@ -176,106 +177,111 @@ export default function NewReportScreen() {
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
       >
-        <FormField
-          label="Título del problema"
-          value={titulo}
-          onChangeText={setTitulo}
-          error={errors.titulo}
-          placeholder="Ej. Lámpara quemada en el aula 101"
-          maxLength={LIMITS.titulo}
-        />
-        <Text style={styles.counter}>
-          {titulo.length}/{LIMITS.titulo}
-        </Text>
-        <FormField
-          label="Descripción"
-          value={descripcion}
-          onChangeText={setDescripcion}
-          error={errors.descripcion}
-          placeholder="¿Qué ocurrió? ¿Desde cuándo? ¿Por qué es un problema?"
-          multiline
-          maxLength={LIMITS.descripcion}
-        />
-        <Text style={styles.counter}>
-          {descripcion.length}/{LIMITS.descripcion}
-        </Text>
+        <View style={styles.formCard}>
+          <FormField
+            label="Título del problema"
+            value={titulo}
+            onChangeText={setTitulo}
+            error={errors.titulo}
+            placeholder="Ej. Lámpara quemada en el aula 101"
+            maxLength={LIMITS.titulo}
+          />
 
-        <Text style={styles.sectionTitle}>Área</Text>
-        <View style={styles.chipWrap}>
-          {AREAS.map(a => (
-            <Chip
-              key={a}
-              label={a}
-              selected={area === a}
-              onPress={() => {
-                setArea(a);
-                setErrors(prev => ({ ...prev, area: null }));
-              }}
-            />
-          ))}
+          <SelectField
+            label="Área"
+            icon="📍"
+            value={area}
+            placeholder="Selecciona el área"
+            options={AREAS}
+            error={errors.area}
+            onSelect={value => {
+              setArea(value);
+              setErrors(prev => ({ ...prev, area: null }));
+            }}
+          />
+
+          <SelectField
+            label="Tipo de incidencia"
+            icon="💻"
+            value={categoria}
+            placeholder="Selecciona el tipo"
+            options={CATEGORIES}
+            error={errors.categoria}
+            onSelect={value => {
+              setCategoria(value as Category);
+              setErrors(prev => ({ ...prev, categoria: null }));
+            }}
+          />
+
+          <FormField
+            label="Descripción"
+            value={descripcion}
+            onChangeText={setDescripcion}
+            error={errors.descripcion}
+            placeholder="¿Qué ocurrió? ¿Desde cuándo? ¿Por qué es un problema?"
+            multiline
+            maxLength={LIMITS.descripcion}
+          />
+          <Text style={styles.counter}>
+            {descripcion.length}/{LIMITS.descripcion}
+          </Text>
         </View>
-        {errors.area ? <Text style={styles.error}>{errors.area}</Text> : null}
 
-        <Text style={styles.sectionTitle}>Tipo de incidencia</Text>
-        <View style={styles.chipWrap}>
-          {CATEGORIES.map(c => (
-            <Chip
-              key={c}
-              label={c}
-              selected={categoria === c}
-              onPress={() => {
-                setCategoria(c);
-                setErrors(prev => ({ ...prev, categoria: null }));
-              }}
-            />
-          ))}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
+            Evidencia fotográfica{' '}
+            <Text style={styles.sectionHint}>(opcional)</Text>
+          </Text>
+
+          {photo ? (
+            <View style={styles.previewBox}>
+              <Image
+                source={{
+                  uri:
+                    photo.startsWith('data:') ||
+                    photo.startsWith('file:') ||
+                    photo.startsWith('content:')
+                      ? photo
+                      : `data:image/jpeg;base64,${photo}`,
+                }}
+                style={styles.preview}
+              />
+              <TouchableOpacity
+                accessibilityRole="button"
+                onPress={() => setPhoto(null)}
+                style={styles.removePhoto}
+              >
+                <Text style={styles.removePhotoText}>✕ Quitar foto</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.evidenceRow}>
+              <TouchableOpacity
+                accessibilityRole="button"
+                activeOpacity={0.85}
+                onPress={() => pickImage('gallery')}
+                style={styles.dropzone}
+              >
+                <Text style={styles.dropzoneIcon}>🖼</Text>
+                <Text style={styles.dropzoneText}>Agregar foto</Text>
+              </TouchableOpacity>
+              <View style={styles.evidenceButtons}>
+                <PrimaryButton
+                  title="📷 Tomar foto"
+                  variant="outline"
+                  onPress={() => pickImage('camera')}
+                  style={styles.evidenceButton}
+                />
+                <PrimaryButton
+                  title="☁ Subir imagen"
+                  variant="outline"
+                  onPress={() => pickImage('gallery')}
+                  style={styles.evidenceButton}
+                />
+              </View>
+            </View>
+          )}
         </View>
-        {errors.categoria ? (
-          <Text style={styles.error}>{errors.categoria}</Text>
-        ) : null}
-
-        <Text style={styles.sectionTitle}>Evidencia fotográfica</Text>
-        <Text style={styles.hint}>
-          Opcional: toma la foto o elígela de la galería.
-        </Text>
-
-        {photo ? (
-          <View style={styles.previewBox}>
-            <Image
-              source={{
-                uri:
-                  photo.startsWith('data:') ||
-                  photo.startsWith('file:') ||
-                  photo.startsWith('content:')
-                    ? photo
-                    : `data:image/jpeg;base64,${photo}`,
-              }}
-              style={styles.preview}
-            />
-            <TouchableOpacity
-              accessibilityRole="button"
-              onPress={() => setPhoto(null)}
-              style={styles.removePhoto}
-            >
-              <Text style={styles.removePhotoText}>✕ Quitar foto</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.photoButtons}>
-            <PrimaryButton
-              title="📷 Cámara"
-              variant="outline"
-              onPress={() => pickImage('camera')}
-              style={styles.photoButton}
-            />
-            <PrimaryButton
-              title="🖼 Galería"
-              variant="outline"
-              onPress={() => pickImage('gallery')}
-              style={styles.photoButton}
-            />
-          </View>
-        )}
 
         <PrimaryButton
           title="Enviar reporte"
@@ -297,33 +303,67 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   content: {
     padding: spacing.md,
+    paddingTop: spacing.sm,
     paddingBottom: spacing.xl,
     backgroundColor: colors.background,
+  },
+  formCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginTop: spacing.md,
+    ...shadow.card,
+  },
+  section: {
+    marginTop: spacing.lg,
   },
   sectionTitle: {
     fontSize: 16.5,
     fontWeight: '800',
     color: colors.primary,
-    marginTop: spacing.md,
     marginBottom: spacing.sm,
+  },
+  sectionHint: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: colors.textMuted,
   },
   counter: {
     fontSize: 12,
     color: colors.textMuted,
     textAlign: 'right',
-    marginTop: -spacing.sm - 2,
-    marginBottom: spacing.sm + 2,
+    marginTop: -spacing.md,
   },
-  chipWrap: { flexDirection: 'row', flexWrap: 'wrap' },
-  error: {
+  evidenceRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  dropzone: {
+    width: 120,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing.md,
+    gap: spacing.xs,
+  },
+  dropzoneIcon: {
+    fontSize: 26,
+  },
+  dropzoneText: {
     fontSize: 12.5,
-    color: colors.danger,
-    marginBottom: spacing.sm,
-  },
-  hint: {
-    fontSize: 13,
+    fontWeight: '700',
     color: colors.textMuted,
-    marginBottom: spacing.sm + 2,
+  },
+  evidenceButtons: {
+    flex: 1,
+    gap: spacing.sm,
+    justifyContent: 'center',
+  },
+  evidenceButton: {
+    minHeight: 46,
   },
   previewBox: {
     borderRadius: radius.md,
@@ -339,8 +379,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.dangerSoft,
   },
   removePhotoText: { color: colors.danger, fontWeight: '700', fontSize: 14 },
-  photoButtons: { flexDirection: 'row', gap: spacing.sm },
-  photoButton: { flex: 1 },
   submit: { marginTop: spacing.lg },
   footerHint: {
     fontSize: 12.5,

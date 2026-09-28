@@ -11,16 +11,26 @@ interface Props {
   onPress: () => void;
   /** Muestra el nombre del autor (panel del personal, F07). */
   showOwner?: boolean;
+  /** Nota de estado ampliada bajo la tarjeta (mockup de Mis reportes). */
+  note?: { icon: string; title: string; text: string } | null;
+  /** La tarjeta está expandida: muestra el chevron hacia arriba y la nota. */
+  expanded?: boolean;
+  /** Plega/despliega la nota sin navegar al detalle. */
+  onToggleNote?: () => void;
 }
 
 /**
  * Tarjeta de reporte usada en todas las listas (mockups F06/F07):
  * miniatura redondeada, título, filas con icono de ubicación/fecha y badge.
+ * Con `note` reproduce la variante expandida del mockup "Mis reportes".
  */
 export default function ReportCard({
   report,
   onPress,
   showOwner = false,
+  note = null,
+  expanded = false,
+  onToggleNote,
 }: Props) {
   const uri = photoUri(report.photoBase64);
   return (
@@ -28,7 +38,7 @@ export default function ReportCard({
       accessibilityRole="button"
       activeOpacity={0.85}
       onPress={onPress}
-      style={styles.card}
+      style={[styles.card, expanded && styles.cardExpanded]}
     >
       {uri ? (
         <Image source={{ uri }} style={styles.thumb} />
@@ -43,7 +53,20 @@ export default function ReportCard({
           <Text style={styles.title} numberOfLines={1}>
             {report.titulo}
           </Text>
-          <Text style={styles.chevron}>›</Text>
+          {onToggleNote ? (
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel={expanded ? 'Ocultar detalle' : 'Ver detalle'}
+              accessibilityState={{ expanded }}
+              hitSlop={8}
+              onPress={onToggleNote}
+              style={styles.chevronButton}
+            >
+              <Text style={styles.chevron}>{expanded ? '⌃' : '›'}</Text>
+            </TouchableOpacity>
+          ) : (
+            <Text style={styles.chevron}>›</Text>
+          )}
         </View>
         <Text style={styles.meta} numberOfLines={1}>
           <Text style={styles.metaIcon}>📍 </Text>
@@ -60,6 +83,18 @@ export default function ReportCard({
           <Text style={styles.owner}>Por: {report.ownerNombre}</Text>
         ) : null}
       </View>
+
+      {expanded && note ? (
+        <View style={styles.note}>
+          <View style={styles.noteIconBox}>
+            <Text style={styles.noteIcon}>{note.icon}</Text>
+          </View>
+          <View style={styles.noteBody}>
+            <Text style={styles.noteTitle}>{note.title}</Text>
+            <Text style={styles.noteText}>{note.text}</Text>
+          </View>
+        </View>
+      ) : null}
     </TouchableOpacity>
   );
 }
@@ -67,12 +102,54 @@ export default function ReportCard({
 const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
     padding: spacing.sm + 4,
     marginBottom: spacing.sm + 4,
     gap: spacing.md,
     ...shadow.card,
+  },
+  cardExpanded: {
+    borderColor: colors.accent,
+    borderWidth: 1.5,
+  },
+  note: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm + 2,
+    width: '100%',
+    backgroundColor: colors.accentSoft,
+    borderRadius: radius.md + 2,
+    padding: spacing.sm + 4,
+    marginTop: spacing.xs,
+  },
+  noteIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noteIcon: {
+    fontSize: 19,
+  },
+  noteBody: {
+    flex: 1,
+  },
+  noteTitle: {
+    fontSize: 14.5,
+    fontWeight: '800',
+    color: colors.primary,
+  },
+  noteText: {
+    fontSize: 13,
+    color: colors.textMuted,
+    lineHeight: 19,
+    marginTop: 2,
   },
   thumb: {
     width: 74,
@@ -106,6 +183,9 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     color: colors.textMuted,
+  },
+  chevronButton: {
+    paddingLeft: spacing.sm,
   },
   meta: {
     fontSize: 13,

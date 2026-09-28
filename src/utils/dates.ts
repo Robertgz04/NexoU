@@ -1,8 +1,18 @@
 /** Formateo de fechas en español sin dependencias externas. */
 
 const MESES = [
-  'ene', 'feb', 'mar', 'abr', 'may', 'jun',
-  'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
+  'ene',
+  'feb',
+  'mar',
+  'abr',
+  'may',
+  'jun',
+  'jul',
+  'ago',
+  'sep',
+  'oct',
+  'nov',
+  'dic',
 ];
 
 /** "12 sep 2026, 14:05" */
@@ -13,7 +23,31 @@ export function formatFecha(iso: string): string {
   }
   const hh = String(d.getHours()).padStart(2, '0');
   const mm = String(d.getMinutes()).padStart(2, '0');
-  return `${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}, ${hh}:${mm}`;
+  return `${d.getDate()} ${
+    MESES[d.getMonth()]
+  } ${d.getFullYear()}, ${hh}:${mm}`;
+}
+
+/** "12 abr. 2025" */
+export function formatFechaCorta(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) {
+    return '';
+  }
+  return `${d.getDate()} ${MESES[d.getMonth()]}. ${d.getFullYear()}`;
+}
+
+/** "12 abr. 2025 • 10:24 a. m." (mockups de seguimiento) */
+export function formatFechaHora(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) {
+    return '';
+  }
+  const h24 = d.getHours();
+  const h = h24 % 12 === 0 ? 12 : h24 % 12;
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  const ampm = h24 < 12 ? 'a. m.' : 'p. m.';
+  return `${formatFechaCorta(iso)} • ${h}:${mm} ${ampm}`;
 }
 
 /** Fecha relata para listas: "hace 5 min", "ayer", o fecha completa. */
