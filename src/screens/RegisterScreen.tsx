@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,9 +14,11 @@ import { useAuth } from '../context/AuthContext';
 import Chip from '../components/Chip';
 import FormField from '../components/FormField';
 import PrimaryButton from '../components/PrimaryButton';
-import ScreenHeader from '../components/ScreenHeader';
+import ScreenBackground from '../components/ScreenBackground';
+import { SCREEN_BACKGROUNDS } from '../constants/backgrounds';
 import { LIMITS } from '../constants/catalog';
-import { colors, spacing } from '../theme';
+import Logo from '../assets/NexoU_Logo.png';
+import { colors, shadow, spacing } from '../theme';
 import type { Role } from '../types';
 import {
   validateEmail,
@@ -80,12 +83,27 @@ export default function RegisterScreen() {
     }
   };
 
+  const fondo = SCREEN_BACKGROUNDS.register;
+
+  const backButton = (
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel="Volver"
+      activeOpacity={0.85}
+      onPress={() => navigation.goBack()}
+      style={styles.backButton}
+    >
+      <Text style={styles.backIcon}>←</Text>
+    </TouchableOpacity>
+  );
+
   return (
-    <View style={styles.safe}>
-      <ScreenHeader
-        title="Crear cuenta"
-        subtitle="Elige tu tipo de usuario para continuar."
-      />
+    <ScreenBackground
+      source={fondo.source}
+      artBottom={fondo.artBottom}
+      sheet
+      overArt={backButton}
+    >
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -94,18 +112,23 @@ export default function RegisterScreen() {
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.heading}>Registro</Text>
+          <Image source={Logo} style={styles.logo} resizeMode="contain" />
+          <Text style={styles.heading}>Crear cuenta</Text>
+          <Text style={styles.subtitle}>
+            Regístrate como {rol === 'estudiante' ? 'estudiante' : 'personal'} para
+            conectar tu vida universitaria.
+          </Text>
 
           <View style={styles.roleRow}>
             <Chip
               testID="role-estudiante"
-              label="Estudiante"
+              label="Rol: Estudiante"
               selected={rol === 'estudiante'}
               onPress={() => setRol('estudiante')}
             />
             <Chip
               testID="role-personal"
-              label="Personal universitario"
+              label="Rol: Personal universitario"
               selected={rol === 'personal'}
               onPress={() => setRol('personal')}
             />
@@ -179,21 +202,49 @@ export default function RegisterScreen() {
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
-    </View>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
-  scroll: { padding: spacing.lg, paddingTop: spacing.sm },
-  heading: {
-    fontSize: 17,
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadow.floating,
+  },
+  backIcon: {
+    fontSize: 20,
     fontWeight: '800',
     color: colors.primary,
+  },
+  scroll: { padding: spacing.lg, paddingTop: spacing.lg },
+  logo: {
+    height: 46,
+    width: 162,
+    alignSelf: 'center',
     marginBottom: spacing.md,
   },
-  roleRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: spacing.sm },
+  heading: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.primary,
+    textAlign: 'center',
+    letterSpacing: -0.4,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 19,
+    marginTop: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  roleRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: spacing.md, justifyContent: 'center' },
   errorBox: {
     backgroundColor: colors.dangerSoft,
     borderRadius: 12,
@@ -207,5 +258,5 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
   },
   linkText: { fontSize: 14.5, color: colors.textMuted },
-  linkBold: { color: colors.primary, fontWeight: '700' },
+  linkBold: { color: colors.accentDark, fontWeight: '700' },
 });

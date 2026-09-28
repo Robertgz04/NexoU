@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import {
   Image,
-  ImageBackground,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -11,12 +10,13 @@ import {
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Campus from '../../assets/NexoU_Fondo_Campus.png';
 import Logo from '../../assets/NexoU_Logo.png';
 import EmptyList from '../../components/EmptyList';
+import ScreenBackground from '../../components/ScreenBackground';
 import StatTiles from '../../components/StatTiles';
 import type { StatItem } from '../../components/StatTiles';
 import StatusBadge from '../../components/StatusBadge';
+import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
 import { CATEGORIES } from '../../constants/catalog';
 import { useAuth } from '../../context/AuthContext';
 import { getReportsByOwner } from '../../data/reportRepository';
@@ -109,9 +109,10 @@ export default function HomeScreen() {
     .slice(0, 3);
 
   const firstName = user?.nombre.trim().split(/\s+/)[0] ?? '';
+  const fondo = SCREEN_BACKGROUNDS.home;
 
   return (
-    <View style={styles.root}>
+    <ScreenBackground source={fondo.source} artBottom={fondo.artBottom}>
       <ScrollView
         contentContainerStyle={styles.scroll}
         refreshControl={
@@ -122,8 +123,6 @@ export default function HomeScreen() {
           />
         }
       >
-        <ImageBackground source={Campus} style={styles.hero} />
-
         <View style={styles.panel}>
           <View style={styles.greetRow}>
             <View style={styles.greetTexts}>
@@ -243,19 +242,13 @@ export default function HomeScreen() {
           )}
         </View>
       </ScrollView>
-    </View>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
   scroll: { paddingBottom: spacing.xl },
-  hero: { height: 250, width: '100%' },
   panel: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    marginTop: -28,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
   },

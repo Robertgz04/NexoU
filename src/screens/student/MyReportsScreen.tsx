@@ -11,10 +11,12 @@ import {
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../context/AuthContext';
+import BrandRow from '../../components/BrandRow';
 import Chip from '../../components/Chip';
 import EmptyList from '../../components/EmptyList';
 import ReportCard from '../../components/ReportCard';
-import ScreenHeader from '../../components/ScreenHeader';
+import ScreenBackground from '../../components/ScreenBackground';
+import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
 import { STATUSES, statusMeta } from '../../constants/catalog';
 import { getReportsByOwner } from '../../data/reportRepository';
 import { colors, spacing } from '../../theme';
@@ -132,9 +134,17 @@ export default function MyReportsScreen() {
     </ScrollView>
   );
 
+  const fondo = SCREEN_BACKGROUNDS.myReports;
+
   return (
-    <View style={styles.container}>
-      <ScreenHeader title="Mis reportes" right={avatar} />
+    <ScreenBackground
+      source={fondo.source}
+      artBottom={fondo.artBottom}
+      overArt={<BrandRow right={avatar} />}
+    >
+      <View style={styles.titleBlock}>
+        <Text style={styles.title}>Mis reportes</Text>
+      </View>
 
       <FlatList
         data={filtered}
@@ -179,12 +189,21 @@ export default function MyReportsScreen() {
           />
         }
       />
-    </View>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  titleBlock: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.primary,
+    letterSpacing: -0.5,
+  },
   avatarButton: {
     width: 42,
     height: 42,

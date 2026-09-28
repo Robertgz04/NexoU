@@ -1,11 +1,22 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useFocusEffect, useRoute } from '@react-navigation/native';
+import {
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import type { RouteProp } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
+import BrandRow from '../components/BrandRow';
 import EmptyList from '../components/EmptyList';
 import PrimaryButton from '../components/PrimaryButton';
+import ScreenBackground from '../components/ScreenBackground';
 import StatusBadge from '../components/StatusBadge';
+import { SCREEN_BACKGROUNDS } from '../constants/backgrounds';
 import { STATUSES, statusMeta } from '../constants/catalog';
 import { getReportById, updateReportStatus } from '../data/reportRepository';
 import { colors, radius, shadow, spacing } from '../theme';
@@ -104,6 +115,7 @@ function timelineDe(report: Report): TimelineStep[] {
  */
 export default function ReportDetailScreen() {
   const route = useRoute<DetailRoute>();
+  const navigation = useNavigation();
   const { user } = useAuth();
 
   const [report, setReport] = useState<Report | null>(null);
@@ -150,7 +162,7 @@ export default function ReportDetailScreen() {
 
   if (notFound) {
     return (
-      <View style={styles.container}>
+      <View style={styles.emptyRoot}>
         <EmptyList
           icon="😕"
           title="Reporte no encontrado"
@@ -162,7 +174,7 @@ export default function ReportDetailScreen() {
 
   if (!report) {
     return (
-      <View style={styles.container}>
+      <View style={styles.emptyRoot}>
         <EmptyList icon="⏳" title="Cargando reporte…" />
       </View>
     );
@@ -170,9 +182,35 @@ export default function ReportDetailScreen() {
 
   const uri = photoUri(report.photoBase64);
   const isStaff = user?.rol === 'personal';
+  const fondo = SCREEN_BACKGROUNDS.reportDetail;
+
+  const backButton = (
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel="Volver"
+      activeOpacity={0.85}
+      onPress={() => navigation.goBack()}
+      style={styles.backButton}
+    >
+      <Text style={styles.backIcon}>←</Text>
+    </TouchableOpacity>
+  );
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScreenBackground
+      source={fondo.source}
+      artBottom={fondo.artBottom}
+      overArt={
+        <View>
+          {backButton}
+          <View style={styles.brandBlock}>
+            <BrandRow />
+            <Text style={styles.screenTitle}>Detalle del reporte</Text>
+          </View>
+        </View>
+      }
+    >
+    <ScrollView contentContainerStyle={styles.content}>
       {uri ? (
         <Image source={{ uri }} style={styles.photo} />
       ) : (
@@ -275,11 +313,36 @@ export default function ReportDetailScreen() {
       />
       <Text style={styles.version}>Reportado por: {report.ownerNombre}</Text>
     </ScrollView>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  emptyRoot: { flex: 1, backgroundColor: colors.background },
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadow.floating,
+  },
+  backIcon: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: colors.primary,
+  },
+  brandBlock: {
+    marginTop: spacing.md,
+  },
+  screenTitle: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: colors.primary,
+    letterSpacing: -0.5,
+    marginTop: spacing.sm,
+  },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
   photo: {
     width: '100%',

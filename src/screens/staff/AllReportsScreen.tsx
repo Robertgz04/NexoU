@@ -10,12 +10,14 @@ import {
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../context/AuthContext';
+import BrandRow from '../../components/BrandRow';
 import Chip from '../../components/Chip';
 import EmptyList from '../../components/EmptyList';
 import ReportCard from '../../components/ReportCard';
-import ScreenHeader from '../../components/ScreenHeader';
+import ScreenBackground from '../../components/ScreenBackground';
 import StatTiles from '../../components/StatTiles';
 import type { StatItem } from '../../components/StatTiles';
+import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
 import { AREAS, STATUSES } from '../../constants/catalog';
 import { getAllReports } from '../../data/reportRepository';
 import { colors, spacing } from '../../theme';
@@ -138,13 +140,20 @@ export default function AllReportsScreen() {
     </View>
   );
 
+  const fondo = SCREEN_BACKGROUNDS.allReports;
+
   return (
-    <View style={styles.container}>
-      <ScreenHeader
-        withImage
-        title={`Hola, ${user?.nombre?.split(' ')[0] ?? 'personal'}`}
-        subtitle="Revisa y administra los reportes de la comunidad universitaria."
-      />
+    <ScreenBackground
+      source={fondo.source}
+      artBottom={fondo.artBottom}
+      overArt={<BrandRow />}
+    >
+      <View style={styles.titleBlock}>
+        <Text style={styles.title}>
+          Hola, {user?.nombre?.split(' ')[0] ?? 'personal'}
+        </Text>
+        <Text style={styles.subtitle}>Panel del personal</Text>
+      </View>
 
       <FlatList
         data={filtered}
@@ -175,12 +184,26 @@ export default function AllReportsScreen() {
           />
         }
       />
-    </View>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
+  titleBlock: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: colors.primary,
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
   tiles: {
     marginTop: spacing.md,
   },

@@ -1,12 +1,11 @@
 import React, { useCallback, useState } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useFocusEffect } from '@react-navigation/native';
 import AllReportsScreen from '../screens/staff/AllReportsScreen';
 import NotificationsScreen from '../screens/staff/NotificationsScreen';
 import StatisticsScreen from '../screens/staff/StatisticsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import FondoOndas from '../assets/NexoU_Fondo_Ondas.png';
 import { getAllReports } from '../data/reportRepository';
 import { colors, shadow, spacing } from '../theme';
 import type { StaffTabParamList } from './types';
@@ -51,16 +50,7 @@ const styles = StyleSheet.create({
   tabIconBoxActive: {
     backgroundColor: colors.accentSoft,
   },
-  waves: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: 22,
-  },
-  badge: {
-    position: 'absolute',
+  badge: {    position: 'absolute',
     top: -4,
     right: -6,
     minWidth: 18,
@@ -79,7 +69,10 @@ const styles = StyleSheet.create({
   },
 });
 
-/** Panel del personal universitario (F07–F10). */
+/**
+ * Panel del personal universitario (F07–F10). Las ondas del mockup ya vienen
+ * dibujadas en el fondo de cada pantalla, por lo que la barra es opaca.
+ */
 export default function StaffTabs() {
   const [pendientes, setPendientes] = useState(0);
 
@@ -147,14 +140,6 @@ export default function StaffTabs() {
           }}
         />
       </Tab.Navigator>
-
-      {/* Ondas decorativas del mockup bajo la barra de pestañas. */}
-      <Image
-        source={FondoOndas}
-        style={styles.waves}
-        resizeMode="cover"
-        pointerEvents="none"
-      />
     </View>
   );
 }

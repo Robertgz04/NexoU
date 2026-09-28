@@ -20,7 +20,9 @@ import PrimaryButton from '../../components/PrimaryButton';
 import SelectField from '../../components/SelectField';
 import { AREAS, CATEGORIES, LIMITS } from '../../constants/catalog';
 import { createReport } from '../../data/reportRepository';
-import ScreenHeader from '../../components/ScreenHeader';
+import ScreenBackground from '../../components/ScreenBackground';
+import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
+import Logo from '../../assets/NexoU_Logo.png';
 import { colors, radius, shadow, spacing } from '../../theme';
 import type { Category } from '../../types';
 import type { RootStackParamList } from '../../navigation/types';
@@ -162,22 +164,41 @@ export default function NewReportScreen() {
     }
   };
 
-  return (
-    <KeyboardAvoidingView
-      style={styles.flex}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+  const fondo = SCREEN_BACKGROUNDS.newReport;
+
+  const backButton = (
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel="Volver"
+      activeOpacity={0.85}
+      onPress={() => navigation.goBack()}
+      style={styles.backButton}
     >
-      <ScreenHeader
-        hero
-        centered
-        title="Nuevo reporte"
-        subtitle="Reporta una incidencia en tu universidad para que pueda ser atendida."
-      />
-      <ScrollView
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
+      <Text style={styles.backIcon}>←</Text>
+    </TouchableOpacity>
+  );
+
+  return (
+    <ScreenBackground
+      source={fondo.source}
+      artBottom={fondo.artBottom}
+      sheet
+      overArt={backButton}
+    >
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.formCard}>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Image source={Logo} style={styles.logo} resizeMode="contain" />
+          <Text style={styles.title}>Nuevo reporte</Text>
+          <Text style={styles.subtitle}>
+            Reporta una incidencia en tu universidad para que pueda ser atendida.
+          </Text>
+          <View style={styles.formCard}>
           <FormField
             label="Título del problema"
             value={titulo}
@@ -295,23 +316,57 @@ export default function NewReportScreen() {
           verirá en su panel.
         </Text>
       </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadow.floating,
+  },
+  backIcon: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: colors.primary,
+  },
+  logo: {
+    height: 46,
+    width: 162,
+    alignSelf: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.primary,
+    textAlign: 'center',
+    letterSpacing: -0.4,
+    marginTop: spacing.sm,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 19,
+    marginTop: spacing.xs,
+  },
   content: {
     padding: spacing.md,
-    paddingTop: spacing.sm,
+    paddingTop: spacing.lg,
     paddingBottom: spacing.xl,
-    backgroundColor: colors.background,
   },
   formCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.md,
-    marginTop: spacing.md,
+    marginTop: spacing.lg,
     ...shadow.card,
   },
   section: {

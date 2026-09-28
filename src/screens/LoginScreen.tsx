@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Image,
-  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -14,11 +13,11 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import FormField from '../components/FormField';
 import PrimaryButton from '../components/PrimaryButton';
+import ScreenBackground from '../components/ScreenBackground';
+import { SCREEN_BACKGROUNDS } from '../constants/backgrounds';
 import { LIMITS } from '../constants/catalog';
-import FondoLogin from '../assets/NexoU_Fondo_Login.png';
-import FondoOndas from '../assets/NexoU_Fondo_Ondas.png';
 import Logo from '../assets/NexoU_Logo.png';
-import { colors, radius, shadow, spacing } from '../theme';
+import { colors, radius, spacing } from '../theme';
 import { validateEmail, validatePassword } from '../utils/validators';
 
 interface FieldErrors {
@@ -59,9 +58,10 @@ export default function LoginScreen() {
     }
   };
 
+  const fondo = SCREEN_BACKGROUNDS.login;
+
   return (
-    <View style={styles.root}>
-      <ImageBackground source={FondoLogin} style={styles.hero} />
+    <ScreenBackground source={fondo.source} artBottom={fondo.artBottom} sheet>
       <SafeAreaView style={styles.safe} edges={['bottom']}>
         <KeyboardAvoidingView
           style={styles.flex}
@@ -139,33 +139,19 @@ export default function LoginScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-      <Image source={FondoOndas} style={styles.waves} resizeMode="cover" />
-    </View>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.surface },
   flex: { flex: 1 },
-  hero: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 320,
-  },
   safe: { flex: 1 },
   scroll: {
-    paddingTop: 190,
     paddingBottom: spacing.xl + 40,
   },
   sheet: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
-    ...shadow.floating,
   },
   logo: {
     height: 54,
@@ -221,12 +207,4 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   demoText: { fontSize: 13, color: colors.accentDark, lineHeight: 20 },
-  waves: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: 96,
-  },
 });

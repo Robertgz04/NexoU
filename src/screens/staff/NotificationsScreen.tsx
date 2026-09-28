@@ -9,8 +9,10 @@ import {
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import EmptyList from '../../components/EmptyList';
-import ScreenHeader from '../../components/ScreenHeader';
+import BrandRow from '../../components/BrandRow';
+import ScreenBackground from '../../components/ScreenBackground';
 import SegmentedControl from '../../components/SegmentedControl';
+import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
 import { statusMeta } from '../../constants/catalog';
 import { getAllReports } from '../../data/reportRepository';
 import type { RootStackParamList } from '../../navigation/types';
@@ -176,14 +178,17 @@ export default function NotificationsScreen() {
     </View>
   );
 
+  const fondo = SCREEN_BACKGROUNDS.notifications;
+
   return (
-    <View style={styles.root}>
-      <ScreenHeader
-        withImage
-        title="Notificaciones"
-        subtitle="Avisos de los reportes del campus"
-        right={avatar}
-      />
+    <ScreenBackground
+      source={fondo.source}
+      artBottom={fondo.artBottom}
+      overArt={<BrandRow right={avatar} />}
+    >
+      <View style={styles.titleBlock}>
+        <Text style={styles.screenTitle}>Notificaciones</Text>
+      </View>
 
       <SectionList
         sections={secciones}
@@ -230,12 +235,21 @@ export default function NotificationsScreen() {
           />
         }
       />
-    </View>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
+  titleBlock: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  screenTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.primary,
+    letterSpacing: -0.5,
+  },
   content: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.xl,

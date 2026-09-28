@@ -3,10 +3,12 @@ import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
+import BrandRow from '../components/BrandRow';
 import MenuRow from '../components/MenuRow';
-import ScreenHeader from '../components/ScreenHeader';
+import ScreenBackground from '../components/ScreenBackground';
 import StatTiles from '../components/StatTiles';
 import type { StatItem } from '../components/StatTiles';
+import { SCREEN_BACKGROUNDS } from '../constants/backgrounds';
 import { getReportsByOwner } from '../data/reportRepository';
 import { colors, radius, shadow, spacing } from '../theme';
 import type { RootStackParamList } from '../navigation/types';
@@ -94,9 +96,19 @@ export default function ProfileScreen() {
     },
   ];
 
+  const fondo = SCREEN_BACKGROUNDS.profile;
+
   return (
-    <View style={styles.root}>
-      <ScreenHeader hero title="Mi perfil" />
+    <ScreenBackground
+      source={fondo.source}
+      artBottom={fondo.artBottom}
+      overArt={
+        <View>
+          <BrandRow />
+          <Text style={styles.screenTitle}>Mi perfil</Text>
+        </View>
+      }
+    >
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.profileCard}>
           <View style={styles.avatarBox}>
@@ -204,12 +216,18 @@ export default function ProfileScreen() {
           NexoU v0.1.0 · Desarrollo Móvil Integral
         </Text>
       </ScrollView>
-    </View>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
+  screenTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.primary,
+    letterSpacing: -0.5,
+    marginTop: spacing.md,
+  },
   content: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.xl,

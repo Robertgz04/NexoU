@@ -11,8 +11,10 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import DonutChart from '../../components/DonutChart';
 import LineChart from '../../components/LineChart';
 import type { LinePoint } from '../../components/LineChart';
-import ScreenHeader from '../../components/ScreenHeader';
+import BrandRow from '../../components/BrandRow';
+import ScreenBackground from '../../components/ScreenBackground';
 import SegmentedControl from '../../components/SegmentedControl';
+import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
 import { CATEGORIES, STATUSES } from '../../constants/catalog';
 import { getAllReports } from '../../data/reportRepository';
 import { useAuth } from '../../context/AuthContext';
@@ -178,14 +180,17 @@ export default function StatisticsScreen() {
     </TouchableOpacity>
   );
 
+  const fondo = SCREEN_BACKGROUNDS.statistics;
+
   return (
-    <View style={styles.root}>
-      <ScreenHeader
-        withImage
-        title="Estadísticas"
-        subtitle="Resumen de incidencias del campus"
-        right={avatar}
-      />
+    <ScreenBackground
+      source={fondo.source}
+      artBottom={fondo.artBottom}
+      overArt={<BrandRow right={avatar} />}
+    >
+      <View style={styles.titleBlock}>
+        <Text style={styles.screenTitle}>Estadísticas</Text>
+      </View>
 
       <ScrollView contentContainerStyle={styles.content}>
         <SegmentedControl
@@ -353,7 +358,7 @@ export default function StatisticsScreen() {
           al abrir la pantalla.
         </Text>
       </ScrollView>
-    </View>
+    </ScreenBackground>
   );
 }
 
@@ -385,7 +390,16 @@ function StatCard({
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
+  titleBlock: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  screenTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.primary,
+    letterSpacing: -0.5,
+  },
   content: {
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.xl,

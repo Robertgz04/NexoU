@@ -1,11 +1,10 @@
 import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/student/HomeScreen';
 import MyReportsScreen from '../screens/student/MyReportsScreen';
 import NewReportScreen from '../screens/student/NewReportScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import FondoOndas from '../assets/NexoU_Fondo_Ondas.png';
 import { colors } from '../theme';
 import type { StudentTabParamList } from './types';
 
@@ -33,17 +32,12 @@ const styles = StyleSheet.create({
   tabIconBoxActive: {
     backgroundColor: colors.accentSoft,
   },
-  waves: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: 22,
-  },
 });
 
-/** Navegación principal del estudiante (bottom bar + ondas del mockup). */
+/**
+ * Navegación principal del estudiante. Las ondas del mockup ya vienen
+ * dibujadas en el fondo de cada pantalla, por lo que la barra es opaca.
+ */
 export default function StudentTabs() {
   return (
     <View style={styles.root}>
@@ -96,14 +90,6 @@ export default function StudentTabs() {
           }}
         />
       </Tab.Navigator>
-
-      {/* Ondas decorativas del mockup bajo la barra de pestañas. */}
-      <Image
-        source={FondoOndas}
-        style={styles.waves}
-        resizeMode="cover"
-        pointerEvents="none"
-      />
     </View>
   );
 }
