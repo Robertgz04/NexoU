@@ -70,9 +70,12 @@ NexoU/
 ## 4. Requisitos y puesta en marcha
 
 1. **Node.js ≥ 22.11** y **npm**
-2. **Android Studio** (SDK Platform 35+ y un emulador o dispositivo conectado)
-3. JDK 17+ (Android Studio incluye su propio JBR; si compilas desde terminal:
-   `$env:JAVA_HOME='C:\Program Files\Android\Android Studio\jbr'`)
+2. **Android Studio** actualizado (con soporte de SDK 37 / NL o superior) con instalado:
+   - Android SDK Platform 37
+   - Android SDK Build-Tools
+   - Emulador (Device Manager) o un celular con depuración USB
+3. **JDK 17+**: no uses el JDK 11 del sistema; usa el que trae Android Studio (JBR 17/21). Si compilas desde terminal:
+   `$env:JAVA_HOME='C:\Program Files\Android\Android Studio\jbr'`
 
 ```powershell
 # 1) Dependencias (sólo la primera vez)
