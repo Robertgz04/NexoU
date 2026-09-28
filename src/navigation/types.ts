@@ -1,7 +1,8 @@
-import type {NavigatorScreenParams} from '@react-navigation/native';
+import type { NavigatorScreenParams } from '@react-navigation/native';
 
-/** Tabs del estudiante: consulta de reportes, alta y perfil (F03–F06). */
+/** Tabs del estudiante: inicio, reportes, alta y perfil (F03–F06). */
 export type StudentTabParamList = {
+  Home: undefined;
   MyReports: undefined;
   NewReport: undefined;
   Profile: undefined;
@@ -22,7 +23,7 @@ export type RootStackParamList = {
   Register: undefined;
   StudentTabs: NavigatorScreenParams<StudentTabParamList> | undefined;
   StaffTabs: NavigatorScreenParams<StaffTabParamList> | undefined;
-  ReportDetail: {reportId: string};
+  ReportDetail: { reportId: string };
 };
 
 declare global {

@@ -1,28 +1,28 @@
 # NexoU — App Móvil 📱
 
-Aplicación móvil para **registrar y consultar reportes de problemas dentro de una universidad**. Desarrollada con **React Native + Android Studio** para la asignatura *Desarrollo Móvil Integral* (Ingeniería en Desarrollo y Gestión de Software, UTM / Extensión de la UTSC).
+Aplicación móvil para **registrar y consultar reportes de problemas dentro de una universidad**. Desarrollada con **React Native + Android Studio** para la asignatura _Desarrollo Móvil Integral_ (Ingeniería en Desarrollo y Gestión de Software, UTM / Extensión de la UTSC).
 
-| | |
-|---|---|
-| **Equipo** | Brayan David Casas Morales · Roberto Carlos De La Cruz Gonzalez · Devany Guadalupe Zapata Chávez |
-| **Docente** | Ing. Mario Alberto Chacón Muñoz |
-| **Grupo** | IDGS10 · Periodo 22 sep – 27 nov 2026 |
-| **Metodología** | Scrum (Sprints semanales, ver `docs/fuentes/`) |
+|                 |                                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| **Equipo**      | Brayan David Casas Morales · Roberto Carlos De La Cruz Gonzalez · Devany Guadalupe Zapata Chávez |
+| **Docente**     | Ing. Mario Alberto Chacón Muñoz                                                                  |
+| **Grupo**       | IDGS10 · Periodo 22 sep – 27 nov 2026                                                            |
+| **Metodología** | Scrum (Sprints semanales, ver `docs/fuentes/`)                                                   |
 
 ---
 
 ## 1. Funcionalidades implementadas (F01–F08)
 
-| ID | Funcionalidad | Dónde vive |
-|----|---------------|------------|
-| **F01** | Inicio de sesión con redirección según rol | `src/screens/LoginScreen.tsx` + `src/navigation/RootNavigator.tsx` |
-| **F02** | Registro (nombre, matrícula/código, correo, contraseña, rol) | `src/screens/RegisterScreen.tsx` + `src/data/authRepository.ts` |
-| **F03** | Levantar reporte (título + descripción con validaciones) | `src/screens/student/NewReportScreen.tsx` |
-| **F04** | Selección de **área** (edificio/espacio) y **categoría** (mobiliario, electricidad, agua, limpieza, equipos, otros) | `src/constants/catalog.ts` (chips en el formulario) |
-| **F05** | Evidencia fotográfica desde **cámara o galería** | `NewReportScreen.tsx` (`react-native-image-picker`) |
-| **F06** | "Mis reportes" con estado y filtros (pendiente / en revisión / solucionado) | `src/screens/student/MyReportsScreen.tsx` |
-| **F07** | Panel del personal con **todos** los reportes + filtros por estado y área | `src/screens/staff/AllReportsScreen.tsx` |
-| **F08** | Actualización de estado por el personal (reflejo inmediato en el estudiante) | `src/screens/ReportDetailScreen.tsx` |
+| ID      | Funcionalidad                                                                                                       | Dónde vive                                                         |
+| ------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **F01** | Inicio de sesión con redirección según rol                                                                          | `src/screens/LoginScreen.tsx` + `src/navigation/RootNavigator.tsx` |
+| **F02** | Registro (nombre, matrícula/código, correo, contraseña, rol)                                                        | `src/screens/RegisterScreen.tsx` + `src/data/authRepository.ts`    |
+| **F03** | Levantar reporte (título + descripción con validaciones)                                                            | `src/screens/student/NewReportScreen.tsx`                          |
+| **F04** | Selección de **área** (edificio/espacio) y **categoría** (mobiliario, electricidad, agua, limpieza, equipos, otros) | `src/constants/catalog.ts` (chips en el formulario)                |
+| **F05** | Evidencia fotográfica desde **cámara o galería**                                                                    | `NewReportScreen.tsx` (`react-native-image-picker`)                |
+| **F06** | "Mis reportes" con estado y filtros (pendiente / en revisión / solucionado)                                         | `src/screens/student/MyReportsScreen.tsx`                          |
+| **F07** | Panel del personal con **todos** los reportes + filtros por estado y área                                           | `src/screens/staff/AllReportsScreen.tsx`                           |
+| **F08** | Actualización de estado por el personal (reflejo inmediato en el estudiante)                                        | `src/screens/ReportDetailScreen.tsx`                               |
 
 **Delimitaciones respetadas** (sección 6 del documento de proyecto): sin chat, sin GPS (ubicación por lista de áreas), sin asignación automática a técnicos, sin sistema administrativo, sin IA, sin red social.
 
@@ -56,7 +56,7 @@ NexoU/
 │   ├── screens/
 │   │   ├── LoginScreen.tsx  RegisterScreen.tsx  ProfileScreen.tsx
 │   │   ├── ReportDetailScreen.tsx               # Detalle + gestor de estado (F08)
-│   │   ├── student/  MyReportsScreen · NewReportScreen
+│   │   ├── student/  HomeScreen · MyReportsScreen · NewReportScreen
 │   │   └── staff/    AllReportsScreen
 │   ├── theme.ts                 # Paleta y espaciados
 │   ├── types/index.ts           # User, Report, Role, ReportStatus, Category
@@ -105,19 +105,20 @@ cd android
 
 ### Cuentas de demostración (sembradas en el primer arranque)
 
-| Rol | Correo | Contraseña |
-|-----|--------|------------|
-| Estudiante | `estudiante@nexou.mx` | `Demo1234` |
-| Personal universitario | `personal@nexou.mx` | `Demo1234` |
+| Rol                    | Correo                | Contraseña |
+| ---------------------- | --------------------- | ---------- |
+| Estudiante             | `estudiante@nexou.mx` | `Demo1234` |
+| Personal universitario | `personal@nexou.mx`   | `Demo1234` |
 
 Con la cuenta de estudiante verás 3 reportes de ejemplo (uno por estado); con la
 de personal se prueba el panel completo y el cambio de estado (F08).
 
 **Flujo completo recomendado para la demo:**
+
 1. Entrar como estudiante → pestaña **Nuevo** → llenar título, descripción, área,
    categoría y tomar una foto → **Publicar reporte**.
 2. Cerrar sesión → entrar como **personal** → abrir el reporte → cambiar estado a
-   *En revisión* / *Solucionado*.
+   _En revisión_ / _Solucionado_.
 3. Volver a la sesión del estudiante → el reporte muestra el nuevo estado (F08).
 
 ## 5. Comandos de calidad (Definition of Done)
@@ -179,6 +180,4 @@ Claves AsyncStorage: `@nexou/users`, `@nexou/reports`, `@nexou/session`, `@nexou
 
 ---
 
-*Universidad Tecnológica Montemorelos · Desarrollo Móvil Integral · 2026*
-
-
+_Universidad Tecnológica Montemorelos · Desarrollo Móvil Integral · 2026_

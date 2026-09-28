@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import HomeScreen from '../screens/student/HomeScreen';
 import MyReportsScreen from '../screens/student/MyReportsScreen';
 import NewReportScreen from '../screens/student/NewReportScreen';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -48,11 +49,20 @@ export default function StudentTabs() {
       }}
     >
       <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{
+          title: 'Inicio',
+          tabBarLabel: 'Inicio',
+          tabBarIcon: tabIcon('🏠'),
+        }}
+      />
+      <Tab.Screen
         name="MyReports"
         component={MyReportsScreen}
         options={{
           title: 'Mis reportes',
-          tabBarLabel: 'Reportes',
+          tabBarLabel: 'Mis reportes',
           tabBarIcon: tabIcon('📋'),
         }}
       />

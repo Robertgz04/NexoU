@@ -15,13 +15,51 @@ export interface StatItem {
 interface Props {
   items: StatItem[];
   style?: ViewStyle;
+  /**
+   * 'stacked' = tarjeta única con icono arriba (listas);
+   * 'inline' = tarjetas sueltas con icono a la izquierda (mockup de Inicio).
+   */
+  variant?: 'stacked' | 'inline';
 }
 
 /**
  * Fila de mosaicos de estadísticas (mockups de Inicio y Panel personal):
  * icono sobre fondo tenue + cifra + etiqueta dentro de una tarjeta blanca.
  */
-export default function StatTiles({ items, style }: Props) {
+export default function StatTiles({
+  items,
+  style,
+  variant = 'stacked',
+}: Props) {
+  if (variant === 'inline') {
+    return (
+      <View style={[styles.row, style]}>
+        {items.map(item => {
+          const color = item.color ?? colors.primary;
+          const soft = item.soft ?? colors.primarySoft;
+          return (
+            <View key={item.label} style={styles.inlineCard}>
+              <View style={[styles.iconBox, { backgroundColor: soft }]}>
+                <Text style={[styles.icon, { color }]}>{item.icon}</Text>
+              </View>
+              <View style={styles.inlineTexts}>
+                <Text style={styles.value}>{item.value}</Text>
+                <Text
+                  style={[styles.label, styles.inlineLabel]}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
+                >
+                  {item.label}
+                </Text>
+              </View>
+            </View>
+          );
+        })}
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.card, style]}>
       {items.map(item => {
@@ -77,5 +115,26 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     color: colors.textMuted,
     textAlign: 'center',
+  },
+  row: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  inlineCard: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.sm,
+    gap: spacing.xs,
+    ...shadow.card,
+  },
+  inlineTexts: {
+    flexShrink: 1,
+  },
+  inlineLabel: {
+    textAlign: 'left',
   },
 });
