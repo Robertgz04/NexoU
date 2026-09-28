@@ -120,7 +120,14 @@ export default function ScreenHeader({
           {row}
         </View>
       )}
-      <View style={[styles.titleBlock, centered && styles.titleBlockCentered]}>
+      <View
+        style={[
+          styles.titleBlock,
+          centered && styles.titleBlockCentered,
+          // Con banda ilustrada el título sube sobre la curva del campus.
+          showBanner && !centered && styles.titleBlockOverBanner,
+        ]}
+      >
         <Text
           style={[styles.title, centered && styles.titleCentered]}
           numberOfLines={2}
@@ -143,7 +150,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   banner: {
-    height: 96,
+    height: 132,
     justifyContent: 'flex-start',
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
@@ -209,6 +216,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
     paddingBottom: spacing.md,
+  },
+  titleBlockOverBanner: {
+    marginTop: -spacing.xl,
   },
   titleBlockCentered: {
     alignItems: 'center',

@@ -8,9 +8,11 @@ export type StudentTabParamList = {
   Profile: undefined;
 };
 
-/** Tabs del personal: panel general y perfil (F07/F08). */
+/** Tabs del personal: reportes, estadísticas, notificaciones y perfil (F07–F09). */
 export type StaffTabParamList = {
   AllReports: undefined;
+  Statistics: undefined;
+  Notifications: undefined;
   Profile: undefined;
 };
 

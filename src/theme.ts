@@ -31,7 +31,36 @@ export const colors = {
   revisionSoft: '#DBEAFE',
   solucionado: '#10B981',
   solucionadoSoft: '#D1FAE5',
+  // Gráficas de Estadísticas
+  chartGrid: '#EDF1F6',
+  chartAxis: '#9AA7B6',
+  purple: '#A78BFA',
+  purpleSoft: '#EDE9FE',
+  navySoft: '#E7F0F8',
 } as const;
+
+/**
+ * Color de cada barra en "Reportes por categoría" (mockup de Estadísticas).
+ * El orden sigue a `CATEGORIES`.
+ */
+export const CATEGORY_COLORS: Record<string, string> = {
+  Mobiliario: '#0E7490',
+  Electricidad: '#3B82F6',
+  Agua: '#93C5FD',
+  Limpieza: '#4ADE80',
+  Equipos: '#A78BFA',
+  Otros: '#CBD5E1',
+};
+
+/** Glifo e icono de cada categoría (mockups de Inicio y Estadísticas). */
+export const CATEGORY_ICONS: Record<string, string> = {
+  Mobiliario: '🪑',
+  Electricidad: '⚡',
+  Agua: '💧',
+  Limpieza: '🧹',
+  Equipos: '💻',
+  Otros: '•••',
+};
 
 export const spacing = {
   xs: 4,

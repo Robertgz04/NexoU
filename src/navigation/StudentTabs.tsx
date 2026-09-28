@@ -1,10 +1,11 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/student/HomeScreen';
 import MyReportsScreen from '../screens/student/MyReportsScreen';
 import NewReportScreen from '../screens/student/NewReportScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import FondoOndas from '../assets/NexoU_Fondo_Ondas.png';
 import { colors } from '../theme';
 import type { StudentTabParamList } from './types';
 
@@ -20,6 +21,7 @@ function tabIcon(icon: string) {
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.surface },
   tabIcon: { fontSize: 16 },
   tabIconBox: {
     width: 46,
@@ -31,55 +33,77 @@ const styles = StyleSheet.create({
   tabIconBoxActive: {
     backgroundColor: colors.accentSoft,
   },
+  waves: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: 22,
+  },
 });
 
-/** Navegación principal del estudiante (bottom bar, ver Sprint 2). */
+/** Navegación principal del estudiante (bottom bar + ondas del mockup). */
 export default function StudentTabs() {
   return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.accentDark,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-        },
-        tabBarLabelStyle: { fontWeight: '700', fontSize: 11 },
-      }}
-    >
-      <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{
-          title: 'Inicio',
-          tabBarLabel: 'Inicio',
-          tabBarIcon: tabIcon('🏠'),
+    <View style={styles.root}>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: colors.accentDark,
+          tabBarInactiveTintColor: colors.textMuted,
+          tabBarStyle: {
+            backgroundColor: colors.surface,
+            borderTopColor: colors.border,
+          },
+          tabBarLabelStyle: { fontWeight: '700', fontSize: 11 },
         }}
+      >
+        <Tab.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{
+            title: 'Inicio',
+            tabBarLabel: 'Inicio',
+            tabBarIcon: tabIcon('🏠'),
+          }}
+        />
+        <Tab.Screen
+          name="MyReports"
+          component={MyReportsScreen}
+          options={{
+            title: 'Mis reportes',
+            tabBarLabel: 'Mis reportes',
+            tabBarIcon: tabIcon('📋'),
+          }}
+        />
+        <Tab.Screen
+          name="NewReport"
+          component={NewReportScreen}
+          options={{
+            title: 'Nuevo reporte',
+            tabBarLabel: 'Reportar',
+            tabBarIcon: tabIcon('＋'),
+          }}
+        />
+        <Tab.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{
+            title: 'Perfil',
+            tabBarLabel: 'Perfil',
+            tabBarIcon: tabIcon('👤'),
+          }}
+        />
+      </Tab.Navigator>
+
+      {/* Ondas decorativas del mockup bajo la barra de pestañas. */}
+      <Image
+        source={FondoOndas}
+        style={styles.waves}
+        resizeMode="cover"
+        pointerEvents="none"
       />
-      <Tab.Screen
-        name="MyReports"
-        component={MyReportsScreen}
-        options={{
-          title: 'Mis reportes',
-          tabBarLabel: 'Mis reportes',
-          tabBarIcon: tabIcon('📋'),
-        }}
-      />
-      <Tab.Screen
-        name="NewReport"
-        component={NewReportScreen}
-        options={{
-          title: 'Nuevo reporte',
-          tabBarLabel: 'Reportar',
-          tabBarIcon: tabIcon('＋'),
-        }}
-      />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{ title: 'Perfil', tabBarIcon: tabIcon('👤') }}
-      />
-    </Tab.Navigator>
+    </View>
   );
 }

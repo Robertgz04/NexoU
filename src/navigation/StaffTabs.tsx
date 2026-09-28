@@ -1,9 +1,14 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useFocusEffect } from '@react-navigation/native';
 import AllReportsScreen from '../screens/staff/AllReportsScreen';
+import NotificationsScreen from '../screens/staff/NotificationsScreen';
+import StatisticsScreen from '../screens/staff/StatisticsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import { colors } from '../theme';
+import FondoOndas from '../assets/NexoU_Fondo_Ondas.png';
+import { getAllReports } from '../data/reportRepository';
+import { colors, shadow, spacing } from '../theme';
 import type { StaffTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<StaffTabParamList>();
@@ -17,7 +22,24 @@ function tabIcon(icon: string) {
   );
 }
 
+/** Icono de Notificaciones con contador de reportes pendientes (mockup). */
+function notificationIcon(badge: number) {
+  return ({ color, focused }: { color: string; focused: boolean }) => (
+    <View>
+      <View style={[styles.tabIconBox, focused && styles.tabIconBoxActive]}>
+        <Text style={[styles.tabIcon, { color }]}>🔔</Text>
+      </View>
+      {badge > 0 ? (
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.surface },
   tabIcon: { fontSize: 16 },
   tabIconBox: {
     width: 46,
@@ -29,37 +51,110 @@ const styles = StyleSheet.create({
   tabIconBoxActive: {
     backgroundColor: colors.accentSoft,
   },
+  waves: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: 22,
+  },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -6,
+    minWidth: 18,
+    height: 18,
+    paddingHorizontal: 4,
+    borderRadius: 9,
+    backgroundColor: colors.danger,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadow.floating,
+  },
+  badgeText: {
+    color: colors.textOnPrimary,
+    fontSize: 10,
+    fontWeight: '800',
+  },
 });
 
-/** Panel del personal universitario (F07/F08). */
+/** Panel del personal universitario (F07–F10). */
 export default function StaffTabs() {
+  const [pendientes, setPendientes] = useState(0);
+
+  const load = useCallback(async () => {
+    const reports = await getAllReports();
+    setPendientes(reports.filter(r => r.estado === 'pendiente').length);
+  }, []);
+
+  // El contador se refresca cada vez que el panel vuelve al primer plano.
+  useFocusEffect(
+    useCallback(() => {
+      load();
+    }, [load]),
+  );
+
   return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.accentDark,
-        tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-        },
-        tabBarLabelStyle: { fontWeight: '700', fontSize: 11 },
-      }}
-    >
-      <Tab.Screen
-        name="AllReports"
-        component={AllReportsScreen}
-        options={{
-          title: 'Panel de reportes',
-          tabBarLabel: 'Reportes',
-          tabBarIcon: tabIcon('📊'),
+    <View style={styles.root}>
+      <Tab.Navigator
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: colors.accentDark,
+          tabBarInactiveTintColor: colors.textMuted,
+          tabBarStyle: {
+            backgroundColor: colors.surface,
+            borderTopColor: colors.border,
+          },
+          tabBarLabelStyle: { fontWeight: '700', fontSize: 11 },
+          tabBarItemStyle: { paddingVertical: spacing.xs },
         }}
+      >
+        <Tab.Screen
+          name="AllReports"
+          component={AllReportsScreen}
+          options={{
+            title: 'Panel de reportes',
+            tabBarLabel: 'Reportes',
+            tabBarIcon: tabIcon('▦'),
+          }}
+        />
+        <Tab.Screen
+          name="Statistics"
+          component={StatisticsScreen}
+          options={{
+            title: 'Estadísticas',
+            tabBarLabel: 'Estadísticas',
+            tabBarIcon: tabIcon('▥'),
+          }}
+        />
+        <Tab.Screen
+          name="Notifications"
+          component={NotificationsScreen}
+          options={{
+            title: 'Notificaciones',
+            tabBarLabel: 'Notificaciones',
+            tabBarIcon: notificationIcon(pendientes),
+          }}
+        />
+        <Tab.Screen
+          name="Profile"
+          component={ProfileScreen}
+          options={{
+            title: 'Perfil',
+            tabBarLabel: 'Perfil',
+            tabBarIcon: tabIcon('👤'),
+          }}
+        />
+      </Tab.Navigator>
+
+      {/* Ondas decorativas del mockup bajo la barra de pestañas. */}
+      <Image
+        source={FondoOndas}
+        style={styles.waves}
+        resizeMode="cover"
+        pointerEvents="none"
       />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{ title: 'Perfil', tabBarIcon: tabIcon('👤') }}
-      />
-    </Tab.Navigator>
+    </View>
   );
 }

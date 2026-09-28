@@ -1,6 +1,7 @@
 /** Formateo de fechas en español sin dependencias externas. */
 
-const MESES = [
+/** Meses abreviados en español, reutilizados por las gráficas. */
+export const MESES_CORTOS = [
   'ene',
   'feb',
   'mar',
@@ -13,7 +14,7 @@ const MESES = [
   'oct',
   'nov',
   'dic',
-];
+] as const;
 
 /** "12 sep 2026, 14:05" */
 export function formatFecha(iso: string): string {
@@ -24,7 +25,7 @@ export function formatFecha(iso: string): string {
   const hh = String(d.getHours()).padStart(2, '0');
   const mm = String(d.getMinutes()).padStart(2, '0');
   return `${d.getDate()} ${
-    MESES[d.getMonth()]
+    MESES_CORTOS[d.getMonth()]
   } ${d.getFullYear()}, ${hh}:${mm}`;
 }
 
@@ -34,7 +35,7 @@ export function formatFechaCorta(iso: string): string {
   if (isNaN(d.getTime())) {
     return '';
   }
-  return `${d.getDate()} ${MESES[d.getMonth()]}. ${d.getFullYear()}`;
+  return `${d.getDate()} ${MESES_CORTOS[d.getMonth()]}. ${d.getFullYear()}`;
 }
 
 /** "12 abr. 2025 • 10:24 a. m." (mockups de seguimiento) */
