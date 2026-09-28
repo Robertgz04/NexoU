@@ -1,0 +1,320 @@
+PAGES: 7
+--- PAGE 1 ---
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+UNIVERSIDAD TECNOLÓGICA MONTEMORELOS 
+EXTENSIÓN DE LA UTSC 
+INGENIERÍA EN DESARROLLO Y GESTIÓN DE SOFTWARE 
+DESARROLLO MÓVIL INTEGRAL 
+PROYECTO: NEXOU-APP MÓVIL 
+PRIMER PARCIAL 
+DOCENTE: MARIO ALBERTO CHACÓN 
+ 
+NOMBRE: ROBERTO CARLOS DE LA CRUZ GONZALEZ 
+BRAYAN DAVID CASAS MORALES 
+         DEVANY GUADALUPE ZAPATA CHAVEZ 
+ 
+MONTEMORELOS, N. L.   12/ SEPTIEMBRE/ 2026 
+ 
+ 
+ 
+
+--- PAGE 2 ---
+ 
+ 
+ 
+ 
+ 
+1. Identificación del proyecto 
+Nombre provisional: NexoU 
+Integrantes: 
+• Brayan David Casas Morales 
+• Devany Guadalupe Zapata Chávez 
+• Roberto Carlos De La Cruz Gonzalez 
+Descripción breve: 
+NexoU será una aplicación móvil para registrar y consultar reportes relacionados con 
+problemas encontrados dentro de una universidad. La aplicación contará con dos tipos 
+de usuario: estudiantes y personal universitario. 
+Los estudiantes podrán levantar un reporte seleccionando el área en la que se 
+encuentra el problema, el tipo de incidencia, una descripción y una fotografía como 
+evidencia. Por otro lado, el personal de la universidad tendrá acceso a un panel donde 
+podrá visualizar las quejas o reportes recibidos y cambiar su estado conforme sean 
+revisados o solucionados. 
+La aplicación estará enfocada en realizar este proceso de forma sencilla, evitando 
+agregar funciones que no sean necesarias para la primera versión. 
+2. Problemática 
+En las universidades pueden presentarse problemas dentro de las instalaciones, como 
+mobiliario dañado, fallas en la iluminación, fugas de agua, salones sucios, equipos que 
+no funcionan o desperfectos en baños y áreas comunes. Estas situaciones afectan 
+principalmente a los estudiantes, quienes utilizan diariamente los espacios 
+universitarios y necesitan que se encuentren en buenas condiciones. 
+Actualmente, muchos de estos problemas se reportan de manera verbal a un maestro, 
+prefecto, coordinador o trabajador de mantenimiento. También pueden comunicarse 
+mediante mensajes personales o grupos de WhatsApp. Sin embargo, al utilizar estos 
+medios, la información puede perderse, llegar a la persona equivocada o no contener 
+--- PAGE 3 ---
+datos suficientes para identificar el lugar y el tipo de problema. Además, el estudiante 
+normalmente no sabe si su reporte fue revisado o atendido. 
+Una aplicación móvil tendría sentido porque permitiría levantar el reporte directamente 
+desde el lugar donde se detectó el problema. El estudiante podría indicar el área, 
+seleccionar el tipo de incidencia, escribir una descripción y agregar una fotografía. Al 
+mismo tiempo, el personal de la universidad tendría un panel organizado para consultar 
+los reportes recibidos y actualizar su estado. Esto facilitaría la comunicación sin intentar 
+reemplazar todos los procesos administrativos de la institución. 
+3. Usuario objetivo 
+La aplicación tendrá dos tipos principales de usuarios. 
+Estudiantes: serán quienes utilizarán la aplicación para reportar problemas 
+encontrados dentro de las instalaciones universitarias. Necesitan una manera rápida y 
+sencilla de comunicar una incidencia sin tener que buscar personalmente al encargado 
+correspondiente. Como beneficio, podrán registrar el problema con información clara y 
+consultar posteriormente su estado. 
+Personal de la universidad: estará conformado por coordinadores, administrativos o 
+responsables de revisar las condiciones de las instalaciones. Necesitan recibir los 
+reportes en un solo lugar, conocer qué ocurrió, dónde ocurrió y contar con una 
+fotografía como evidencia. El principal beneficio será tener una lista organizada de las 
+incidencias reportadas por los estudiantes. 
+Ambos usuarios necesitarán una cuenta para acceder a las funciones 
+correspondientes. Las opciones mostradas dependerán del tipo de usuario con el que 
+se haya iniciado sesión. 
+4. Objetivo general 
+Desarrollar una aplicación móvil que permita a los estudiantes registrar reportes sobre 
+problemas encontrados dentro de una universidad y al personal responsable consultar 
+y actualizar el estado de dichos reportes. 
+5. Alcance funcional inicial 
+ID Funcionalidad Descripción 
+F01 Inicio de sesión Permitirá que estudiantes y personal universitario 
+ingresen con su cuenta y accedan al panel 
+correspondiente. 
+--- PAGE 4 ---
+F02 Registro de 
+estudiantes 
+Permitirá que un estudiante cree una cuenta 
+proporcionando datos básicos como nombre, matrícula, 
+correo y contraseña. 
+F03 Levantar reporte El estudiante podrá crear un reporte escribiendo un 
+título y una descripción breve del problema encontrado. 
+F04 Selección de área y 
+tipo 
+Permitirá elegir el área donde ocurre el problema y 
+clasificarlo en categorías como mobiliario, electricidad, 
+agua, limpieza, equipos u otros. 
+F05 Evidencia fotográfica El estudiante podrá tomar una fotografía o seleccionar 
+una imagen de su dispositivo para adjuntarla al reporte. 
+F06 Consulta de reportes 
+del estudiante 
+El estudiante podrá visualizar los reportes que haya 
+realizado y conocer si se encuentran pendientes, en 
+revisión o solucionados. 
+F07 Panel de reportes de 
+la universidad 
+El personal universitario podrá consultar una lista con 
+todos los reportes recibidos, incluyendo su área, 
+categoría, descripción y fotografía. 
+F08 Actualización del 
+estado 
+El personal universitario podrá cambiar el estado de un 
+reporte a pendiente, en revisión o solucionado. 
+ 
+6. Delimitación 
+Para mantener el proyecto dentro de un alcance realista, en la primera versión de 
+NexoU no se desarrollarán las siguientes funciones: 
+1. No se incluirá un chat en tiempo real. 
+Los estudiantes y el personal universitario no podrán enviarse mensajes mediante la 
+aplicación. La comunicación se limitará al contenido y al estado del reporte. 
+2. No se utilizará geolocalización GPS. 
+La ubicación del problema se seleccionará mediante una lista de edificios, áreas o 
+espacios de la universidad. La aplicación no rastreará la ubicación exacta del 
+dispositivo. 
+3. No se enviarán los reportes automáticamente a trabajadores específicos. 
+El panel mostrará los reportes al personal autorizado, pero no contará con asignación 
+automática a técnicos, electricistas o personal de limpieza. 
+--- PAGE 5 ---
+4. No se desarrollará un sistema administrativo completo. 
+La aplicación no manejará inventarios, presupuestos, compras, horarios, empleados, 
+calificaciones ni otros procesos universitarios. 
+5. No se utilizará inteligencia artificial. 
+La aplicación no analizará fotografías ni determinará automáticamente el tipo o la 
+gravedad del problema. 
+6. No se desarrollará una red social universitaria. 
+Los usuarios no podrán publicar contenido, agregar amigos, comentar reportes ni 
+reaccionar a las publicaciones de otros estudiantes. 
+7. Análisis de metodologías ágiles 
+Aspecto Scrum Kanban XP 
+Organización Divide el proyecto en 
+periodos cortos 
+llamados Sprints, 
+con objetivos y 
+tareas definidas. 
+Organiza las tareas 
+en un tablero visual 
+con columnas como 
+pendiente, en 
+proceso y 
+terminado. 
+Divide el trabajo en 
+pequeñas 
+funcionalidades y se 
+enfoca principalmente 
+en la programación. 
+Cambios Los cambios se 
+revisan y 
+normalmente se 
+agregan al siguiente 
+Sprint. 
+Permite incorporar 
+y reorganizar tareas 
+en cualquier 
+momento. 
+Acepta cambios 
+frecuentes debido a 
+sus ciclos cortos de 
+desarrollo. 
+Entregas Al finalizar cada 
+Sprint se presenta 
+una parte funcional 
+de la aplicación. 
+Las tareas se 
+entregan conforme 
+son terminadas. 
+Realiza entregas 
+pequeñas y 
+frecuentes. 
+Participación 
+del cliente 
+El cliente o 
+responsable del 
+producto revisa 
+avances y ayuda a 
+priorizar 
+funcionalidades. 
+La participación 
+puede realizarse 
+cuando sea 
+necesario. 
+Requiere 
+comunicación 
+constante con el 
+cliente. 
+Prácticas 
+técnicas 
+No establece 
+técnicas específicas 
+de programación. 
+No obliga al equipo 
+a utilizar prácticas 
+Incluye programación 
+en pareja, pruebas 
+automatizadas, 
+--- PAGE 6 ---
+técnicas 
+determinadas. 
+refactorización e 
+integración continua. 
+Ventajas para 
+NexoU 
+Facilita dividir el 
+proyecto por 
+módulos y revisar 
+avances en cada 
+parcial. 
+Permite identificar 
+rápidamente qué 
+tareas están 
+pendientes o en 
+desarrollo. 
+Ayudaría a mejorar la 
+calidad del código y 
+detectar errores de 
+forma temprana. 
+Desventajas 
+para NexoU 
+Requiere respetar 
+reuniones y periodos 
+de trabajo para 
+funcionar 
+correctamente. 
+Puede tener poca 
+estructura si el 
+equipo no 
+establece fechas u 
+objetivos claros. 
+Algunas de sus 
+prácticas pueden ser 
+difíciles de aplicar 
+constantemente por el 
+tiempo y experiencia 
+del equipo. 
+Nivel de 
+adaptación 
+Alto. Se adapta a un 
+proyecto escolar 
+dividido en entregas 
+parciales. 
+Medio-alto. Es útil 
+para controlar 
+tareas, pero ofrece 
+menos estructura. 
+Medio. Sus prácticas 
+técnicas son útiles, 
+aunque pueden 
+aumentar la 
+complejidad del 
+desarrollo. 
+ 
+8. Metodología seleccionada 
+La metodología seleccionada para el desarrollo de NexoU será Scrum, porque permite 
+organizar el proyecto mediante periodos cortos de trabajo y establecer objetivos claros 
+para cada entrega. Al ser un equipo de tres integrantes, será importante distribuir las 
+actividades y revisar constantemente el avance para evitar que todas las funciones se 
+intenten desarrollar al final. 
+El proyecto podrá dividirse en Sprints. En el primero se puede trabajar en el diseño de 
+las pantallas, la base de datos y el inicio de sesión. En el segundo se puede desarrollar 
+el panel del estudiante y el formulario para levantar reportes. En el tercero se puede 
+implementar el panel de la universidad, la consulta de incidencias y la actualización de 
+estados. Finalmente, se podrán realizar pruebas y correcciones. 
+Scrum también permitirá que el equipo revise al finalizar cada Sprint qué partes 
+funcionan, qué errores existen y cuáles serán las siguientes tareas. Si se requiere 
+modificar un campo del reporte o mejorar una pantalla, el cambio podrá agregarse al 
+siguiente periodo sin desorganizar todo el proyecto. 
+--- PAGE 7 ---
+Aunque Kanban es más sencillo y XP contiene buenas prácticas técnicas, Scrum 
+ofrece una estructura más adecuada para las entregas escolares y para un equipo que 
+necesita demostrar avances funcionales durante cada parcial. 
+9. Organización inicial del equipo 
+Integrante Rol inicial Responsabilidad principal 
+Brayan David 
+Casas Morales 
+Producto / 
+Proceso 
+Organizar los requerimientos, definir las 
+prioridades del proyecto, revisar el cumplimiento 
+de las tareas y asegurarse de que la aplicación 
+mantenga un alcance sencillo y realista. 
+Roberto Carlos 
+De La Cruz 
+Gonzalez 
+Responsable 
+Técnico 
+Supervisar la estructura de la aplicación, la base 
+de datos, el inicio de sesión, la conexión entre 
+los paneles y la integración de las 
+funcionalidades. 
+Devany 
+Guadalupe 
+Zapata Chávez 
+Calidad Comprobar que las funciones cumplan con los 
+requerimientos, realizar pruebas, identificar 
+errores y revisar que la aplicación sea clara y 
+sencilla de utilizar. 
+ 
+Los tres integrantes participarán en el análisis, diseño, programación, documentación y 
+pruebas de la aplicación. El rol asignado únicamente representa la responsabilidad 
+principal durante el primer parcial. 
+En los siguientes parciales, los roles serán rotados para que cada integrante pueda 
+participar como responsable de Producto/Proceso, Responsable Técnico y Calidad. 
+ 

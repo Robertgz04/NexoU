@@ -1,0 +1,593 @@
+PAGES: 15
+--- PAGE 1 ---
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+UNIVERSIDAD TECNOLÓGICA MONTEMORELOS 
+EXTENSIÓN DE LA UTSC 
+INGENIERÍA EN DESARROLLO Y GESTIÓN DE SOFTWARE 
+DESARROLLO MÓVIL INTEGRAL 
+PROYECTO: NEXOU-APP MÓVIL 
+PLAN DE TRABAJO SEMANAL 
+PRIMER PARCIAL 
+DOCENTE: MARIO ALBERTO CHACÓN 
+NOMBRES: ROBERTO CARLOS DE LA CRUZ GONZALEZ 
+BRAYAN DAVID CASAS MORALES 
+DEVANY GUADALUPE ZAPATA CHAVEZ 
+ 
+MONTEMORELOS, N. L.   27/ SEPTIEMBRE/ 2026 
+ 
+ 
+ 
+
+--- PAGE 2 ---
+Plan de trabajo para el desarrollo de NexoU – APP MÓVIL 
+ 
+UNIVERSIDAD TECNOLÓGICA MONTEMORELOS 
+EXTENSIÓN DE LA UTSC 
+Ingeniería en Desarrollo y Gestión de Software 
+Asignatura: Desarrollo Móvil Integral 
+Docente: Ing. Mario Alberto Chacón Muñoz 
+Integrantes del equipo: 
+• Roberto Carlos De La Cruz Gonzalez 
+• Brayan David Casas Morales 
+• Devany Guadalupe Zapata Chávez 
+Periodo: 22 de septiembre al 27 de noviembre de 2026 
+Grupo: IDGS10 | Modalidad: Equipos de 3 integrantes 
+Montemorelos, N.L. | Septiembre 2026 
+ 
+1. Identificación del proyecto 
+1.1 Nombre de la aplicación 
+NexoU 
+1.2 Objetivo general 
+Desarrollar una aplicación móvil que permita a los estudiantes registrar reportes sobre 
+problemas encontrados dentro de una universidad (mobiliario, iluminación, fugas, 
+limpieza, equipos, etc.) y al personal responsable consultar y actualizar el estado de 
+dichos reportes de forma organizada y con evidencia fotográfica. 
+1.3 Integrantes del equipo 
+Integrante Rol inicial (Sprint 
+1) 
+Responsabilidad principal 
+Brayan David 
+Casas Morales 
+Product Owner / 
+Scrum Master 
+Priorización del Product Backlog, 
+facilitación de eventos Scrum y 
+seguimiento de compromisos. 
+--- PAGE 3 ---
+Roberto Carlos 
+De La Cruz 
+Gonzalez 
+Desarrollador 
+(Frontend + 
+Backend) 
+Arquitectura de la app, base de datos, 
+autenticación, integración de servicios 
+en la nube. 
+Devany 
+Guadalupe Zapata 
+Chávez 
+Desarrolladora + 
+Calidad 
+Implementación de pantallas, pruebas, 
+Definition of Done y validación de 
+usabilidad. 
+ 
+Nota: Los roles se rotarán entre Sprints para que los tres integrantes participen en 
+programación, pruebas y gestión del producto. Todos trabajan en el código fuente. 
+1.4 Metodología ágil seleccionada 
+Scrum 
+Se seleccionó Scrum en la etapa anterior porque permite organizar el trabajo en 
+periodos cortos (Sprints) con objetivos claros, facilita la revisión de avances en cada 
+parcial y se adapta bien a un equipo de tres integrantes que necesita demostrar 
+incrementos funcionales de forma periódica. 
+1.5 Descripción del producto al 25 de noviembre 
+Al finalizar el periodo, NexoU será una aplicación móvil ejecutable (Android) que 
+permitirá: 
+• Registro e inicio de sesión de estudiantes y personal universitario. 
+• Creación de reportes con título, descripción, área, tipo de incidencia y evidencia 
+fotográfica. 
+• Consulta del estado de los reportes por parte del estudiante. 
+• Panel del personal universitario para visualizar todos los reportes y actualizar su 
+estado (pendiente / en revisión / solucionado). 
+• Almacenamiento de datos e imágenes en servicios en la nube, con mecanismos 
+básicos de seguridad y autenticación. 
+ 
+2. Alcance comprometido 
+Las funcionalidades que conformarán la versión final de NexoU se identifican a 
+continuación. Se distinguen las esenciales (prioridad Alta) de las complementarias 
+(prioridad Media). 
+ 
+--- PAGE 4 ---
+ID Funcionalidad Prioridad Dependencias / Descripción 
+F01 Inicio de sesión Alta Ninguna. Permite que estudiantes y personal 
+ingresen con su cuenta y accedan al panel 
+correspondiente según su rol. 
+F02 Registro de 
+estudiantes 
+Alta Ninguna. El estudiante crea cuenta con 
+nombre, matrícula, correo y contraseña. 
+F03 Levantar reporte Alta F01, F04. El estudiante crea un reporte con 
+título y descripción del problema. 
+F04 Selección de área y 
+tipo 
+Alta Ninguna. Selección de área 
+(edificio/espacio) y categoría (mobiliario, 
+electricidad, agua, limpieza, equipos, otros). 
+F05 Evidencia 
+fotográfica 
+Alta F03. Tomar o seleccionar una imagen y 
+adjuntarla al reporte. 
+F06 Consulta de 
+reportes del 
+estudiante 
+Alta F01, F03. El estudiante visualiza sus 
+reportes y conoce su estado (pendiente / en 
+revisión / solucionado). 
+F07 Panel de reportes 
+de la universidad 
+Alta F01. El personal consulta la lista de todos 
+los reportes con área, categoría, descripción 
+y fotografía. 
+F08 Actualización del 
+estado 
+Alta F07. El personal cambia el estado de un 
+reporte a pendiente, en revisión o 
+solucionado. 
+ 
+Verde = esenciales del flujo estudiante | Amarillo = esenciales del flujo personal 
+universitario. Todas tienen prioridad Alta y se programan con anticipación para no 
+depender de la última semana. 
+ 
+3. Adaptación de la metodología al proyecto 
+Se aplicará Scrum de forma adaptada al contexto escolar de un equipo de tres 
+integrantes durante nueve semanas. 
+3.1 Roles y responsabilidades 
+• Product Owner (rotativo): mantiene y prioriza el Product Backlog, define el 
+valor de cada incremento. 
+--- PAGE 5 ---
+• Scrum Master (rotativo): facilita los eventos, elimina impedimentos y cuida que 
+se respeten los acuerdos del equipo. 
+• Developers: los tres integrantes. Todos programan, integran, prueban y 
+documentan. No existen silos permanentes. 
+3.2 Artefactos 
+• Product Backlog: lista priorizada de funcionalidades (F01–F08) convertidas en 
+historias de usuario. 
+• Sprint Backlog: conjunto de historias seleccionadas para el Sprint actual, con 
+tareas técnicas. 
+• Incremento: versión ejecutable de la aplicación al final de cada Sprint que 
+cumple la Definition of Done. 
+3.3 Organización de las iteraciones 
+Se trabajarán Sprints de 1 semana (alineados al calendario escolar). Cada Sprint inicia 
+con Sprint Planning (lunes/inicio de semana), incluye Daily Scrums breves (15 min, 3 
+veces por semana) y termina con Sprint Review + Retrospective (viernes). 
+3.4 Mecanismo de priorización 
+El Product Owner prioriza el Product Backlog por valor de negocio y dependencias 
+técnicas. Las funcionalidades del flujo estudiante (F01–F06) se priorizan primero para 
+lograr un flujo extremo a extremo temprano; después se completa el panel del personal 
+(F07–F08). 
+3.5 Forma de asignar o tomar trabajo 
+Durante el Sprint Planning el equipo selecciona las historias del Product Backlog y las 
+descompone en tareas. Cada integrante toma voluntariamente las tareas según 
+capacidad y conocimiento. Se evita la asignación unilateral de “uno programa y otros 
+documentan”. 
+3.6 Forma de revisar el avance 
+Daily Scrum (qué hice, qué haré, impedimentos). Sprint Review al final de cada Sprint 
+con demostración del incremento ejecutable. Exposiciones semanales ante el docente 
+como evidencia de seguimiento. 
+3.7 Criterio para considerar terminado un elemento 
+Se utiliza una Definition of Done explícita (ver sección 7). Ninguna historia se marca 
+como terminada solo por “código escrito”. 
+3.8 Mecanismo para gestionar cambios 
+Los cambios se registran en el Product Backlog y se priorizan para el siguiente Sprint. 
+--- PAGE 6 ---
+No se incorporan a mitad de Sprint salvo impedimento crítico acordado por el equipo. 
+Todo ajuste queda documentado en el repositorio y en las notas de la Retrospective. 
+3.9 Frecuencia de revisión o retrospectiva 
+Retrospective al final de cada Sprint (semanal). Se identifican mejoras de proceso y se 
+acuerdan acciones concretas para el siguiente Sprint. 
+3.10 Integración de las pruebas 
+Las pruebas forman parte de la Definition of Done. Cada historia incluye criterios de 
+aceptación verificables. Se realizan pruebas manuales de flujo y, cuando sea posible, 
+pruebas unitarias de lógica crítica. Los resultados se registran como evidencia del 
+Sprint. 
+ 
+4. Product Backlog priorizado 
+Las funcionalidades se expresan como historias de usuario priorizadas. El orden refleja 
+dependencias técnicas y valor para lograr un flujo extremo a extremo lo antes posible. 
+Orden Historia de usuario ID / 
+Prioridad 
+Criterios de aceptación 
+(resumen) 
+1 Como estudiante quiero 
+registrarme e iniciar sesión 
+para acceder a la 
+aplicación. 
+F01 / F02 
+– Alta 
+Registro con datos básicos; login 
+exitoso; redirección según rol; 
+manejo de errores de 
+credenciales. 
+2 Como estudiante quiero 
+seleccionar el área y el tipo 
+de problema para clasificar 
+mi reporte. 
+F04 – Alta Listas de áreas y categorías 
+disponibles; selección obligatoria 
+antes de enviar. 
+3 Como estudiante quiero 
+levantar un reporte con 
+título, descripción y 
+fotografía. 
+F03 / F05 
+– Alta 
+Formulario completo; 
+captura/selección de imagen; 
+almacenamiento en nube; 
+confirmación de envío. 
+4 Como estudiante quiero 
+consultar el estado de mis 
+reportes. 
+F06 – Alta Lista de reportes propios; 
+visualización de estado; detalle 
+con imagen. 
+5 Como personal 
+universitario quiero ver 
+F07 – Alta Lista completa filtrable; detalle 
+con área, tipo, descripción e 
+imagen. 
+--- PAGE 7 ---
+todos los reportes 
+recibidos. 
+6 Como personal 
+universitario quiero 
+actualizar el estado de un 
+reporte. 
+F08 – Alta Cambio de estado (pendiente / en 
+revisión / solucionado); reflejo 
+inmediato en la vista del 
+estudiante. 
+ 
+Distribución prevista en Sprints: 
+• Sprints 1–2 (semanas 1–2): arquitectura, autenticación (F01–F02), diseño de 
+pantallas base y repositorio. 
+• Sprints 3–4 (semanas 3–4): levantar reporte + área/tipo + evidencia (F03–F05) 
+y consulta del estudiante (F06). 
+• Sprint 5 (semana 5 – Hito 1): consolidación del flujo estudiante extremo a 
+extremo + avance de integración nube/seguridad. 
+• Sprints 6–7 (semanas 6–7): panel del personal (F07) y actualización de estado 
+(F08). 
+• Sprint 8 (semana 8 – Versión candidata): pruebas integrales, corrección de 
+defectos, estabilización. 
+• Sprint 9 (semana 9): liberación, documentación final y cierre. 
+ 
+5. Plan de las nueve semanas (organizado por Sprints) 
+Cada Sprint tiene duración de 1 semana. Se indica Sprint Goal, historias/actividades, 
+responsables, incremento esperado y evidencia. 
+Sprint 1 – Semana 1 (28 sep – 2 oct) 
+Sprint Goal Establecer la base técnica del proyecto: repositorio, arquitectura 
+inicial, diseño de pantallas de autenticación y estructura de datos. 
+Historias / 
+Actividades 
+Crear repositorio Git y estructura del proyecto (Flutter/React 
+Native según decisión técnica). Diseñar y maquetar pantallas de 
+registro e inicio de sesión. Definir modelo de datos de usuarios y 
+reportes. Configurar servicio de autenticación (Firebase Auth o 
+equivalente). Acordar Definition of Done y convenciones de 
+código. 
+--- PAGE 8 ---
+Responsables Todos (Roberto: arquitectura y backend; Brayan: backlog y setup; 
+Devany: UI de auth y pruebas). 
+Producto 
+verificable 
+Repositorio inicializado + pantallas de login/registro navegables 
+(sin backend completo) + modelo de datos documentado. 
+Evidencia Commits, capturas de pantallas, enlace al repositorio, notas del 
+Sprint Planning y Review. 
+ 
+Sprint 2 – Semana 2 (5 – 9 oct) 
+Sprint Goal Completar autenticación funcional (F01–F02) e iniciar la 
+navegación principal de la app. 
+Historias / 
+Actividades 
+Implementar registro de estudiantes e inicio de sesión con 
+validación. Manejo de roles (estudiante / personal) y redirección al 
+panel correspondiente. Navegación principal (bottom bar o 
+drawer). Pruebas de autenticación y corrección de errores. 
+Responsables Todos (Roberto: integración auth; Devany: UI y validaciones; 
+Brayan: pruebas y priorización). 
+Producto 
+verificable 
+App ejecutable con registro e inicio de sesión funcionales y 
+navegación básica. 
+Evidencia Demo en dispositivo/emulador, commits, resultados de pruebas de 
+login. 
+Sprint 3 – Semana 3 (12 – 16 oct) 
+Sprint Goal Permitir al estudiante crear un reporte con área, tipo y 
+descripción (F03–F04). 
+Historias / 
+Actividades 
+Formulario de levantar reporte (título + descripción). Selectores 
+de área y tipo de incidencia. Persistencia del reporte en base de 
+datos / nube. Validaciones de campos obligatorios. 
+Responsables Todos (Devany: formulario UI; Roberto: persistencia; Brayan: 
+criterios de aceptación y pruebas). 
+Producto 
+verificable 
+Flujo de creación de reporte (sin foto aún) funcionando de 
+extremo a extremo. 
+Evidencia Demo, commits, capturas del formulario y lista de reportes 
+creados. 
+--- PAGE 9 ---
+Sprint 4 – Semana 4 (19 – 23 oct) 
+Sprint Goal Incorporar evidencia fotográfica (F05) y consulta de reportes del 
+estudiante (F06). 
+Historias / 
+Actividades 
+Captura o selección de imagen y subida a almacenamiento en la 
+nube. Asociación de la imagen al reporte. Pantalla de “Mis 
+reportes” con estado. Detalle del reporte con imagen. 
+Responsables Todos (Roberto: storage en nube; Devany: UI de cámara y lista; 
+Brayan: pruebas de flujo completo). 
+Producto 
+verificable 
+Flujo completo del estudiante: login → levantar reporte con foto 
+→ consultar estado. 
+Evidencia Demo de flujo extremo a extremo, commits, imágenes en 
+storage. 
+Sprint 5 – Semana 5 (26 – 30 oct) — PRIMER AVANCE SIGNIFICATIVO 
+Sprint Goal Consolidar el incremento funcional del 50 % del alcance: 
+aplicación ejecutable con flujo estudiante completo, repositorio 
+actualizado, integración nube y pruebas. 
+Historias / 
+Actividades 
+Refinar y estabilizar F01–F06. Mecanismos iniciales de seguridad 
+(reglas de acceso, validación de tokens). Pruebas de integración 
+y corrección de defectos. Preparar demostración del Hito 1. 
+Documentar avance y evidencias. 
+Responsables Todos (participación verificable de los tres en código y pruebas). 
+Producto 
+verificable 
+App ejecutable + navegación principal + al menos un flujo 
+extremo a extremo + ~50 % del alcance demostrable. 
+Evidencia Demo en vivo, repositorio actualizado, resultados de pruebas, 
+commits de los tres integrantes. 
+Sprint 6 – Semana 6 (2 – 6 nov) 
+Sprint Goal Implementar el panel de reportes del personal universitario (F07). 
+Historias / 
+Actividades 
+Pantalla de lista de todos los reportes (área, categoría, estado, 
+miniatura). Detalle completo del reporte con fotografía. Filtros 
+básicos por estado o área. Control de acceso solo para rol 
+personal. 
+--- PAGE 10 ---
+Responsables Todos (Brayan: priorización y UI; Roberto: consultas y seguridad; 
+Devany: pruebas de rol). 
+Producto 
+verificable 
+Panel del personal funcional con listado y detalle de reportes. 
+Evidencia Demo, commits, capturas del panel. 
+Sprint 7 – Semana 7 (9 – 13 nov) 
+Sprint Goal Permitir la actualización de estado de reportes (F08) y cerrar el 
+flujo completo estudiante–personal. 
+Historias / 
+Actividades 
+Cambio de estado (pendiente / en revisión / solucionado). Reflejo 
+del cambio en la vista del estudiante. Notificación visual de 
+cambio de estado. Pruebas de flujo extremo a extremo completo. 
+Responsables Todos (Roberto: lógica de actualización; Devany: UI y feedback; 
+Brayan: pruebas integrales). 
+Producto 
+verificable 
+Flujo completo: estudiante reporta → personal actualiza estado 
+→ estudiante lo consulta. 
+Evidencia Demo del ciclo completo, commits, resultados de pruebas. 
+Sprint 8 – Semana 8 (16 – 20 nov) — VERSIÓN CANDIDATA 
+Sprint Goal Estabilizar la aplicación: pruebas, corrección de defectos, revisión 
+de seguridad, validación de permisos y ajustes finales. Todas las 
+funcionalidades comprometidas implementadas. 
+Historias / 
+Actividades 
+Pruebas de regresión de F01–F08. Corrección de defectos 
+prioritarios. Revisión de reglas de seguridad y permisos. Ajustes 
+de usabilidad y rendimiento. Preparación de APK / versión de 
+distribución. 
+Responsables Todos (enfoque en calidad y estabilización). 
+Producto 
+verificable 
+Versión candidata ejecutable con todas las funcionalidades y sin 
+errores críticos. 
+Evidencia Lista de defectos corregidos, resultados de pruebas, APK 
+generada, commits finales de estabilización. 
+Sprint 9 – Semana 9 (23 – 27 nov) — LIBERACIÓN Y CIERRE 
+--- PAGE 11 ---
+Sprint Goal Entregar la aplicación final el 24 y 25 de noviembre, completar 
+documentación y realizar cierre del proyecto. 
+Historias / 
+Actividades 
+Últimos ajustes menores y empaquetado. Documentación técnica 
+solicitada. Preparación de la presentación final. Entrega de código 
+fuente, repositorio, APK y evidencias. Cierre y retroalimentación 
+(26–27 nov). 
+Responsables Todos. 
+Producto 
+verificable 
+Aplicación final funcional + código fuente + repositorio + 
+documentación + versión de distribución. 
+Evidencia Entrega formal, presentación, repositorio completo y archivos de 
+distribución. 
+ 
+6. Organización de los tres integrantes 
+La distribución respeta el principio de que todos participan en el producto técnico. No 
+se permite que un integrante programe mientras los demás solo elaboran documentos. 
+Roles rotativos por Sprint (ejemplo de rotación): 
+Sprint Brayan Roberto Devany 
+1–2 PO / Scrum Master Dev (Arquitectura + 
+Auth) 
+Dev (UI Auth + Pruebas) 
+3–4 Dev (Formulario + 
+Pruebas) 
+PO / Scrum Master Dev (UI Reporte + 
+Storage) 
+5 (Hito 
+1) 
+Dev + Calidad Dev (Integración) PO / Scrum Master 
+6–7 PO / Scrum Master Dev (Panel Personal) Dev (Estado + Pruebas) 
+8–9 Dev + Calidad PO / Scrum Master Dev + Documentación 
+ 
+En todos los Sprints los tres integrantes realizan commits al repositorio, participan en 
+Daily Scrums y en las demos. La participación se verifica mediante el historial de Git y 
+las exposiciones semanales. 
+ 
+ 
+--- PAGE 12 ---
+7. Definition of Done 
+Una funcionalidad (historia) se considera terminada únicamente cuando cumple todos 
+los siguientes criterios: 
+• Implementación completa según los criterios de aceptación de la historia. 
+• Integrada con el resto de la aplicación (no es un módulo aislado). 
+• Ejecución sin errores críticos en dispositivo o emulador. 
+• Criterios de aceptación verificados y documentados. 
+• Pruebas manuales (y unitarias cuando aplique) realizadas y registradas. 
+• Código almacenado en el repositorio (rama principal o merge aprobado). 
+• Revisión por al menos otro integrante del equipo (pair review o pull request). 
+• Actualización del Sprint Backlog / tablero reflejando el estado “Done”. 
+ 
+8. Estrategia de seguimiento y evidencias 
+El cumplimiento del plan se demostrará semanalmente mediante exposiciones y los 
+siguientes artefactos de Scrum y herramientas técnicas: 
+• Product Backlog y Sprint Backlog actualizados (herramienta digital o documento 
+compartido). 
+• Repositorio Git con commits frecuentes de los tres integrantes. 
+• Pull requests o revisiones de código. 
+• Versiones ejecutables (APK o build de emulador) al final de cada Sprint. 
+• Resultados de pruebas y lista de defectos. 
+• Notas de Sprint Review y Retrospective. 
+• Exposiciones semanales ante el docente como mecanismo formal de 
+seguimiento. 
+ 
+9. Hito 1 – Primer avance significativo (Semana 5: 26–30 de octubre) 
+Al finalizar el Sprint 5 el equipo demostrará un incremento funcional real (no prototipos 
+ni pantallas aisladas). Se espera: 
+• Aplicación ejecutable en dispositivo o emulador. 
+--- PAGE 13 ---
+• Navegación principal funcional. 
+• Repositorio actualizado con commits de los tres integrantes. 
+• Varias funcionalidades principales implementadas (F01–F06). 
+• Al menos un flujo completo de extremo a extremo (estudiante: login → levantar 
+reporte con foto → consultar estado). 
+• Manejo real de información (datos e imágenes en la nube). 
+• Avance sustancial de integración con servicios en la nube y autenticación. 
+• Mecanismos iniciales de seguridad. 
+• Pruebas sobre lo desarrollado. 
+• Aproximadamente el 50 % del alcance comprometido en condición demostrable. 
+El avance corresponderá a los Sprints 1–5 definidos en este plan. 
+ 
+10. Hito 2 – Versión candidata (Semana 8: 16–20 de noviembre) 
+Al finalizar el Sprint 8 estarán implementadas prácticamente todas las funcionalidades 
+comprometidas (F01–F08). El proyecto se encontrará en fase de: 
+• Pruebas de regresión e integración. 
+• Corrección de defectos. 
+• Revisión de seguridad y validación de permisos. 
+• Ajustes finales de usabilidad. 
+• Estabilización (sin errores críticos). 
+No se reservarán funcionalidades críticas para la última semana. 
+ 
+11. Entrega final (Martes 24 y Miércoles 25 de noviembre de 2026) 
+La entrega incluirá: 
+• Aplicación funcional (APK o equivalente). 
+• Código fuente completo. 
+• Repositorio actualizado. 
+• Todas las funcionalidades comprometidas (F01–F08). 
+--- PAGE 14 ---
+• Servicios en la nube y APIs utilizadas documentados. 
+• Mecanismos de seguridad implementados. 
+• Resultados de pruebas e incidencias/correcciones. 
+• Permisos configurados. 
+• Archivo o versión de distribución. 
+• Documentación técnica solicitada. 
+Los días 26 y 27 de noviembre se destinan exclusivamente a cierre, revisión y 
+retroalimentación. No constituyen ampliación de la fecha de entrega. 
+ 
+12. Riesgos y contingencias 
+Se identifican al menos cinco riesgos que pueden afectar el plan. La contingencia 
+procura mantener el objetivo del proyecto. Un retraso no autoriza cambiar de 
+aplicación. 
+Riesgo Probabilidad Impacto Prevención o respuesta 
+Retraso en la 
+configuración de 
+servicios en la nube 
+(auth/storage) 
+Media Alto Iniciar configuración en Sprint 1. 
+Usar cuentas de prueba 
+tempranas. Si falla un proveedor, 
+migrar a alternativa 
+documentada en el siguiente 
+Sprint. 
+Sobrecarga de un 
+integrante o ausencia 
+temporal 
+Media Alto Rotación de roles y conocimiento 
+compartido. Pair programming 
+en tareas críticas. Redistribuir 
+tareas en el Daily Scrum. 
+Subestimación del 
+esfuerzo de 
+integración foto + 
+nube 
+Media-Alta Medio-
+Alto 
+Prototipar la subida de imágenes 
+en Sprint 3–4. Definir límites de 
+tamaño. Priorizar funcionalidad 
+mínima viable de evidencia. 
+Defectos críticos 
+detectados tarde 
+(cerca del Hito 1 o 2) 
+Media Alto Incluir pruebas en la DoD de 
+cada Sprint. Revisar en Sprint 
+Review. Reservar buffer en 
+Sprint 5 y 8 para corrección. 
+--- PAGE 15 ---
+Cambios de alcance 
+no autorizados o 
+ambigüedad de 
+requisitos 
+Baja-Media Medio Product Backlog priorizado y 
+congelado por Sprint. Cambios 
+solo vía backlog para el siguiente 
+Sprint y con justificación técnica 
+aprobada. 
+Problemas de 
+compatibilidad de 
+dispositivo / 
+emulador 
+Media Medio Probar en al menos dos entornos 
+desde Sprint 2. Mantener build 
+estable semanal. Documentar 
+versiones de SDK y 
+dependencias. 
+ 
+13. Compromiso del equipo 
+Una vez aprobado, este plan se convierte en la línea base de trabajo del equipo. El 
+seguimiento semanal y las evaluaciones parciales tomarán como referencia los 
+compromisos aquí establecidos. 
+Las fechas se cumplirán, los productos serán demostrables, no se cambiará de 
+proyecto y cualquier modificación importante será autorizada y documentada mediante 
+los mecanismos de Scrum (Product Backlog y Retrospective). 
+ 
+ 
+Firmas de compromiso: 
+ 
+Brayan David Casas Morales: Brayan Casas 
+Roberto Carlos De La Cruz Gonzalez: R.C 
+Devany Guadalupe Zapata Chávez: Devany Zapata 
+ 
+ 
