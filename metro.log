@@ -29,90 +29,115 @@ Starting dev server on http://localhost:8081
   [1m[7m j [27m[22m - open DevTools
 
 [33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 1% [22m[2m(1/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 1% [22m[2m(1/5)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 4% [22m[2m(2/5)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 4% [22m[2m(5/109)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 4% [22m[2m(6/109)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓[49m[39m[47m[37m░░░░░░░░░░░░░░[39m[49m[1m 16% [22m[2m(109/265)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓[49m[39m[47m[37m░░░░░░░░░░░░░░[39m[49m[1m 16% [22m[2m(109/265)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓[49m[39m[47m[37m░░░░░░░░░░░░░░[39m[49m[1m 17% [22m[2m(110/265)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓[49m[39m[47m[37m░░░░░░░░░░░░[39m[49m[1m 30% [22m[2m(265/483)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓[49m[39m[47m[37m░░░░░░░░░░░░[39m[49m[1m 30% [22m[2m(266/483)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
 [33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
-[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 98% [22m[2m(894/899)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░░░░░░░[39m[49m[1m 58% [22m[2m(483/629)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░░░░░░░[39m[49m[1m 59% [22m[2m(484/629)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░░░░░[39m[49m[1m 73% [22m[2m(628/736)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░░░░░[39m[49m[1m 73% [22m[2m(629/736)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░░░░░[39m[49m[1m 73% [22m[2m(630/736)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░░░[39m[49m[1m 85% [22m[2m(735/797)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░░░[39m[49m[1m 85% [22m[2m(736/800)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░░░[39m[49m[1m 85% [22m[2m(737/800)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 94% [22m[2m(800/824)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 94% [22m[2m(801/824)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 98% [22m[2m(824/832)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 98% [22m[2m(825/832)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(832/851)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(834/851)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(851/885)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(852/885)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(885/913)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(913/937)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(914/937)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(937/940)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(938/940)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(940/943)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(941/943)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(943/943)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
 [32m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
 [33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
-[33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
-[32m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
 [33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
-[32m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
-[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
-[32m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
-[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
-[32m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
-[33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
-[33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
-[33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
-[33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
-[33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
-[33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
-[33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
-[33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
-[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
-[32m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
 [33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
 [33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
 [32m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
+[32m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
 [33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 1% [22m[2m(1/5)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 4% [22m[2m(2/5)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 4% [22m[2m(5/109)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 4% [22m[2m(6/109)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓[49m[39m[47m[37m░░░░░░░░░░░░░░[39m[49m[1m 16% [22m[2m(109/265)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓[49m[39m[47m[37m░░░░░░░░░░░░[39m[49m[1m 30% [22m[2m(265/483)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓[49m[39m[47m[37m░░░░░░░░░░░░[39m[49m[1m 30% [22m[2m(266/483)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░░░░░░░[39m[49m[1m 58% [22m[2m(483/629)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░░░░░░░[39m[49m[1m 59% [22m[2m(484/629)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░░░░░[39m[49m[1m 73% [22m[2m(629/736)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░░░[39m[49m[1m 85% [22m[2m(736/800)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 94% [22m[2m(800/824)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 98% [22m[2m(824/832)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(831/834)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(832/851)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(833/851)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(851/885)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(852/885)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(885/913)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(913/937)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(937/940)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(940/943)[22m
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓[49m[39m[47m[37m░[39m[49m[1m 99% [22m[2m(943/943)[22m
 [32m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
 [33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
 [32m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
-[33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
-[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
-[33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
-[32m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
-[33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
-[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
-[32m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
-[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
-[32m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
-[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
-[33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
-[31m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
-[31m[7m[1m ERROR [22m[27m[39m Error: Unable to resolve module ../assets/NexoU_Fondo_Splash.png from C:\xamppold\htdocs\NexoU\src\navigation\RootNavigator.tsx: 
-
-None of these files exist:
-  * NexoU_Fondo_Splash.png
-  * src\assets\NexoU_Fondo_Splash.png
-   9 | import { createNativeStackNavigator } from '@react-navigation/native-stack';
-  10 | import { useAuth } from '../context/AuthContext';
-> 11 | import FondoSplash from '../assets/NexoU_Fondo_Splash.png';
-     |                          ^
-  12 | import Logo from '../assets/NexoU_Logo.png';
-  13 | import { colors, spacing } from '../theme';
-  14 | import LoginScreen from '../screens/LoginScreen';
-    at ModuleResolver.resolveDependency (C:\xamppold\htdocs\NexoU\node_modules\metro\src\node-haste\DependencyGraph\ModuleResolution.js:145:15)
-    at DependencyGraph.resolveDependency (C:\xamppold\htdocs\NexoU\node_modules\metro\src\node-haste\DependencyGraph.js:203:43)
-    at C:\xamppold\htdocs\NexoU\node_modules\metro\src\lib\transformHelpers.js:165:21
-    at resolveDependencies (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\buildSubgraph.js:43:25)
-    at visit (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\buildSubgraph.js:81:30)
-    at async Promise.all (index 625)
-    at async buildSubgraph (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\buildSubgraph.js:105:3)
-    at async Graph._buildDelta (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\Graph.js:163:22)
-    at async Graph.traverseDependencies (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\Graph.js:50:19)
-    at async DeltaCalculator._getChangedDependencies (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\DeltaCalculator.js:201:42)
-[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
-[31m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
-[31m[7m[1m ERROR [22m[27m[39m Error: Unable to resolve module ../assets/NexoU_Fondo_Splash.png from C:\xamppold\htdocs\NexoU\src\navigation\RootNavigator.tsx: 
-
-None of these files exist:
-  * NexoU_Fondo_Splash.png
-  * src\assets\NexoU_Fondo_Splash.png
-   9 | import { createNativeStackNavigator } from '@react-navigation/native-stack';
-  10 | import { useAuth } from '../context/AuthContext';
-> 11 | import FondoSplash from '../assets/NexoU_Fondo_Splash.png';
-     |                          ^
-  12 | import Logo from '../assets/NexoU_Logo.png';
-  13 | import { colors, spacing } from '../theme';
-  14 | import LoginScreen from '../screens/LoginScreen';
-    at ModuleResolver.resolveDependency (C:\xamppold\htdocs\NexoU\node_modules\metro\src\node-haste\DependencyGraph\ModuleResolution.js:145:15)
-    at DependencyGraph.resolveDependency (C:\xamppold\htdocs\NexoU\node_modules\metro\src\node-haste\DependencyGraph.js:203:43)
-    at C:\xamppold\htdocs\NexoU\node_modules\metro\src\lib\transformHelpers.js:165:21
-    at resolveDependencies (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\buildSubgraph.js:43:25)
-    at visit (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\buildSubgraph.js:81:30)
-    at async Promise.all (index 625)
-    at async buildSubgraph (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\buildSubgraph.js:105:3)
-    at async Graph._buildDelta (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\Graph.js:163:22)
-    at async Graph.traverseDependencies (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\Graph.js:50:19)
-    at async DeltaCalculator._getChangedDependencies (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\DeltaCalculator.js:201:42)
