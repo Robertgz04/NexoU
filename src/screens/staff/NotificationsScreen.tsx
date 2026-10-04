@@ -37,7 +37,6 @@ interface Notificacion {
   titulo: string;
   texto: string;
   hora: string;
-  /** Estado del reporte que originó el aviso (para el filtro "Estado"). */
   estado: ReportStatus;
 }
 
@@ -49,12 +48,12 @@ function mensajeDe(report: Report): { titulo: string; texto: string } {
         titulo: 'Reporte en revisión',
         texto:
           `El reporte "${report.titulo}" de ${report.ownerNombre} ` +
-          'ya está siendo revisado por mantenimiento.',
+          'está siendo atendido por el equipo de mantenimiento.',
       };
     case 'solucionado':
       return {
         titulo: 'Reporte solucionado',
-        texto: `Mantenimiento terminó "${report.titulo}". ¡Gracias por reportar!`,
+        texto: `Se concluyó la atención de "${report.titulo}".`,
       };
     default:
       return {
@@ -83,11 +82,7 @@ function notificacionesDe(reports: Report[]): Notificacion[] {
   });
 }
 
-/**
- * F10 – Notificaciones del panel de personal (mockup "Notificaciones"):
- * segmented control (Todas / Estado / Avisos) y lista agrupada por día
- * con los avisos derivados de los reportes registrados.
- */
+/** F10 – Notificaciones y avisos del panel del personal. */
 export default function NotificationsScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -106,10 +101,6 @@ export default function NotificationsScreen() {
 
   const todas = useMemo(() => notificacionesDe(reports), [reports]);
 
-  /**
-   * "Estado" muestra sólo los cambios de estado; "Avisos" destaca los
-   * reportes aún pendientes de atender.
-   */
   const lista = useMemo(() => {
     if (filtro === 'estado') {
       return todas.filter(n => n.estado !== 'pendiente');
@@ -120,7 +111,7 @@ export default function NotificationsScreen() {
     return todas;
   }, [todas, filtro]);
 
-  /** Agrupa por "Hoy" / "Ayer" / "Anteriores", como en el mockup. */
+  /** Agrupa por "Hoy" / "Ayer" / "Anteriores". */
   const secciones = useMemo(() => {
     const hoy = new Date();
     const ayer = new Date();
@@ -162,7 +153,12 @@ export default function NotificationsScreen() {
   );
 
   const encabezado = (
-    <View>
+    <View style={styles.headerBlock}>
+      <Text style={styles.screenTitle}>Notificaciones</Text>
+      <Text style={styles.screenSubtitle}>
+        Avisos en tiempo real sobre incidencias de los estudiantes.
+      </Text>
+
       <SegmentedControl
         testID="filtro-notificaciones"
         options={FILTROS}
@@ -170,11 +166,6 @@ export default function NotificationsScreen() {
         onChange={v => setFiltro(v as Filtro)}
         style={styles.filtros}
       />
-      <View style={styles.resumen}>
-        <Text style={styles.resumenText}>
-          {lista.length} {lista.length === 1 ? 'aviso' : 'avisos'}
-        </Text>
-      </View>
     </View>
   );
 
@@ -186,10 +177,6 @@ export default function NotificationsScreen() {
       artBottom={fondo.artBottom}
       overArt={<BrandRow right={avatar} />}
     >
-      <View style={styles.titleBlock}>
-        <Text style={styles.screenTitle}>Notificaciones</Text>
-      </View>
-
       <SectionList
         sections={secciones}
         keyExtractor={item => item.id}
@@ -202,7 +189,7 @@ export default function NotificationsScreen() {
         renderItem={({ item }) => (
           <TouchableOpacity
             accessibilityRole="button"
-            activeOpacity={0.9}
+            activeOpacity={0.88}
             style={styles.row}
             onPress={() =>
               navigation.navigate('ReportDetail', { reportId: item.reportId })
@@ -230,8 +217,8 @@ export default function NotificationsScreen() {
         ListEmptyComponent={
           <EmptyList
             icon="🔔"
-            title="Sin notificaciones"
-            subtitle="Aquí verás los avisos de los nuevos reportes y sus cambios de estado."
+            title="Sin notificaciones pendientes"
+            subtitle="Aquí verás las alertas cuando los estudiantes registren nuevos reportes."
           />
         }
       />
@@ -240,49 +227,47 @@ export default function NotificationsScreen() {
 }
 
 const styles = StyleSheet.create({
-  titleBlock: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.sm,
+  headerBlock: {
+    marginBottom: spacing.xs,
   },
   screenTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '800',
     color: colors.primary,
     letterSpacing: -0.5,
   },
-  content: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl,
-    flexGrow: 1,
+  screenSubtitle: {
+    fontSize: 13.5,
+    color: colors.textMuted,
+    marginTop: 2,
+    marginBottom: spacing.md,
   },
   avatarButton: {
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: colors.primarySoft,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
+    ...shadow.card,
   },
   avatarIcon: { fontSize: 19 },
   filtros: {
-    marginTop: -spacing.lg,
-    marginBottom: spacing.sm,
-  },
-  resumen: {
     marginBottom: spacing.xs,
   },
-  resumenText: {
-    fontSize: 12.5,
-    color: colors.textMuted,
+  content: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.xl + 20,
+    flexGrow: 1,
   },
   sectionTitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: colors.primary,
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
     marginTop: spacing.md,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
   row: {
     flexDirection: 'row',
@@ -295,28 +280,28 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   iconBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
   icon: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
   },
   texts: {
     flex: 1,
   },
   rowTitle: {
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: '800',
     color: colors.primary,
   },
   rowText: {
     fontSize: 12.5,
     color: colors.textMuted,
-    lineHeight: 18,
+    lineHeight: 17,
     marginTop: 2,
   },
   metaBox: {
@@ -328,7 +313,7 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
   chevron: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.textMuted,
   },

@@ -35,10 +35,7 @@ type Errors = {
   categoria?: string | null;
 };
 
-/**
- * F03 + F04 + F05 – Formulario para levantar un reporte:
- * título, descripción, área, categoría y evidencia fotográfica.
- */
+/** Formulario para levantar un reporte de incidencia universitaria. */
 export default function NewReportScreen() {
   const { user } = useAuth();
   const navigation =
@@ -68,8 +65,8 @@ export default function NewReportScreen() {
         );
         if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
           Alert.alert(
-            'Permiso requerido',
-            'Habilita el permiso de cámara para adjuntar la evidencia.',
+            'Permiso de cámara requerido',
+            'Por favor habilita el permiso de cámara para capturar la evidencia fotográfica.',
           );
           return;
         }
@@ -85,8 +82,8 @@ export default function NewReportScreen() {
       }
       if (response.errorCode) {
         Alert.alert(
-          'No se pudo obtener la imagen',
-          response.errorMessage ?? 'Intenta de nuevo.',
+          'No se obtuvo la imagen',
+          response.errorMessage ?? 'Intenta seleccionar la imagen de nuevo.',
         );
         return;
       }
@@ -95,25 +92,24 @@ export default function NewReportScreen() {
       if (asset?.base64) {
         setPhoto(asset.base64);
       } else if (asset?.uri) {
-        // Respaldo: se guarda la URI local si el base64 no estuvo disponible.
         setPhoto(asset.uri);
       } else {
-        Alert.alert('Imagen no disponible', 'No se pudo leer la fotografía.');
+        Alert.alert('Imagen no disponible', 'No se pudo procesar la fotografía.');
       }
     } catch {
       Alert.alert(
         'Error',
-        'Ocurrió un problema al abrir la cámara o la galería.',
+        'Ocurrió un inconveniente al abrir la cámara o la galería.',
       );
     }
   };
 
   const onSubmit = async () => {
     const nextErrors: Errors = {
-      titulo: validateRequired(titulo, 'título'),
-      descripcion: validateRequired(descripcion, 'descripción'),
-      area: area ? null : 'Selecciona el área donde ocurrió el problema.',
-      categoria: categoria ? null : 'Selecciona el tipo de incidencia.',
+      titulo: validateRequired(titulo, 'título del reporte'),
+      descripcion: validateRequired(descripcion, 'descripción detallada'),
+      area: area ? null : 'Selecciona el área donde ocurrió la incidencia.',
+      categoria: categoria ? null : 'Selecciona el tipo de categoría.',
     };
     if (Object.values(nextErrors).some(v => v)) {
       setErrors(nextErrors);
@@ -143,21 +139,21 @@ export default function NewReportScreen() {
       setErrors({});
 
       Alert.alert(
-        'Reporte publicado ✅',
-        'Tu reporte se envió con estado "Pendiente". El personal lo revisará.',
+        'Reporte enviado correctamente ✅',
+        'Tu reporte ha sido registrado en estado "Pendiente". El personal universitario le dará seguimiento.',
         [
           {
             text: 'Ver mis reportes',
             onPress: () =>
               navigation.navigate('StudentTabs', { screen: 'MyReports' }),
           },
-          { text: 'Cerrar', style: 'cancel' },
+          { text: 'Aceptar', style: 'cancel' },
         ],
       );
     } catch (e) {
       Alert.alert(
         'Error',
-        e instanceof Error ? e.message : 'No se pudo crear el reporte.',
+        e instanceof Error ? e.message : 'No se pudo enviar el reporte.',
       );
     } finally {
       setSaving(false);
@@ -194,128 +190,130 @@ export default function NewReportScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <Image source={Logo} style={styles.logo} resizeMode="contain" />
-          <Text style={styles.title}>Nuevo reporte</Text>
+          <Text style={styles.title}>Nuevo reporte de incidencia</Text>
           <Text style={styles.subtitle}>
-            Reporta una incidencia en tu universidad para que pueda ser atendida.
+            Ingresa la información detallada para que el área correspondiente pueda intervenir.
           </Text>
+
           <View style={styles.formCard}>
-          <FormField
-            label="Título del problema"
-            value={titulo}
-            onChangeText={setTitulo}
-            error={errors.titulo}
-            placeholder="Ej. Lámpara quemada en el aula 101"
-            maxLength={LIMITS.titulo}
-          />
+            <FormField
+              label="Título del reporte"
+              value={titulo}
+              onChangeText={setTitulo}
+              error={errors.titulo}
+              placeholder="Ej. Silla rota o luminaria apagada en lab 3"
+              maxLength={LIMITS.titulo}
+            />
 
-          <SelectField
-            label="Área"
-            icon="📍"
-            value={area}
-            placeholder="Selecciona el área"
-            options={AREAS}
-            error={errors.area}
-            onSelect={value => {
-              setArea(value);
-              setErrors(prev => ({ ...prev, area: null }));
-            }}
-          />
+            <SelectField
+              label="Ubicación o Área"
+              icon="📍"
+              value={area}
+              placeholder="Selecciona el área universitaria"
+              options={AREAS}
+              error={errors.area}
+              onSelect={value => {
+                setArea(value);
+                setErrors(prev => ({ ...prev, area: null }));
+              }}
+            />
 
-          <SelectField
-            label="Tipo de incidencia"
-            icon="💻"
-            value={categoria}
-            placeholder="Selecciona el tipo"
-            options={CATEGORIES}
-            error={errors.categoria}
-            onSelect={value => {
-              setCategoria(value as Category);
-              setErrors(prev => ({ ...prev, categoria: null }));
-            }}
-          />
+            <SelectField
+              label="Tipo o Cuestión"
+              icon="💻"
+              value={categoria}
+              placeholder="Selecciona la categoría"
+              options={CATEGORIES}
+              error={errors.categoria}
+              onSelect={value => {
+                setCategoria(value as Category);
+                setErrors(prev => ({ ...prev, categoria: null }));
+              }}
+            />
 
-          <FormField
-            label="Descripción"
-            value={descripcion}
-            onChangeText={setDescripcion}
-            error={errors.descripcion}
-            placeholder="¿Qué ocurrió? ¿Desde cuándo? ¿Por qué es un problema?"
-            multiline
-            maxLength={LIMITS.descripcion}
-          />
-          <Text style={styles.counter}>
-            {descripcion.length}/{LIMITS.descripcion}
-          </Text>
-        </View>
+            <FormField
+              label="Descripción de la incidencia"
+              value={descripcion}
+              onChangeText={setDescripcion}
+              error={errors.descripcion}
+              placeholder="Describe lo ocurrido con el mayor detalle posible..."
+              multiline
+              maxLength={LIMITS.descripcion}
+            />
+            <Text style={styles.counter}>
+              {descripcion.length}/{LIMITS.descripcion}
+            </Text>
+          </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            Evidencia fotográfica{' '}
-            <Text style={styles.sectionHint}>(opcional)</Text>
-          </Text>
+          <View style={styles.evidenceCard}>
+            <Text style={styles.sectionTitle}>
+              Evidencia fotográfica{' '}
+              <Text style={styles.sectionHint}>(Opcional pero recomendable)</Text>
+            </Text>
 
-          {photo ? (
-            <View style={styles.previewBox}>
-              <Image
-                source={{
-                  uri:
-                    photo.startsWith('data:') ||
-                    photo.startsWith('file:') ||
-                    photo.startsWith('content:')
-                      ? photo
-                      : `data:image/jpeg;base64,${photo}`,
-                }}
-                style={styles.preview}
-              />
-              <TouchableOpacity
-                accessibilityRole="button"
-                onPress={() => setPhoto(null)}
-                style={styles.removePhoto}
-              >
-                <Text style={styles.removePhotoText}>✕ Quitar foto</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <View style={styles.evidenceRow}>
-              <TouchableOpacity
-                accessibilityRole="button"
-                activeOpacity={0.85}
-                onPress={() => pickImage('gallery')}
-                style={styles.dropzone}
-              >
-                <Text style={styles.dropzoneIcon}>🖼</Text>
-                <Text style={styles.dropzoneText}>Agregar foto</Text>
-              </TouchableOpacity>
-              <View style={styles.evidenceButtons}>
-                <PrimaryButton
-                  title="📷 Tomar foto"
-                  variant="outline"
-                  onPress={() => pickImage('camera')}
-                  style={styles.evidenceButton}
+            {photo ? (
+              <View style={styles.previewBox}>
+                <Image
+                  source={{
+                    uri:
+                      photo.startsWith('data:') ||
+                      photo.startsWith('file:') ||
+                      photo.startsWith('content:')
+                        ? photo
+                        : `data:image/jpeg;base64,${photo}`,
+                  }}
+                  style={styles.preview}
                 />
-                <PrimaryButton
-                  title="☁ Subir imagen"
-                  variant="outline"
-                  onPress={() => pickImage('gallery')}
-                  style={styles.evidenceButton}
-                />
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  onPress={() => setPhoto(null)}
+                  style={styles.removePhoto}
+                >
+                  <Text style={styles.removePhotoText}>✕ Eliminar evidencia</Text>
+                </TouchableOpacity>
               </View>
-            </View>
-          )}
-        </View>
+            ) : (
+              <View style={styles.evidenceRow}>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  activeOpacity={0.85}
+                  onPress={() => pickImage('gallery')}
+                  style={styles.dropzone}
+                >
+                  <Text style={styles.dropzoneIcon}>📷</Text>
+                  <Text style={styles.dropzoneText}>Adjuntar foto</Text>
+                </TouchableOpacity>
 
-        <PrimaryButton
-          title="Enviar reporte"
-          withArrow
-          onPress={onSubmit}
-          loading={saving}
-          style={styles.submit}
-        />
-        <Text style={styles.footerHint}>
-          Al publicar, tu reporte queda en estado Pendiente y el personal lo
-          verirá en su panel.
-        </Text>
-      </ScrollView>
+                <View style={styles.evidenceButtons}>
+                  <PrimaryButton
+                    title="📷 Tomar foto"
+                    variant="outline"
+                    onPress={() => pickImage('camera')}
+                    style={styles.evidenceButton}
+                  />
+                  <PrimaryButton
+                    title="🖼 Seleccionar galería"
+                    variant="outline"
+                    onPress={() => pickImage('gallery')}
+                    style={styles.evidenceButton}
+                  />
+                </View>
+              </View>
+            )}
+          </View>
+
+          <PrimaryButton
+            title="Enviar reporte a revisión"
+            withArrow
+            onPress={onSubmit}
+            loading={saving}
+            style={styles.submit}
+          />
+
+          <Text style={styles.footerHint}>
+            El reporte quedará visible en tu historial para dar seguimiento en tiempo real.
+          </Text>
+        </ScrollView>
       </KeyboardAvoidingView>
     </ScreenBackground>
   );
@@ -338,53 +336,57 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   logo: {
-    height: 46,
-    width: 162,
+    height: 44,
+    width: 154,
     alignSelf: 'center',
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '800',
     color: colors.primary,
     textAlign: 'center',
     letterSpacing: -0.4,
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 13.5,
     color: colors.textMuted,
     textAlign: 'center',
-    lineHeight: 19,
+    lineHeight: 18,
     marginTop: spacing.xs,
   },
   content: {
     padding: spacing.md,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xl,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl + 20,
   },
   formCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.md,
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
     ...shadow.card,
   },
-  section: {
-    marginTop: spacing.lg,
+  evidenceCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginTop: spacing.md,
+    ...shadow.card,
   },
   sectionTitle: {
-    fontSize: 16.5,
+    fontSize: 15.5,
     fontWeight: '800',
     color: colors.primary,
     marginBottom: spacing.sm,
   },
   sectionHint: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '500',
     color: colors.textMuted,
   },
   counter: {
-    fontSize: 12,
+    fontSize: 11.5,
     color: colors.textMuted,
     textAlign: 'right',
     marginTop: -spacing.md,
@@ -394,7 +396,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   dropzone: {
-    width: 120,
+    width: 110,
     borderWidth: 1.5,
     borderStyle: 'dashed',
     borderColor: colors.border,
@@ -403,22 +405,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: spacing.md,
     gap: spacing.xs,
+    backgroundColor: colors.background,
   },
   dropzoneIcon: {
-    fontSize: 26,
+    fontSize: 28,
   },
   dropzoneText: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: '700',
     color: colors.textMuted,
   },
   evidenceButtons: {
     flex: 1,
-    gap: spacing.sm,
+    gap: spacing.xs,
     justifyContent: 'center',
   },
   evidenceButton: {
-    minHeight: 46,
+    minHeight: 44,
   },
   previewBox: {
     borderRadius: radius.md,
@@ -433,13 +436,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     backgroundColor: colors.dangerSoft,
   },
-  removePhotoText: { color: colors.danger, fontWeight: '700', fontSize: 14 },
+  removePhotoText: { color: colors.danger, fontWeight: '700', fontSize: 13.5 },
   submit: { marginTop: spacing.lg },
   footerHint: {
-    fontSize: 12.5,
+    fontSize: 12,
     color: colors.textMuted,
     textAlign: 'center',
     marginTop: spacing.sm,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
 });

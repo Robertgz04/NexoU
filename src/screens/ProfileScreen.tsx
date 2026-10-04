@@ -20,7 +20,7 @@ function initials(nombre: string): string {
   return (first + second).toUpperCase();
 }
 
-/** Perfil del usuario activo + cierre de sesión (compartido por ambos roles). */
+/** Perfil del usuario activo y cierre de sesión. */
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const navigation =
@@ -56,7 +56,7 @@ export default function ProfileScreen() {
   const idLabel = isEstudiante ? 'Matrícula' : 'Código';
 
   const confirmLogout = () => {
-    Alert.alert('Cerrar sesión', '¿Deseas salir de NexoU?', [
+    Alert.alert('Cerrar sesión', '¿Deseas salir de tu cuenta en NexoU?', [
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Cerrar sesión', style: 'destructive', onPress: () => logout() },
     ]);
@@ -137,6 +137,7 @@ export default function ProfileScreen() {
                 {isEstudiante ? '🎓 Estudiante' : '🛠 Personal universitario'}
               </Text>
             </View>
+
             <View style={styles.metaRow}>
               <Text style={styles.metaIcon}>🪪</Text>
               <Text style={styles.metaText}>
@@ -157,7 +158,7 @@ export default function ProfileScreen() {
         <MenuRow
           icon="👤"
           title="Datos personales"
-          subtitle="Tu información de cuenta y universidad"
+          subtitle="Información de tu cuenta y credencial universitaria"
           color={colors.info}
           soft={colors.revisionSoft}
           onPress={() =>
@@ -167,53 +168,66 @@ export default function ProfileScreen() {
             )
           }
         />
-        <MenuRow
-          icon="📋"
-          title="Mis reportes"
-          subtitle="Consulta el estado de tus reportes"
-          color={colors.solucionado}
-          soft={colors.solucionadoSoft}
-          onPress={() =>
-            navigation.navigate('StudentTabs', { screen: 'MyReports' })
-          }
-        />
+        {isEstudiante ? (
+          <MenuRow
+            icon="📋"
+            title="Mis reportes"
+            subtitle="Consulta el historial y seguimiento de tus reportes"
+            color={colors.solucionado}
+            soft={colors.solucionadoSoft}
+            onPress={() =>
+              navigation.navigate('StudentTabs', { screen: 'MyReports' })
+            }
+          />
+        ) : (
+          <MenuRow
+            icon="📊"
+            title="Panel de incidencias"
+            subtitle="Gestión de todos los reportes recibidos"
+            color={colors.solucionado}
+            soft={colors.solucionadoSoft}
+            onPress={() =>
+              navigation.navigate('StaffTabs', { screen: 'AllReports' })
+            }
+          />
+        )}
         <MenuRow
           icon="⚙️"
           title="Configuración"
-          subtitle="Notificaciones y preferencias"
+          subtitle="Ajustes de notificaciones y preferencias"
           color="#7C3AED"
           soft="#EDE9FE"
           onPress={() =>
             avisar(
               'Configuración',
-              'Las notificaciones de tus reportes están activas por defecto.',
+              'Las notificaciones de seguimiento están activadas por defecto.',
             )
           }
         />
         <MenuRow
           icon="❓"
           title="Ayuda y soporte"
-          subtitle="Preguntas frecuentes y contacto"
+          subtitle="Soporte técnico y ventanilla de atención universitaria"
           color={colors.pendiente}
           soft={colors.pendienteSoft}
           onPress={() =>
             avisar(
               'Ayuda y soporte',
-              'Escribe a soporte.nexou@universidad.edu o visita la Ventanilla de Atención Universitaria.',
+              'Contacto: soporte.nexou@universidad.edu\nUbicación: Ventanilla de Atención Universitaria, Edificio Central.',
             )
           }
         />
         <MenuRow
           icon="⏻"
           title="Cerrar sesión"
-          subtitle="Salir de tu cuenta"
+          subtitle="Salir de tu cuenta de forma segura"
           color={colors.danger}
           soft={colors.dangerSoft}
           onPress={confirmLogout}
         />
 
         <Text style={styles.version}>
-          NexoU v0.1.0 · Desarrollo Móvil Integral
+          NexoU v0.1.0 · Sistema Universitario de Incidencias
         </Text>
       </ScrollView>
     </ScreenBackground>
@@ -222,15 +236,15 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   screenTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '800',
     color: colors.primary,
     letterSpacing: -0.5,
-    marginTop: spacing.md,
+    marginTop: spacing.xs,
   },
   content: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.xl + 20,
   },
   profileCard: {
     flexDirection: 'row',
@@ -239,44 +253,44 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.md,
-    marginTop: -spacing.lg,
+    marginTop: -spacing.md,
     ...shadow.card,
   },
   avatarBox: {
-    width: 92,
-    height: 92,
-  },
-  avatar: {
     width: 88,
     height: 88,
-    borderRadius: 44,
+  },
+  avatar: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: colors.textOnPrimary, fontSize: 28, fontWeight: '800' },
+  avatarText: { color: colors.textOnPrimary, fontSize: 26, fontWeight: '800' },
   editBadge: {
     position: 'absolute',
     right: 0,
     bottom: 0,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: colors.accentSoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
   editIcon: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
     color: colors.primary,
   },
   profileInfo: {
     flex: 1,
-    gap: 2,
+    gap: 3,
   },
   name: {
-    fontSize: 20,
+    fontSize: 19,
     fontWeight: '800',
     color: colors.primary,
   },
@@ -285,22 +299,22 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accentSoft,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.sm + 4,
-    paddingVertical: 5,
+    paddingVertical: 4,
     marginBottom: 2,
   },
-  roleText: { fontSize: 12.5, fontWeight: '700', color: colors.accentDark },
+  roleText: { fontSize: 12, fontWeight: '700', color: colors.accentDark },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm - 2,
+    gap: spacing.xs,
   },
-  metaIcon: { fontSize: 14 },
-  metaText: { fontSize: 13, color: colors.text, flexShrink: 1 },
+  metaIcon: { fontSize: 13 },
+  metaText: { fontSize: 12.5, color: colors.text, flexShrink: 1 },
   tiles: {
     marginTop: spacing.md,
   },
   version: {
-    fontSize: 12.5,
+    fontSize: 12,
     color: colors.textMuted,
     textAlign: 'center',
     marginTop: spacing.lg,

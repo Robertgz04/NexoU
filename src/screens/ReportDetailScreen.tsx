@@ -48,7 +48,7 @@ function InfoRow({
   );
 }
 
-/** Paso de la línea de tiempo de "Seguimiento" (mockup). */
+/** Paso de la línea de tiempo de "Seguimiento". */
 interface TimelineStep {
   icon: string;
   title: string;
@@ -64,7 +64,7 @@ function timelineDe(report: Report): TimelineStep[] {
       icon: '✓',
       title: 'Reporte enviado',
       date: formatFechaHora(report.createdAt),
-      detail: 'Tu reporte ha sido recibido correctamente.',
+      detail: 'Tu reporte ha sido registrado en el sistema.',
       tone: 'success',
     },
   ];
@@ -84,7 +84,7 @@ function timelineDe(report: Report): TimelineStep[] {
     icon: '🔧',
     title: 'Asignado a mantenimiento',
     date: formatFechaHora(report.updatedAt),
-    detail: 'Se ha asignado al equipo de mantenimiento para su revisión.',
+    detail: 'Se ha asignado al equipo técnico para su atención.',
     tone: 'info',
   });
 
@@ -93,7 +93,7 @@ function timelineDe(report: Report): TimelineStep[] {
       icon: '◷',
       title: 'Actualmente en revisión',
       date: formatFechaHora(report.updatedAt),
-      detail: 'El equipo de mantenimiento está revisando el problema.',
+      detail: 'El equipo técnico está trabajando en la incidencia.',
       tone: 'info',
     });
   } else {
@@ -101,7 +101,7 @@ function timelineDe(report: Report): TimelineStep[] {
       icon: '✓',
       title: 'Problema solucionado',
       date: formatFechaHora(report.updatedAt),
-      detail: 'Mantenimiento terminó el trabajo. ¡Gracias por reportar!',
+      detail: 'Mantenimiento concluyó el trabajo. ¡Gracias por reportar!',
       tone: 'success',
     });
   }
@@ -109,10 +109,7 @@ function timelineDe(report: Report): TimelineStep[] {
   return steps;
 }
 
-/**
- * Detalle del reporte (F06 vista estudiante / F07 vista personal).
- * Si la sesión es de personal aparece el gestor de estado (F08).
- */
+/** Detalle del reporte (vista para estudiante y personal). */
 export default function ReportDetailScreen() {
   const route = useRoute<DetailRoute>();
   const navigation = useNavigation();
@@ -147,8 +144,8 @@ export default function ReportDetailScreen() {
       const updated = await updateReportStatus(report.id, estado);
       setReport(updated);
       Alert.alert(
-        'Estado actualizado',
-        `El reporte ahora está: ${statusMeta(estado).label}.`,
+        'Estado actualizado ✅',
+        `El reporte ahora está marcado como: ${statusMeta(estado).label}.`,
       );
     } catch (e) {
       Alert.alert(
@@ -166,7 +163,7 @@ export default function ReportDetailScreen() {
         <EmptyList
           icon="😕"
           title="Reporte no encontrado"
-          subtitle="Puede que haya sido eliminado."
+          subtitle="Es posible que haya sido eliminado."
         />
       </View>
     );
@@ -205,114 +202,101 @@ export default function ReportDetailScreen() {
           {backButton}
           <View style={styles.brandBlock}>
             <BrandRow />
-            <Text style={styles.screenTitle}>Detalle del reporte</Text>
+            <Text style={styles.screenTitle}>Detalle de la incidencia</Text>
           </View>
         </View>
       }
     >
-    <ScrollView contentContainerStyle={styles.content}>
-      {uri ? (
-        <Image source={{ uri }} style={styles.photo} />
-      ) : (
-        <View style={[styles.photo, styles.photoPlaceholder]}>
-          <Text style={styles.photoEmoji}>🖼</Text>
-          <Text style={styles.photoText}>Sin evidencia fotográfica</Text>
+      <ScrollView contentContainerStyle={styles.content}>
+        {uri ? (
+          <Image source={{ uri }} style={styles.photo} />
+        ) : (
+          <View style={[styles.photo, styles.photoPlaceholder]}>
+            <Text style={styles.photoEmoji}>🖼</Text>
+            <Text style={styles.photoText}>Sin evidencia fotográfica adjunta</Text>
+          </View>
+        )}
+
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>{report.titulo}</Text>
+          <StatusBadge status={report.estado} />
         </View>
-      )}
 
-      <View style={styles.titleRow}>
-        <Text style={styles.title}>{report.titulo}</Text>
-        <StatusBadge status={report.estado} />
-      </View>
+        <View style={styles.infoCard}>
+          <InfoRow icon="📍" label="Área / Ubicación" value={report.area} />
+          <InfoRow icon="🔌" label="Categoría" value={report.categoria} />
+          <InfoRow
+            icon="📅"
+            label="Fecha de reporte"
+            value={formatFechaCorta(report.createdAt)}
+          />
+          <InfoRow icon="🧾" label="Folio oficial" value={folioDe(report.id)} />
+        </View>
 
-      <View style={styles.infoCard}>
-        <InfoRow icon="📍" label="Área" value={report.area} />
-        <InfoRow icon="🔌" label="Categoría" value={report.categoria} />
-        <InfoRow
-          icon="📅"
-          label="Fecha de reporte"
-          value={formatFechaCorta(report.createdAt)}
-        />
-        <InfoRow icon="🧾" label="Folio" value={folioDe(report.id)} />
-      </View>
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Descripción detallada</Text>
+          <Text style={styles.description}>{report.descripcion}</Text>
+        </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Descripción</Text>
-        <Text style={styles.description}>{report.descripcion}</Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Seguimiento</Text>
-        {timelineDe(report).map((step, index, all) => (
-          <View key={step.title} style={styles.step}>
-            <View style={styles.stepRail}>
-              <View
-                style={[
-                  styles.stepIcon,
-                  step.tone === 'success'
-                    ? styles.stepIconSuccess
-                    : styles.stepIconInfo,
-                ]}
-              >
-                <Text style={styles.stepIconText}>{step.icon}</Text>
-              </View>
-              {index < all.length - 1 ? (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Seguimiento y estado</Text>
+          {timelineDe(report).map((step, index, all) => (
+            <View key={step.title} style={styles.step}>
+              <View style={styles.stepRail}>
                 <View
                   style={[
-                    styles.stepLine,
+                    styles.stepIcon,
                     step.tone === 'success'
-                      ? styles.stepLineSuccess
-                      : styles.stepLineInfo,
+                      ? styles.stepIconSuccess
+                      : styles.stepIconInfo,
                   ]}
-                />
-              ) : null}
+                >
+                  <Text style={styles.stepIconText}>{step.icon}</Text>
+                </View>
+                {index < all.length - 1 ? (
+                  <View
+                    style={[
+                      styles.stepLine,
+                      step.tone === 'success'
+                        ? styles.stepLineSuccess
+                        : styles.stepLineInfo,
+                    ]}
+                  />
+                ) : null}
+              </View>
+              <View style={styles.stepBody}>
+                <Text style={styles.stepTitle}>{step.title}</Text>
+                <Text style={styles.stepDate}>{step.date}</Text>
+                <Text style={styles.stepDetail}>{step.detail}</Text>
+              </View>
             </View>
-            <View style={styles.stepBody}>
-              <Text style={styles.stepTitle}>{step.title}</Text>
-              <Text style={styles.stepDate}>{step.date}</Text>
-              <Text style={styles.stepDetail}>{step.detail}</Text>
-            </View>
-          </View>
-        ))}
-      </View>
-
-      {isStaff ? (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Actualizar estado</Text>
-          <Text style={styles.helper}>
-            El estudiante verá este cambio de inmediato en su lista de reportes.
-          </Text>
-          {STATUSES.map(s => {
-            const isCurrent = report.estado === s.value;
-            return (
-              <PrimaryButton
-                key={s.value}
-                title={isCurrent ? `✓ ${s.label}` : `Cambiar a ${s.label}`}
-                variant={isCurrent ? 'primary' : 'outline'}
-                disabled={saving || isCurrent}
-                onPress={() => changeStatus(s.value)}
-                style={styles.statusButton}
-              />
-            );
-          })}
+          ))}
         </View>
-      ) : null}
 
-      <PrimaryButton
-        title="Ver evidencia completa"
-        variant="outline"
-        onPress={() =>
-          Alert.alert(
-            'Evidencia fotográfica',
-            uri
-              ? 'La imagen adjunta se muestra ampliada en esta pantalla.'
-              : 'Este reporte no tiene evidencia fotográfica adjunta.',
-          )
-        }
-        style={styles.evidenceButton}
-      />
-      <Text style={styles.version}>Reportado por: {report.ownerNombre}</Text>
-    </ScrollView>
+        {isStaff ? (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Gestión de estado del personal</Text>
+            <Text style={styles.helper}>
+              Actualiza el progreso para notificar al estudiante en tiempo real.
+            </Text>
+            {STATUSES.map(s => {
+              const isCurrent = report.estado === s.value;
+              return (
+                <PrimaryButton
+                  key={s.value}
+                  title={isCurrent ? `✓ ${s.label} (Actual)` : `Cambiar a ${s.label}`}
+                  variant={isCurrent ? 'primary' : 'outline'}
+                  disabled={saving || isCurrent}
+                  onPress={() => changeStatus(s.value)}
+                  style={styles.statusButton}
+                />
+              );
+            })}
+          </View>
+        ) : null}
+
+        <Text style={styles.version}>Reportante: {report.ownerNombre}</Text>
+      </ScrollView>
     </ScreenBackground>
   );
 }
@@ -334,19 +318,19 @@ const styles = StyleSheet.create({
     color: colors.primary,
   },
   brandBlock: {
-    marginTop: spacing.md,
+    marginTop: spacing.sm,
   },
   screenTitle: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '800',
     color: colors.primary,
     letterSpacing: -0.5,
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
   },
-  content: { padding: spacing.md, paddingBottom: spacing.xl },
+  content: { padding: spacing.md, paddingBottom: spacing.xl + 20 },
   photo: {
     width: '100%',
-    height: 230,
+    height: 220,
     borderRadius: radius.xl,
     backgroundColor: colors.primarySoft,
     resizeMode: 'cover',
@@ -357,7 +341,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.2,
     borderColor: colors.border,
   },
-  photoEmoji: { fontSize: 44 },
+  photoEmoji: { fontSize: 40 },
   photoText: { fontSize: 13, color: colors.textMuted, marginTop: spacing.xs },
   card: {
     backgroundColor: colors.surface,
@@ -375,7 +359,7 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontSize: 21,
+    fontSize: 20,
     fontWeight: '800',
     color: colors.primary,
   },
@@ -389,21 +373,21 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   description: {
-    fontSize: 14.5,
+    fontSize: 14,
     lineHeight: 22,
-    color: colors.textMuted,
+    color: colors.text,
     marginTop: spacing.xs,
   },
   cardTitle: {
-    fontSize: 16,
+    fontSize: 15.5,
     fontWeight: '800',
     color: colors.primary,
     marginBottom: spacing.xs,
   },
   helper: {
-    fontSize: 13.5,
+    fontSize: 13,
     color: colors.textMuted,
-    lineHeight: 20,
+    lineHeight: 18,
     marginBottom: spacing.sm + 2,
   },
   infoRow: {
@@ -428,7 +412,7 @@ const styles = StyleSheet.create({
   infoValue: {
     fontSize: 13.5,
     color: colors.text,
-    fontWeight: '600',
+    fontWeight: '700',
     flexShrink: 1,
     maxWidth: '55%',
     textAlign: 'right',
@@ -439,12 +423,12 @@ const styles = StyleSheet.create({
   },
   stepRail: {
     alignItems: 'center',
-    width: 40,
+    width: 36,
   },
   stepIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -455,7 +439,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.revisionSoft,
   },
   stepIconText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
   },
   stepLine: {
@@ -474,23 +458,20 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
   },
   stepTitle: {
-    fontSize: 15,
+    fontSize: 14.5,
     fontWeight: '800',
     color: colors.primary,
   },
   stepDate: {
-    fontSize: 12,
+    fontSize: 11.5,
     color: colors.textMuted,
     marginTop: 2,
   },
   stepDetail: {
-    fontSize: 13.5,
+    fontSize: 13,
     color: colors.textMuted,
-    lineHeight: 19,
+    lineHeight: 18,
     marginTop: 2,
-  },
-  evidenceButton: {
-    marginTop: spacing.lg,
   },
   version: {
     fontSize: 12,

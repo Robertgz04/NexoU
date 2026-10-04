@@ -39,7 +39,7 @@ const PERIODOS = [
 ];
 
 /** Alto del área de las barras por categoría. */
-const CHART_H = 120;
+const CHART_H = 110;
 
 /** Fecha límite inferior del periodo seleccionado. */
 function desde(periodo: Periodo, now: Date): number {
@@ -64,7 +64,6 @@ function serieDiaria(reports: Report[], dias: number, now: Date): LinePoint[] {
   reports.forEach(report => {
     const t = new Date(report.createdAt).getTime();
     const diff = Math.floor((inicioHoy.getTime() - t) / 86400000);
-    // diff = 0 es hoy; diff = dias-1 es el día más antiguo de la serie.
     if (diff >= 0 && diff < dias) {
       counts[dias - 1 - diff] += 1;
     }
@@ -77,11 +76,7 @@ function serieDiaria(reports: Report[], dias: number, now: Date): LinePoint[] {
   });
 }
 
-/**
- * F09 – Estadísticas del panel de personal (mockup "Estadísticas"):
- * selector de periodo, tarjetas de totales, barras por categoría,
- * anillo de estados, actividad reciente y área con más incidencias.
- */
+/** F09 – Estadísticas e indicadores del panel de personal. */
 export default function StatisticsScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -100,7 +95,7 @@ export default function StatisticsScreen() {
     }, [load]),
   );
 
-  const diasSerie = 7; // el mockup siempre muestra "Últimos 7 días"
+  const diasSerie = 7;
 
   const enPeriodo = useMemo(() => {
     const min = desde(periodo, new Date());
@@ -188,8 +183,11 @@ export default function StatisticsScreen() {
       artBottom={fondo.artBottom}
       overArt={<BrandRow right={avatar} />}
     >
-      <View style={styles.titleBlock}>
-        <Text style={styles.screenTitle}>Estadísticas</Text>
+      <View style={styles.headerBlock}>
+        <Text style={styles.screenTitle}>Estadísticas y Métricas</Text>
+        <Text style={styles.screenSubtitle}>
+          Análisis de volumen e incidencias universitarias.
+        </Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -205,7 +203,7 @@ export default function StatisticsScreen() {
           <StatCard
             icon="📄"
             value={total}
-            label="Reportes totales"
+            label="Totales"
             color={colors.info}
             soft={colors.revisionSoft}
           />
@@ -300,8 +298,8 @@ export default function StatisticsScreen() {
                 slices={slices}
                 centerValue={total}
                 centerLabel="reportes"
-                size={104}
-                thickness={17}
+                size={98}
+                thickness={16}
               />
             </View>
             <View style={styles.legend}>
@@ -314,16 +312,15 @@ export default function StatisticsScreen() {
                   <Text style={styles.legendLabel} numberOfLines={1}>
                     {slice.label}
                   </Text>
-                  <Text style={styles.legendPercent}>{slice.percent}%</Text>
                 </View>
               ))}
             </View>
           </View>
 
           <View style={[styles.card, styles.splitCard]}>
-            <Text style={styles.cardTitle}>Actividad reciente</Text>
-            <Text style={styles.cardSubtitle}>Últimos {diasSerie} días</Text>
-            <LineChart data={serie} height={108} gridLines={3} />
+            <Text style={styles.cardTitle}>Actividad diaria</Text>
+            <Text style={styles.cardSubtitle}>Últimos 7 días</Text>
+            <LineChart data={serie} height={100} gridLines={3} />
           </View>
         </View>
 
@@ -331,7 +328,7 @@ export default function StatisticsScreen() {
         {areaTop ? (
           <TouchableOpacity
             accessibilityRole="button"
-            activeOpacity={0.9}
+            activeOpacity={0.88}
             style={styles.areaCard}
             onPress={() =>
               navigation.navigate('StaffTabs', { screen: 'AllReports' })
@@ -341,12 +338,12 @@ export default function StatisticsScreen() {
               <Text style={styles.areaIcon}>🏛</Text>
             </View>
             <View style={styles.areaTexts}>
-              <Text style={styles.areaLabel}>Área con más incidencias:</Text>
+              <Text style={styles.areaLabel}>Área con mayor atención:</Text>
               <Text style={styles.areaName} numberOfLines={1}>
                 {areaTop.area}
               </Text>
               <Text style={styles.areaMeta} numberOfLines={1}>
-                Categoría principal: {areaTop.categoria}
+                Categoría prevalente: {areaTop.categoria}
               </Text>
             </View>
             <Text style={styles.areaChevron}>›</Text>
@@ -354,15 +351,13 @@ export default function StatisticsScreen() {
         ) : null}
 
         <Text style={styles.footer}>
-          {user?.nombre?.split(' ')[0] ?? 'Personal'}, los datos se actualizan
-          al abrir la pantalla.
+          Los datos se actualizan dinámicamente según la actividad del personal.
         </Text>
       </ScrollView>
     </ScreenBackground>
   );
 }
 
-/** Tarjeta compacta de total (mockup de Estadísticas). */
 function StatCard({
   icon,
   value,
@@ -382,7 +377,7 @@ function StatCard({
         <Text style={[styles.statIcon, { color }]}>{icon}</Text>
       </View>
       <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel} numberOfLines={2}>
+      <Text style={styles.statLabel} numberOfLines={1}>
         {label}
       </Text>
     </View>
@@ -390,58 +385,63 @@ function StatCard({
 }
 
 const styles = StyleSheet.create({
-  titleBlock: {
+  headerBlock: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
   screenTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '800',
     color: colors.primary,
     letterSpacing: -0.5,
   },
+  screenSubtitle: {
+    fontSize: 13.5,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
   content: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.xl + 20,
   },
   avatarButton: {
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: colors.primarySoft,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
+    ...shadow.card,
   },
   avatarIcon: { fontSize: 19 },
   periods: {
-    marginTop: -spacing.lg,
-    marginBottom: spacing.md,
+    marginVertical: spacing.sm,
   },
   tilesRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    gap: spacing.xs,
   },
   statCard: {
     flex: 1,
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    paddingVertical: spacing.sm + 2,
+    paddingVertical: spacing.sm,
     paddingHorizontal: 2,
     alignItems: 'center',
     gap: 2,
     ...shadow.card,
   },
   statIconBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,
   },
-  statIcon: { fontSize: 15 },
+  statIcon: { fontSize: 14 },
   statValue: {
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: '800',
     color: colors.text,
   },
@@ -449,7 +449,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: colors.textMuted,
     textAlign: 'center',
-    lineHeight: 13,
   },
   card: {
     backgroundColor: colors.surface,
@@ -459,7 +458,7 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   cardTitle: {
-    fontSize: 15.5,
+    fontSize: 15,
     fontWeight: '800',
     color: colors.primary,
   },
@@ -467,14 +466,14 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     color: colors.textMuted,
     marginTop: 1,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
   chartRow: {
     flexDirection: 'row',
     marginTop: spacing.sm,
   },
   barAxis: {
-    width: 20,
+    width: 18,
     height: CHART_H,
     justifyContent: 'space-between',
   },
@@ -505,15 +504,15 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   barValue: {
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '800',
     color: colors.text,
-    marginBottom: 3,
+    marginBottom: 2,
   },
   bar: {
-    width: '60%',
-    borderTopLeftRadius: 5,
-    borderTopRightRadius: 5,
+    width: '55%',
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
   },
   barLabels: {
     flexDirection: 'row',
@@ -524,11 +523,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   barIcon: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.primary,
   },
   barLabel: {
-    fontSize: 9.5,
+    fontSize: 9,
     color: colors.textMuted,
     textAlign: 'center',
     marginTop: 2,
@@ -539,37 +538,33 @@ const styles = StyleSheet.create({
   },
   splitCard: {
     flex: 1,
-    padding: spacing.sm + 4,
+    padding: spacing.sm + 2,
   },
   donutBox: {
     alignItems: 'center',
-    marginVertical: spacing.sm,
+    marginVertical: spacing.xs,
   },
   legend: {
-    gap: 6,
+    gap: 4,
   },
   legendRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 4,
   },
   legendDot: {
-    width: 9,
-    height: 9,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   legendValue: {
-    fontSize: 12.5,
+    fontSize: 12,
     fontWeight: '800',
     color: colors.text,
   },
   legendLabel: {
     flex: 1,
-    fontSize: 10.5,
-    color: colors.textMuted,
-  },
-  legendPercent: {
-    fontSize: 10.5,
+    fontSize: 10,
     color: colors.textMuted,
   },
   areaCard: {
@@ -583,37 +578,37 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   areaIconBox: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: colors.purpleSoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  areaIcon: { fontSize: 24 },
+  areaIcon: { fontSize: 22 },
   areaTexts: { flex: 1 },
   areaLabel: {
-    fontSize: 12,
+    fontSize: 11.5,
     color: colors.textMuted,
   },
   areaName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '800',
     color: colors.primary,
     marginTop: 1,
   },
   areaMeta: {
-    fontSize: 12.5,
+    fontSize: 12,
     color: colors.textMuted,
     marginTop: 1,
   },
   areaChevron: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
     color: colors.textMuted,
   },
   footer: {
-    fontSize: 12,
+    fontSize: 11.5,
     color: colors.textMuted,
     textAlign: 'center',
     marginTop: spacing.lg,

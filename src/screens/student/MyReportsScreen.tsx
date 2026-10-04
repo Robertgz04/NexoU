@@ -19,13 +19,13 @@ import ScreenBackground from '../../components/ScreenBackground';
 import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
 import { STATUSES, statusMeta } from '../../constants/catalog';
 import { getReportsByOwner } from '../../data/reportRepository';
-import { colors, spacing } from '../../theme';
+import { colors, radius, shadow, spacing } from '../../theme';
 import type { Report, ReportStatus } from '../../types';
 import type { RootStackParamList } from '../../navigation/types';
 
 type Filter = ReportStatus | 'todas';
 
-/** Nota de estado que se muestra al expandir una tarjeta (mockup F06). */
+/** Nota de estado que se muestra al expandir una tarjeta. */
 function notaDe(reporte: Report): {
   icon: string;
   title: string;
@@ -53,10 +53,7 @@ function notaDe(reporte: Report): {
   }
 }
 
-/**
- * F06 – Consulta de los reportes propios del estudiante con su estado,
- * incluye filtros por estado y actualización al enfocar la pantalla.
- */
+/** F06 – Consulta de los reportes propios del estudiante con filtros por estado. */
 export default function MyReportsScreen() {
   const { user } = useAuth();
   const navigation =
@@ -112,26 +109,36 @@ export default function MyReportsScreen() {
   );
 
   const header = (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.filters}
-    >
-      <Chip
-        label="Todos"
-        selected={filter === 'todas'}
-        onPress={() => setFilter('todas')}
-      />
-      {STATUSES.map(s => (
+    <View style={styles.headerBlock}>
+      <Text style={styles.title}>Mis reportes</Text>
+      <Text style={styles.subtitle}>
+        Consulta el estado y seguimiento en tiempo real de tus incidencias.
+      </Text>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filters}
+      >
         <Chip
-          key={s.value}
-          label={s.label}
-          color={s.color}
-          selected={filter === s.value}
-          onPress={() => setFilter(s.value)}
+          label={`Todos (${reports.length})`}
+          selected={filter === 'todas'}
+          onPress={() => setFilter('todas')}
         />
-      ))}
-    </ScrollView>
+        {STATUSES.map(s => {
+          const count = reports.filter(r => r.estado === s.value).length;
+          return (
+            <Chip
+              key={s.value}
+              label={`${s.label} (${count})`}
+              color={s.color}
+              selected={filter === s.value}
+              onPress={() => setFilter(s.value)}
+            />
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 
   const fondo = SCREEN_BACKGROUNDS.myReports;
@@ -142,10 +149,6 @@ export default function MyReportsScreen() {
       artBottom={fondo.artBottom}
       overArt={<BrandRow right={avatar} />}
     >
-      <View style={styles.titleBlock}>
-        <Text style={styles.title}>Mis reportes</Text>
-      </View>
-
       <FlatList
         data={filtered}
         keyExtractor={item => item.id}
@@ -179,8 +182,8 @@ export default function MyReportsScreen() {
             }
             subtitle={
               filter === 'todas'
-                ? 'Reporta un problema del campus con foto y recibe seguimiento de su estado.'
-                : 'Prueba con otro filtro o crea un reporte nuevo.'
+                ? 'Reporta cualquier problema en el campus con foto y da seguimiento aquí.'
+                : 'Selecciona otro filtro o crea un nuevo reporte.'
             }
             actionLabel="➕ Crear reporte"
             onAction={() =>
@@ -194,32 +197,37 @@ export default function MyReportsScreen() {
 }
 
 const styles = StyleSheet.create({
-  titleBlock: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.sm,
+  headerBlock: {
+    marginBottom: spacing.xs,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '800',
     color: colors.primary,
     letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: 13.5,
+    color: colors.textMuted,
+    marginTop: 2,
   },
   avatarButton: {
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: colors.primarySoft,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
+    ...shadow.card,
   },
   avatarIcon: { fontSize: 19 },
   filters: {
-    paddingTop: spacing.md,
-    paddingRight: spacing.md,
+    paddingVertical: spacing.md,
+    gap: spacing.xs,
   },
   list: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.xl + 20,
     flexGrow: 1,
   },
 });

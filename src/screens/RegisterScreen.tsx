@@ -11,14 +11,13 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
-import Chip from '../components/Chip';
 import FormField from '../components/FormField';
 import PrimaryButton from '../components/PrimaryButton';
 import ScreenBackground from '../components/ScreenBackground';
 import { SCREEN_BACKGROUNDS } from '../constants/backgrounds';
 import { LIMITS } from '../constants/catalog';
 import Logo from '../assets/NexoU_Logo.png';
-import { colors, shadow, spacing } from '../theme';
+import { colors, radius, shadow, spacing } from '../theme';
 import type { Role } from '../types';
 import {
   validateEmail,
@@ -35,11 +34,7 @@ interface FieldErrors {
   general?: string | null;
 }
 
-/**
- * F02 – Registro de cuenta.
- * El rol (estudiante / personal) se elige aquí; con el rol del usuario
- * depende qué panel recibe al iniciar sesión (F01).
- */
+/** F02 – Registro de cuenta para estudiante o personal universitario. */
 export default function RegisterScreen() {
   const navigation = useNavigation();
   const { register } = useAuth();
@@ -55,10 +50,10 @@ export default function RegisterScreen() {
 
   const onSubmit = async () => {
     const nextErrors: FieldErrors = {
-      nombre: validateRequired(nombre, 'nombre'),
+      nombre: validateRequired(nombre, 'nombre completo'),
       matricula: validateRequired(
         matricula,
-        rol === 'estudiante' ? 'matrícula' : 'código',
+        rol === 'estudiante' ? 'matrícula' : 'código de personal',
       ),
       email: validateEmail(email),
       password: validatePassword(password, LIMITS.passwordMin),
@@ -73,7 +68,6 @@ export default function RegisterScreen() {
     setLoading(true);
     try {
       await register({ nombre, matricula, email, password, rol });
-      // La sesión queda activa: RootNavigator cambia al panel del rol.
     } catch (e) {
       setErrors({
         general: e instanceof Error ? e.message : 'No se pudo crear la cuenta.',
@@ -113,25 +107,52 @@ export default function RegisterScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <Image source={Logo} style={styles.logo} resizeMode="contain" />
-          <Text style={styles.heading}>Crear cuenta</Text>
+          <Text style={styles.heading}>Crear cuenta en NexoU</Text>
           <Text style={styles.subtitle}>
-            Regístrate como {rol === 'estudiante' ? 'estudiante' : 'personal'} para
-            conectar tu vida universitaria.
+            Selecciona tu perfil e ingresa tus datos para conectarte con tu universidad.
           </Text>
 
-          <View style={styles.roleRow}>
-            <Chip
-              testID="role-estudiante"
-              label="Rol: Estudiante"
-              selected={rol === 'estudiante'}
+          {/* Selector de rol estilizado */}
+          <View style={styles.roleContainer}>
+            <TouchableOpacity
+              accessibilityRole="button"
+              activeOpacity={0.85}
+              style={[
+                styles.roleCard,
+                rol === 'estudiante' && styles.roleCardActive,
+              ]}
               onPress={() => setRol('estudiante')}
-            />
-            <Chip
-              testID="role-personal"
-              label="Rol: Personal universitario"
-              selected={rol === 'personal'}
+            >
+              <Text style={styles.roleIcon}>🎓</Text>
+              <Text
+                style={[
+                  styles.roleTitle,
+                  rol === 'estudiante' && styles.roleTitleActive,
+                ]}
+              >
+                Estudiante
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              accessibilityRole="button"
+              activeOpacity={0.85}
+              style={[
+                styles.roleCard,
+                rol === 'personal' && styles.roleCardActiveStaff,
+              ]}
               onPress={() => setRol('personal')}
-            />
+            >
+              <Text style={styles.roleIcon}>🛠</Text>
+              <Text
+                style={[
+                  styles.roleTitle,
+                  rol === 'personal' && styles.roleTitleActiveStaff,
+                ]}
+              >
+                Personal
+              </Text>
+            </TouchableOpacity>
           </View>
 
           {errors.general ? (
@@ -145,11 +166,11 @@ export default function RegisterScreen() {
             value={nombre}
             onChangeText={setNombre}
             error={errors.nombre}
-            placeholder="Ej. Ana López García"
+            placeholder="Ej. Ana María López García"
             autoCapitalize="words"
           />
           <FormField
-            label={rol === 'estudiante' ? 'Matrícula' : 'Código de personal'}
+            label={rol === 'estudiante' ? 'Matrícula universitaria' : 'Código de personal'}
             value={matricula}
             onChangeText={setMatricula}
             error={errors.matricula}
@@ -157,16 +178,16 @@ export default function RegisterScreen() {
             autoCapitalize="characters"
           />
           <FormField
-            label="Correo"
+            label="Correo electrónico"
             value={email}
             onChangeText={setEmail}
             error={errors.email}
-            placeholder="usuario@nexou.mx"
+            placeholder="tu.correo@universidad.edu"
             keyboardType="email-address"
             autoCapitalize="none"
           />
           <FormField
-            label={`Contraseña (mín. ${LIMITS.passwordMin} caracteres)`}
+            label={`Contraseña (mínimo ${LIMITS.passwordMin} caracteres)`}
             value={password}
             onChangeText={setPassword}
             error={errors.password}
@@ -185,9 +206,11 @@ export default function RegisterScreen() {
           />
 
           <PrimaryButton
-            title="Crear cuenta"
+            title="Crear mi cuenta"
+            withArrow
             onPress={onSubmit}
             loading={loading}
+            style={styles.submitButton}
           />
 
           <TouchableOpacity
@@ -196,7 +219,7 @@ export default function RegisterScreen() {
             style={styles.link}
           >
             <Text style={styles.linkText}>
-              ¿Ya tienes cuenta?{' '}
+              ¿Ya tienes una cuenta?{' '}
               <Text style={styles.linkBold}>Inicia sesión</Text>
             </Text>
           </TouchableOpacity>
@@ -222,41 +245,88 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: colors.primary,
   },
-  scroll: { padding: spacing.lg, paddingTop: spacing.lg },
+  scroll: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl,
+  },
   logo: {
-    height: 46,
-    width: 162,
+    height: 48,
+    width: 168,
     alignSelf: 'center',
-    marginBottom: spacing.md,
   },
   heading: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '800',
     color: colors.primary,
     textAlign: 'center',
     letterSpacing: -0.4,
+    marginTop: spacing.sm,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 13.5,
     color: colors.textMuted,
     textAlign: 'center',
     lineHeight: 19,
     marginTop: spacing.xs,
     marginBottom: spacing.md,
   },
-  roleRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: spacing.md, justifyContent: 'center' },
+  roleContainer: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  roleCard: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    backgroundColor: colors.background,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm + 4,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+  },
+  roleCardActive: {
+    backgroundColor: colors.accentSoft,
+    borderColor: colors.accent,
+  },
+  roleCardActiveStaff: {
+    backgroundColor: colors.primarySoft,
+    borderColor: colors.primary,
+  },
+  roleIcon: {
+    fontSize: 18,
+  },
+  roleTitle: {
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: colors.textMuted,
+  },
+  roleTitleActive: {
+    color: colors.accentDark,
+    fontWeight: '800',
+  },
+  roleTitleActiveStaff: {
+    color: colors.primaryDark,
+    fontWeight: '800',
+  },
   errorBox: {
     backgroundColor: colors.dangerSoft,
-    borderRadius: 12,
+    borderRadius: radius.md,
     padding: spacing.sm + 4,
     marginBottom: spacing.md,
   },
   errorText: { color: colors.danger, fontSize: 14 },
-  link: {
-    marginTop: spacing.md,
-    alignItems: 'center',
-    marginBottom: spacing.lg,
+  submitButton: {
+    marginTop: spacing.sm,
   },
-  linkText: { fontSize: 14.5, color: colors.textMuted },
-  linkBold: { color: colors.accentDark, fontWeight: '700' },
+  link: {
+    marginTop: spacing.lg,
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  linkText: { fontSize: 14, color: colors.textMuted },
+  linkBold: { color: colors.accentDark, fontWeight: '800' },
 });

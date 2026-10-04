@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -20,16 +21,13 @@ import type { StatItem } from '../../components/StatTiles';
 import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
 import { AREAS, STATUSES } from '../../constants/catalog';
 import { getAllReports } from '../../data/reportRepository';
-import { colors, spacing } from '../../theme';
+import { colors, radius, shadow, spacing } from '../../theme';
 import type { Report, ReportStatus } from '../../types';
 import type { RootStackParamList } from '../../navigation/types';
 
 type EstadoFilter = ReportStatus | 'todas';
 
-/**
- * F07 – Panel con todos los reportes recibidos, con filtros básicos
- * por estado y por área (Sprint 6 del plan de trabajo).
- */
+/** F07 – Panel con todos los reportes recibidos del personal universitario. */
 export default function AllReportsScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -91,11 +89,31 @@ export default function AllReportsScreen() {
     },
   ];
 
+  const goProfile = () =>
+    navigation.navigate('StaffTabs', { screen: 'Profile' });
+
+  const avatar = (
+    <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityLabel="Ir a mi perfil"
+      activeOpacity={0.85}
+      onPress={goProfile}
+      style={styles.avatarButton}
+    >
+      <Text style={styles.avatarIcon}>👤</Text>
+    </TouchableOpacity>
+  );
+
   const header = (
-    <View>
+    <View style={styles.headerBlock}>
+      <Text style={styles.title}>
+        Hola, {user?.nombre?.split(' ')[0] ?? 'personal'}
+      </Text>
+      <Text style={styles.subtitle}>Panel de atención de incidencias</Text>
+
       <StatTiles items={tiles} style={styles.tiles} />
 
-      <Text style={styles.filterLabel}>Estado</Text>
+      <Text style={styles.filterLabel}>Filtrar por estado</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -117,7 +135,7 @@ export default function AllReportsScreen() {
         ))}
       </ScrollView>
 
-      <Text style={styles.filterLabel}>Área</Text>
+      <Text style={styles.filterLabel}>Filtrar por ubicación o área</Text>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -146,15 +164,8 @@ export default function AllReportsScreen() {
     <ScreenBackground
       source={fondo.source}
       artBottom={fondo.artBottom}
-      overArt={<BrandRow />}
+      overArt={<BrandRow right={avatar} />}
     >
-      <View style={styles.titleBlock}>
-        <Text style={styles.title}>
-          Hola, {user?.nombre?.split(' ')[0] ?? 'personal'}
-        </Text>
-        <Text style={styles.subtitle}>Panel del personal</Text>
-      </View>
-
       <FlatList
         data={filtered}
         keyExtractor={item => item.id}
@@ -179,8 +190,8 @@ export default function AllReportsScreen() {
         ListEmptyComponent={
           <EmptyList
             icon="🔍"
-            title="No hay reportes con estos filtros"
-            subtitle="Cambia el estado o el área para ver más reportes."
+            title="Sin reportes registrados"
+            subtitle="No se encontraron reportes con la combinación de filtros seleccionada."
           />
         }
       />
@@ -189,9 +200,8 @@ export default function AllReportsScreen() {
 }
 
 const styles = StyleSheet.create({
-  titleBlock: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.sm,
+  headerBlock: {
+    marginBottom: spacing.xs,
   },
   title: {
     fontSize: 26,
@@ -200,27 +210,39 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 13.5,
     color: colors.textMuted,
     marginTop: 2,
   },
+  avatarButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...shadow.card,
+  },
+  avatarIcon: { fontSize: 19 },
   tiles: {
     marginTop: spacing.md,
   },
   filterLabel: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: colors.primary,
     marginTop: spacing.md,
     marginBottom: spacing.xs,
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
   },
-  filterRow: {},
+  filterRow: {
+    gap: spacing.xs,
+  },
   list: {
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.xl,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xl + 20,
     flexGrow: 1,
   },
 });

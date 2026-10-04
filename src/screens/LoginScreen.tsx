@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,7 +18,7 @@ import ScreenBackground from '../components/ScreenBackground';
 import { SCREEN_BACKGROUNDS } from '../constants/backgrounds';
 import { LIMITS } from '../constants/catalog';
 import Logo from '../assets/NexoU_Logo.png';
-import { colors, radius, spacing } from '../theme';
+import { colors, radius, shadow, spacing } from '../theme';
 import { validateEmail, validatePassword } from '../utils/validators';
 
 interface FieldErrors {
@@ -36,6 +37,16 @@ export default function LoginScreen() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
 
+  const fillDemo = (role: 'estudiante' | 'personal') => {
+    if (role === 'estudiante') {
+      setEmail('estudiante@nexou.mx');
+    } else {
+      setEmail('personal@nexou.mx');
+    }
+    setPassword('Demo1234');
+    setErrors({});
+  };
+
   const onSubmit = async () => {
     const emailError = validateEmail(email);
     const passwordError = validatePassword(password, LIMITS.passwordMin);
@@ -47,7 +58,6 @@ export default function LoginScreen() {
     setErrors({});
     setLoading(true);
     try {
-      // Al iniciar sesión, RootNavigator cambia el árbol según el rol.
       await login(email, password);
     } catch (e) {
       setErrors({
@@ -111,6 +121,7 @@ export default function LoginScreen() {
                 withArrow
                 onPress={onSubmit}
                 loading={loading}
+                style={styles.submitButton}
               />
 
               <View style={styles.dividerRow}>
@@ -127,13 +138,36 @@ export default function LoginScreen() {
                 onPress={() => navigation.navigate('Register')}
               />
 
-              <View style={styles.demoBox}>
-                <Text style={styles.demoTitle}>Cuentas de demostración</Text>
-                <Text style={styles.demoText}>
-                  Estudiante: estudiante@nexou.mx {'\n'}
-                  Personal: personal@nexou.mx {'\n'}
-                  Contraseña: Demo1234
+              <View style={styles.demoCard}>
+                <View style={styles.demoHeader}>
+                  <Text style={styles.demoIcon}>💡</Text>
+                  <Text style={styles.demoTitle}>Probar con cuentas de demostración</Text>
+                </View>
+                <Text style={styles.demoSub}>
+                  Toca una opción para rellenar los datos automáticamente:
                 </Text>
+
+                <View style={styles.demoButtonsRow}>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    activeOpacity={0.8}
+                    style={styles.demoChip}
+                    onPress={() => fillDemo('estudiante')}
+                  >
+                    <Text style={styles.demoChipIcon}>🎓</Text>
+                    <Text style={styles.demoChipText}>Estudiante</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    activeOpacity={0.8}
+                    style={[styles.demoChip, styles.demoChipStaff]}
+                    onPress={() => fillDemo('personal')}
+                  >
+                    <Text style={styles.demoChipIcon}>🛠</Text>
+                    <Text style={styles.demoChipTextStaff}>Personal</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </ScrollView>
@@ -147,29 +181,29 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   safe: { flex: 1 },
   scroll: {
-    paddingBottom: spacing.xl + 40,
+    paddingBottom: spacing.xl + 20,
   },
   sheet: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
   },
   logo: {
-    height: 54,
+    height: 52,
     alignSelf: 'center',
-    width: 190,
+    width: 180,
   },
   tagline: {
     fontSize: 14,
     color: colors.textMuted,
     textAlign: 'center',
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
     lineHeight: 19,
   },
   heading: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '800',
     color: colors.primary,
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
     marginBottom: spacing.md,
   },
   errorBox: {
@@ -179,11 +213,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   errorText: { color: colors.danger, fontSize: 14 },
+  submitButton: {
+    marginTop: spacing.xs,
+  },
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    marginVertical: spacing.md,
+    marginVertical: spacing.md + 4,
   },
   divider: {
     flex: 1,
@@ -194,17 +231,63 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textMuted,
   },
-  demoBox: {
+  demoCard: {
     marginTop: spacing.lg,
-    backgroundColor: colors.accentSoft,
-    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
     padding: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.card,
+  },
+  demoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: 4,
+  },
+  demoIcon: {
+    fontSize: 16,
   },
   demoTitle: {
-    fontSize: 13,
+    fontSize: 13.5,
     fontWeight: '800',
-    color: colors.accentDark,
-    marginBottom: spacing.xs,
+    color: colors.primary,
   },
-  demoText: { fontSize: 13, color: colors.accentDark, lineHeight: 20 },
+  demoSub: {
+    fontSize: 12.5,
+    color: colors.textMuted,
+    marginBottom: spacing.sm + 2,
+  },
+  demoButtonsRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  demoChip: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: colors.accentSoft,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.sm,
+  },
+  demoChipIcon: {
+    fontSize: 16,
+  },
+  demoChipText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.accentDark,
+  },
+  demoChipStaff: {
+    backgroundColor: colors.primarySoft,
+  },
+  demoChipTextStaff: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.primaryDark,
+  },
 });

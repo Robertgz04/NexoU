@@ -30,10 +30,10 @@ interface CatMeta {
   soft: string;
 }
 
-/** Icono y fondo tenue por categoría para Inicio (mockup). */
+/** Icono y fondo tenue por categoría para Inicio. */
 const CATEGORY_META: Record<Category, CatMeta> = {
   Mobiliario: { icon: '🪑', soft: '#DBEAFE' },
-  Electricidad: { icon: '🔌', soft: '#FEF3C7' },
+  Electricidad: { icon: '⚡', soft: '#FEF3C7' },
   Agua: { icon: '💧', soft: '#E0F2FE' },
   Limpieza: { icon: '🧹', soft: '#D1FAE5' },
   Equipos: { icon: '💻', soft: '#EDE9FE' },
@@ -41,7 +41,7 @@ const CATEGORY_META: Record<Category, CatMeta> = {
 };
 
 /**
- * F00 – Inicio del estudiante (mockup "Inicio estudiante"): saludo personal,
+ * F00 – Inicio del estudiante: saludo personal,
  * acceso rápido a "Levantar reporte", mosaicos por estado, categorías y
  * actividad reciente de los reportes propios.
  */
@@ -108,11 +108,23 @@ export default function HomeScreen() {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .slice(0, 3);
 
-  const firstName = user?.nombre.trim().split(/\s+/)[0] ?? '';
+  const firstName = user?.nombre.trim().split(/\s+/)[0] ?? 'estudiante';
   const fondo = SCREEN_BACKGROUNDS.home;
 
   return (
-    <ScreenBackground source={fondo.source} artBottom={fondo.artBottom}>
+    <ScreenBackground
+      source={fondo.source}
+      artBottom={fondo.artBottom}
+      overArt={
+        <View style={styles.headerBar}>
+          <View style={styles.greetBox}>
+            <Text style={styles.hello}>Hola, {firstName}</Text>
+            <Text style={styles.welcome}>Panel del estudiante</Text>
+          </View>
+          <Image source={Logo} style={styles.logo} resizeMode="contain" />
+        </View>
+      }
+    >
       <ScrollView
         contentContainerStyle={styles.scroll}
         refreshControl={
@@ -124,33 +136,25 @@ export default function HomeScreen() {
         }
       >
         <View style={styles.panel}>
-          <View style={styles.greetRow}>
-            <View style={styles.greetTexts}>
-              <Text style={styles.hello}>Hola, {firstName}</Text>
-              <Text style={styles.welcome}>Bienvenido a NexoU</Text>
-            </View>
-            <Image source={Logo} style={styles.logo} resizeMode="contain" />
-          </View>
-
           <TouchableOpacity
             accessibilityRole="button"
-            activeOpacity={0.85}
+            activeOpacity={0.88}
             style={styles.cta}
             onPress={goNewReport}
           >
             <View style={styles.ctaCircle}>
               <Text style={styles.ctaPlus}>＋</Text>
             </View>
-            <Text style={styles.ctaLabel}>Levantar reporte</Text>
+            <Text style={styles.ctaLabel}>Levantar nuevo reporte</Text>
             <Text style={styles.ctaArrow}>→</Text>
           </TouchableOpacity>
 
           <StatTiles items={tiles} variant="inline" style={styles.tiles} />
 
           <View style={styles.sectionHead}>
-            <Text style={styles.sectionTitle}>Categorías</Text>
+            <Text style={styles.sectionTitle}>Categorías de incidencia</Text>
             <TouchableOpacity accessibilityRole="button" onPress={goNewReport}>
-              <Text style={styles.sectionLink}>Ver todas ›</Text>
+              <Text style={styles.sectionLink}>Reportar ›</Text>
             </TouchableOpacity>
           </View>
 
@@ -186,7 +190,7 @@ export default function HomeScreen() {
           <View style={styles.sectionHead}>
             <Text style={styles.sectionTitle}>Actividad reciente</Text>
             <TouchableOpacity accessibilityRole="button" onPress={goMyReports}>
-              <Text style={styles.sectionLink}>Ver todas ›</Text>
+              <Text style={styles.sectionLink}>Ver todos ({reports.length}) ›</Text>
             </TouchableOpacity>
           </View>
 
@@ -197,7 +201,7 @@ export default function HomeScreen() {
                 <TouchableOpacity
                   key={report.id}
                   accessibilityRole="button"
-                  activeOpacity={0.85}
+                  activeOpacity={0.88}
                   style={styles.activityCard}
                   onPress={() =>
                     navigation.navigate('ReportDetail', {
@@ -234,9 +238,9 @@ export default function HomeScreen() {
           ) : (
             <EmptyList
               icon="🗂"
-              title="Aún no hay actividad"
-              subtitle="Reporta un problema del campus y da seguimiento a su estado desde Inicio."
-              actionLabel="➕ Crear reporte"
+              title="Aún no tienes reportes activos"
+              subtitle="Si notas un problema en tu campus, repórtalo en segundos para su mantenimiento."
+              actionLabel="➕ Levantar reporte"
               onAction={goNewReport}
             />
           )}
@@ -247,41 +251,43 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { paddingBottom: spacing.xl },
-  panel: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
-  },
-  greetRow: {
+  scroll: { paddingBottom: spacing.xl + 20 },
+  headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: spacing.sm,
+    paddingHorizontal: spacing.sm,
   },
-  greetTexts: { flexShrink: 1 },
+  greetBox: {
+    flexShrink: 1,
+  },
   hello: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: '800',
     color: colors.primary,
     letterSpacing: -0.5,
   },
-  welcome: { fontSize: 15, color: colors.textMuted, marginTop: 2 },
-  logo: { height: 32, width: 124 },
+  welcome: { fontSize: 13.5, color: colors.textMuted, marginTop: 1 },
+  logo: { height: 34, width: 120 },
+  panel: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.xs,
+  },
   cta: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.primary,
     borderRadius: radius.pill,
-    paddingVertical: spacing.sm + 3,
+    paddingVertical: spacing.sm + 4,
     paddingHorizontal: spacing.md,
-    marginTop: spacing.md,
+    marginTop: spacing.xs,
     ...shadow.floating,
   },
   ctaCircle: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: colors.surface,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.accentSoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -289,20 +295,20 @@ const styles = StyleSheet.create({
   ctaLabel: {
     flex: 1,
     textAlign: 'center',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
     color: colors.textOnPrimary,
   },
-  ctaArrow: { fontSize: 18, fontWeight: '700', color: colors.textOnPrimary },
+  ctaArrow: { fontSize: 18, fontWeight: '700', color: colors.accent },
   tiles: { marginTop: spacing.md },
   sectionHead: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: spacing.lg,
-    marginBottom: spacing.sm + 2,
+    marginBottom: spacing.sm,
   },
-  sectionTitle: { fontSize: 18, fontWeight: '800', color: colors.primary },
+  sectionTitle: { fontSize: 17, fontWeight: '800', color: colors.primary },
   sectionLink: { fontSize: 13.5, fontWeight: '700', color: colors.accentDark },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   catCard: {
@@ -326,7 +332,7 @@ const styles = StyleSheet.create({
   },
   catIcon: { fontSize: 15 },
   catLabel: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '700',
     color: colors.text,
     flexShrink: 1,
