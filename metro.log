@@ -44,3 +44,28 @@ Starting dev server on http://localhost:8081
 [33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
 [32m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
 [33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
+[33m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m [32m[42m[49m[39m[47m[37m░░░░░░░░░░░░░░░░[39m[49m[1m 0% [22m[2m(0/1)[22m
+[33m[7m[1m WARN [22m[27m[39m Attempted to import the module "C:\xamppold\htdocs\NexoU\node_modules\react-native\src\private\featureflags\ReactNativeFeatureFlags" which is not listed in the "exports" of "C:\xamppold\htdocs\NexoU\node_modules\react-native" under the requested subpath "./src/private/featureflags/ReactNativeFeatureFlags". Falling back to file-based resolution. Consider updating the call site or asking the package maintainer(s) to expose this API.
+[31m[7m[1m BUNDLE [22m[27m[39m[0m[2m ./[22m[0m[1mindex.js[22m 
+[31m[7m[1m ERROR [22m[27m[39m Error: Unable to resolve module ../assets/NexoU_Logo.png from C:\xamppold\htdocs\NexoU\src\screens\LoginScreen.tsx: 
+
+None of these files exist:
+  * NexoU_Logo.png
+  * src\assets\NexoU_Logo.png
+  18 | import { SCREEN_BACKGROUNDS } from '../constants/backgrounds';
+  19 | import { LIMITS } from '../constants/catalog';
+> 20 | import Logo from '../assets/NexoU_Logo.png';
+     |                   ^
+  21 | import { colors, radius, shadow, spacing } from '../theme';
+  22 | import { validateEmail, validatePassword } from '../utils/validators';
+  23 |
+    at ModuleResolver.resolveDependency (C:\xamppold\htdocs\NexoU\node_modules\metro\src\node-haste\DependencyGraph\ModuleResolution.js:145:15)
+    at DependencyGraph.resolveDependency (C:\xamppold\htdocs\NexoU\node_modules\metro\src\node-haste\DependencyGraph.js:203:43)
+    at C:\xamppold\htdocs\NexoU\node_modules\metro\src\lib\transformHelpers.js:165:21
+    at resolveDependencies (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\buildSubgraph.js:43:25)
+    at visit (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\buildSubgraph.js:81:30)
+    at async Promise.all (index 1)
+    at async buildSubgraph (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\buildSubgraph.js:105:3)
+    at async Graph._buildDelta (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\Graph.js:163:22)
+    at async Graph.traverseDependencies (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\Graph.js:50:19)
+    at async DeltaCalculator._getChangedDependencies (C:\xamppold\htdocs\NexoU\node_modules\metro\src\DeltaBundler\DeltaCalculator.js:201:42)
