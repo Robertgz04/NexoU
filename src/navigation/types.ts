@@ -22,9 +22,12 @@ export type StaffTabParamList = {
  */
 export type RootStackParamList = {
   Login: undefined;
-  Register: undefined;
+  Register: { rol?: 'estudiante' | 'personal' } | undefined;
   StudentTabs: NavigatorScreenParams<StudentTabParamList> | undefined;
   StaffTabs: NavigatorScreenParams<StaffTabParamList> | undefined;
+  HelpSupport: undefined;
+  Settings: undefined;
+  PersonalData: undefined;
   ReportDetail: { reportId: string };
 };
 

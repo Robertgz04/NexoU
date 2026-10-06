@@ -1,5 +1,6 @@
+import TouchableOpacity from './MotionTouchable';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { colors, radius, shadow, spacing } from '../theme';
 
 export interface SegmentOption {
@@ -53,6 +54,7 @@ export default function SegmentedControl({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     backgroundColor: colors.surface,
     borderRadius: radius.md + 2,
     padding: 4,
@@ -60,14 +62,17 @@ const styles = StyleSheet.create({
     ...shadow.card,
   },
   segment: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: 80,
+    minHeight: 48,
+    paddingHorizontal: spacing.sm,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing.sm + 2,
     borderRadius: radius.md,
   },
   segmentActive: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.primary,
     ...shadow.floating,
   },
   label: {

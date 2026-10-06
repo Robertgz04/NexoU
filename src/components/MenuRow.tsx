@@ -1,5 +1,7 @@
+import TouchableOpacity from './MotionTouchable';
+import AppIcon from './AppIcon';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { colors, radius, shadow, spacing } from '../theme';
 
 interface Props {
@@ -35,13 +37,13 @@ export default function MenuRow({
       style={styles.row}
     >
       <View style={[styles.iconBox, { backgroundColor: soft }]}>
-        <Text style={[styles.icon, { color }]}>{icon}</Text>
+        <AppIcon name={icon} size={20} color={color} />
       </View>
       <View style={styles.texts}>
         <Text style={[styles.title, { color }]}>{title}</Text>
         <Text style={styles.subtitle}>{subtitle}</Text>
       </View>
-      <Text style={[styles.chevron, { color }]}>›</Text>
+      <AppIcon name="ChevronRight" size={20} color={color} />
     </TouchableOpacity>
   );
 }

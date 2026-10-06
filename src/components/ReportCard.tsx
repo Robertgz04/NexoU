@@ -1,7 +1,9 @@
+import TouchableOpacity from './MotionTouchable';
+import AppIcon from './AppIcon';
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import type { Report } from '../types';
-import { colors, radius, shadow, spacing } from '../theme';
+import { colors, radius, spacing } from '../theme';
 import { formatFechaRelativa } from '../utils/dates';
 import { photoUri } from '../utils/photo';
 import StatusBadge from './StatusBadge';
@@ -36,6 +38,7 @@ export default function ReportCard({
   return (
     <TouchableOpacity
       accessibilityRole="button"
+      accessibilityLabel={`Abrir reporte: ${report.titulo}`}
       activeOpacity={0.85}
       onPress={onPress}
       style={[styles.card, expanded && styles.cardExpanded]}
@@ -44,13 +47,13 @@ export default function ReportCard({
         <Image source={{ uri }} style={styles.thumb} />
       ) : (
         <View style={[styles.thumb, styles.thumbPlaceholder]}>
-          <Text style={styles.thumbEmoji}>📋</Text>
+          <AppIcon name="ClipboardList" size={32} color={colors.primary} />
         </View>
       )}
 
       <View style={styles.body}>
         <View style={styles.titleRow}>
-          <Text style={styles.title} numberOfLines={1}>
+          <Text style={styles.title} numberOfLines={2}>
             {report.titulo}
           </Text>
           {onToggleNote ? (
@@ -62,19 +65,23 @@ export default function ReportCard({
               onPress={onToggleNote}
               style={styles.chevronButton}
             >
-              <Text style={styles.chevron}>{expanded ? '⌃' : '›'}</Text>
+              <AppIcon
+                name={expanded ? 'ChevronUp' : 'ChevronRight'}
+                size={20}
+                color={colors.primary}
+              />
             </TouchableOpacity>
           ) : (
-            <Text style={styles.chevron}>›</Text>
+            <AppIcon name="ChevronRight" size={20} color={colors.primary} />
           )}
         </View>
-        <Text style={styles.meta} numberOfLines={1}>
-          <Text style={styles.metaIcon}>📍 </Text>
+        <Text style={styles.meta}>
+          <AppIcon name="MapPin" size={20} color={colors.primary} />
           {report.area} · {report.categoria}
         </Text>
         <View style={styles.footer}>
           <Text style={styles.date}>
-            <Text style={styles.metaIcon}>📅 </Text>
+            <AppIcon name="CalendarDays" size={20} color={colors.primary} />
             {formatFechaRelativa(report.createdAt)}
           </Text>
           <StatusBadge status={report.estado} />
@@ -87,7 +94,7 @@ export default function ReportCard({
       {expanded && note ? (
         <View style={styles.note}>
           <View style={styles.noteIconBox}>
-            <Text style={styles.noteIcon}>{note.icon}</Text>
+            <AppIcon name={note.icon} size={20} color={colors.primary} />
           </View>
           <View style={styles.noteBody}>
             <Text style={styles.noteTitle}>{note.title}</Text>
@@ -110,7 +117,6 @@ const styles = StyleSheet.create({
     padding: spacing.sm + 4,
     marginBottom: spacing.sm + 4,
     gap: spacing.md,
-    ...shadow.card,
   },
   cardExpanded: {
     borderColor: colors.accent,
@@ -202,6 +208,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   footer: {
+    flexWrap: 'wrap',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

@@ -1,3 +1,4 @@
+import useReducedMotion from '../hooks/useReducedMotion';
 import React from 'react';
 import {
   ActivityIndicator,
@@ -13,6 +14,9 @@ import Logo from '../assets/NexoU_Logo.png';
 import { colors, spacing } from '../theme';
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
+import HelpSupportScreen from '../screens/HelpSupportScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import PersonalDataScreen from '../screens/PersonalDataScreen';
 import ReportDetailScreen from '../screens/ReportDetailScreen';
 import StudentTabs from './StudentTabs';
 import StaffTabs from './StaffTabs';
@@ -24,6 +28,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
  * Navegación raíz (F01): decide qué árbol mostrar según la sesión y el rol.
  */
 export default function RootNavigator() {
+  const reducedMotion = useReducedMotion();
   const { user, initializing } = useAuth();
 
   if (initializing) {
@@ -39,6 +44,8 @@ export default function RootNavigator() {
   return (
     <Stack.Navigator
       screenOptions={{
+        animation: reducedMotion ? 'none' : 'slide_from_right',
+        animationDuration: 220,
         headerStyle: { backgroundColor: colors.surface },
         headerTintColor: colors.primary,
         headerTitleStyle: { fontWeight: '800', color: colors.primary },
@@ -52,6 +59,21 @@ export default function RootNavigator() {
             name={user.rol === 'estudiante' ? 'StudentTabs' : 'StaffTabs'}
             component={user.rol === 'estudiante' ? StudentTabs : StaffTabs}
             options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="HelpSupport"
+            component={HelpSupportScreen}
+            options={{ title: 'Ayuda y soporte' }}
+          />
+          <Stack.Screen
+            name="Settings"
+            component={SettingsScreen}
+            options={{ title: 'Configuración' }}
+          />
+          <Stack.Screen
+            name="PersonalData"
+            component={PersonalDataScreen}
+            options={{ title: 'Datos personales' }}
           />
           <Stack.Screen
             name="ReportDetail"

@@ -1,23 +1,20 @@
+import TouchableOpacity from '../components/MotionTouchable';
 import React, { useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { Mail, LockKeyhole, UserRound, IdCard } from 'lucide-react-native';
 import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+  useNavigation,
+  useRoute,
+  type RouteProp,
+} from '@react-navigation/native';
+import type { RootStackParamList } from '../navigation/types';
 import { useAuth } from '../context/AuthContext';
-import FormField from '../components/FormField';
+import AuthLayout from '../components/AuthLayout';
+import AuthField from '../components/AuthField';
+import AuthRoles from '../components/AuthRoles';
 import PrimaryButton from '../components/PrimaryButton';
-import ScreenBackground from '../components/ScreenBackground';
-import { SCREEN_BACKGROUNDS } from '../constants/backgrounds';
 import { LIMITS } from '../constants/catalog';
-import Logo from '../assets/NexoU_Logo.png';
-import { colors, radius, shadow, spacing } from '../theme';
+import { colors } from '../theme';
 import type { Role } from '../types';
 import {
   validateEmail,
@@ -39,7 +36,8 @@ export default function RegisterScreen() {
   const navigation = useNavigation();
   const { register } = useAuth();
 
-  const [rol, setRol] = useState<Role>('estudiante');
+  const route = useRoute<RouteProp<RootStackParamList, 'Register'>>();
+  const [rol, setRol] = useState<Role>(route.params?.rol ?? 'estudiante');
   const [nombre, setNombre] = useState('');
   const [matricula, setMatricula] = useState('');
   const [email, setEmail] = useState('');
@@ -77,256 +75,140 @@ export default function RegisterScreen() {
     }
   };
 
-  const fondo = SCREEN_BACKGROUNDS.register;
-
-  const backButton = (
-    <TouchableOpacity
-      accessibilityRole="button"
-      accessibilityLabel="Volver"
-      activeOpacity={0.85}
-      onPress={() => navigation.goBack()}
-      style={styles.backButton}
-    >
-      <Text style={styles.backIcon}>←</Text>
-    </TouchableOpacity>
-  );
-
   return (
-    <ScreenBackground
-      source={fondo.source}
-      artBottom={fondo.artBottom}
-      sheet
-      overArt={backButton}
-    >
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled"
-        >
-          <Image source={Logo} style={styles.logo} resizeMode="contain" />
-          <Text style={styles.heading}>Crear cuenta en NexoU</Text>
-          <Text style={styles.subtitle}>
-            Selecciona tu perfil e ingresa tus datos para conectarte con tu universidad.
+    <AuthLayout register onBack={() => navigation.goBack()}>
+      <Text style={styles.heading}>Crear cuenta</Text>
+      <Text style={styles.subtitle}>
+        Regístrate como {rol === 'estudiante' ? 'estudiante' : 'personal'} para
+        {'\n'}comenzar a reportar incidencias.
+      </Text>
+      <AuthRoles value={rol} onChange={setRol} compact />
+      <View style={styles.form}>
+        {errors.general && (
+          <Text accessibilityLiveRegion="polite" style={styles.error}>
+            {errors.general}
           </Text>
-
-          {/* Selector de rol estilizado */}
-          <View style={styles.roleContainer}>
-            <TouchableOpacity
-              accessibilityRole="button"
-              activeOpacity={0.85}
-              style={[
-                styles.roleCard,
-                rol === 'estudiante' && styles.roleCardActive,
-              ]}
-              onPress={() => setRol('estudiante')}
-            >
-              <Text style={styles.roleIcon}>🎓</Text>
-              <Text
-                style={[
-                  styles.roleTitle,
-                  rol === 'estudiante' && styles.roleTitleActive,
-                ]}
-              >
-                Estudiante
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              accessibilityRole="button"
-              activeOpacity={0.85}
-              style={[
-                styles.roleCard,
-                rol === 'personal' && styles.roleCardActiveStaff,
-              ]}
-              onPress={() => setRol('personal')}
-            >
-              <Text style={styles.roleIcon}>🛠</Text>
-              <Text
-                style={[
-                  styles.roleTitle,
-                  rol === 'personal' && styles.roleTitleActiveStaff,
-                ]}
-              >
-                Personal
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {errors.general ? (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>{errors.general}</Text>
-            </View>
-          ) : null}
-
-          <FormField
-            label="Nombre completo"
-            value={nombre}
-            onChangeText={setNombre}
-            error={errors.nombre}
-            placeholder="Ej. Ana María López García"
-            autoCapitalize="words"
-          />
-          <FormField
-            label={rol === 'estudiante' ? 'Matrícula universitaria' : 'Código de personal'}
-            value={matricula}
-            onChangeText={setMatricula}
-            error={errors.matricula}
-            placeholder={rol === 'estudiante' ? 'A00123456' : 'P0001'}
-            autoCapitalize="characters"
-          />
-          <FormField
-            label="Correo electrónico"
-            value={email}
-            onChangeText={setEmail}
-            error={errors.email}
-            placeholder="tu.correo@universidad.edu"
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <FormField
-            label={`Contraseña (mínimo ${LIMITS.passwordMin} caracteres)`}
-            value={password}
-            onChangeText={setPassword}
-            error={errors.password}
-            placeholder="••••••••"
-            secureTextEntry
-            autoCapitalize="none"
-          />
-          <FormField
-            label="Confirmar contraseña"
-            value={confirm}
-            onChangeText={setConfirm}
-            error={errors.confirm}
-            placeholder="••••••••"
-            secureTextEntry
-            autoCapitalize="none"
-          />
-
-          <PrimaryButton
-            title="Crear mi cuenta"
-            withArrow
-            onPress={onSubmit}
-            loading={loading}
-            style={styles.submitButton}
-          />
-
-          <TouchableOpacity
-            accessibilityRole="button"
-            onPress={() => navigation.goBack()}
-            style={styles.link}
-          >
-            <Text style={styles.linkText}>
-              ¿Ya tienes una cuenta?{' '}
-              <Text style={styles.linkBold}>Inicia sesión</Text>
-            </Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </ScreenBackground>
+        )}
+        <AuthField
+          hideLabel
+          label="Nombre completo"
+          icon={UserRound}
+          value={nombre}
+          onChangeText={setNombre}
+          error={errors.nombre}
+          placeholder="Nombre completo"
+          hint="Ej. María Fernanda López García"
+          autoCapitalize="words"
+        />
+        <AuthField
+          hideLabel
+          label={rol === 'estudiante' ? 'Matrícula' : 'Código de personal'}
+          icon={IdCard}
+          value={matricula}
+          onChangeText={setMatricula}
+          error={errors.matricula}
+          placeholder={
+            rol === 'estudiante' ? 'Matrícula' : 'Código de personal'
+          }
+          hint={rol === 'estudiante' ? 'Ej. A01234567' : 'Ej. P0001'}
+          autoCapitalize="characters"
+        />
+        <AuthField
+          hideLabel
+          label="Correo institucional"
+          icon={Mail}
+          value={email}
+          onChangeText={setEmail}
+          error={errors.email}
+          placeholder="Correo institucional"
+          hint="Ej. tu.correo@universidad.edu"
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+        <AuthField
+          hideLabel
+          label="Contraseña"
+          icon={LockKeyhole}
+          value={password}
+          onChangeText={setPassword}
+          error={errors.password}
+          placeholder="Contraseña"
+          hint={`Mínimo ${LIMITS.passwordMin} caracteres`}
+          secureTextEntry
+          autoCapitalize="none"
+        />
+        <AuthField
+          hideLabel
+          label="Confirmar contraseña"
+          icon={LockKeyhole}
+          value={confirm}
+          onChangeText={setConfirm}
+          error={errors.confirm}
+          placeholder="Confirmar contraseña"
+          hint="Confirma tu contraseña"
+          secureTextEntry
+          autoCapitalize="none"
+        />
+        <PrimaryButton
+          title="Crear cuenta"
+          withArrow
+          onPress={onSubmit}
+          loading={loading}
+          style={styles.button}
+        />
+      </View>
+      <View style={styles.footer}>
+        <View style={styles.line} />
+        <Text style={styles.muted}>¿Ya tienes cuenta?</Text>
+        <TouchableOpacity
+          accessibilityRole="button"
+          onPress={() => navigation.goBack()}
+          style={styles.link}
+        >
+          <Text style={styles.linkText}>Iniciar sesión</Text>
+        </TouchableOpacity>
+        <View style={styles.line} />
+      </View>
+    </AuthLayout>
   );
 }
-
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...shadow.floating,
-  },
-  backIcon: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  scroll: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.xl,
-  },
-  logo: {
-    height: 48,
-    width: 168,
-    alignSelf: 'center',
-  },
   heading: {
-    fontSize: 22,
+    textAlign: 'center',
+    fontSize: 28,
     fontWeight: '800',
     color: colors.primary,
-    textAlign: 'center',
-    letterSpacing: -0.4,
-    marginTop: spacing.sm,
+    marginTop: 2,
   },
   subtitle: {
-    fontSize: 13.5,
-    color: colors.textMuted,
     textAlign: 'center',
-    lineHeight: 19,
-    marginTop: spacing.xs,
-    marginBottom: spacing.md,
+    fontSize: 15,
+    lineHeight: 21,
+    color: '#596C80',
+    marginTop: 6,
+    marginBottom: 16,
   },
-  roleContainer: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
+  form: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 16,
   },
-  roleCard: {
-    flex: 1,
+  button: { minHeight: 50, borderRadius: 18, backgroundColor: '#063963' },
+  error: { color: colors.danger, marginBottom: 16, fontSize: 14 },
+  footer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.xs,
-    backgroundColor: colors.background,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm + 4,
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    gap: 8,
+    marginHorizontal: 16,
+    marginTop: 8,
   },
-  roleCardActive: {
-    backgroundColor: colors.accentSoft,
-    borderColor: colors.accent,
-  },
-  roleCardActiveStaff: {
-    backgroundColor: colors.primarySoft,
-    borderColor: colors.primary,
-  },
-  roleIcon: {
-    fontSize: 18,
-  },
-  roleTitle: {
-    fontSize: 13.5,
+  line: { flex: 1, height: 1, backgroundColor: '#CFD8E1' },
+  muted: { fontSize: 12, color: '#596C80' },
+  link: { minHeight: 48, justifyContent: 'center' },
+  linkText: {
+    color: '#08796E',
+    fontSize: 12,
     fontWeight: '700',
-    color: colors.textMuted,
+    textDecorationLine: 'underline',
   },
-  roleTitleActive: {
-    color: colors.accentDark,
-    fontWeight: '800',
-  },
-  roleTitleActiveStaff: {
-    color: colors.primaryDark,
-    fontWeight: '800',
-  },
-  errorBox: {
-    backgroundColor: colors.dangerSoft,
-    borderRadius: radius.md,
-    padding: spacing.sm + 4,
-    marginBottom: spacing.md,
-  },
-  errorText: { color: colors.danger, fontSize: 14 },
-  submitButton: {
-    marginTop: spacing.sm,
-  },
-  link: {
-    marginTop: spacing.lg,
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-  linkText: { fontSize: 14, color: colors.textMuted },
-  linkBold: { color: colors.accentDark, fontWeight: '800' },
 });

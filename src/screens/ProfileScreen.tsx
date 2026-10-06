@@ -1,16 +1,17 @@
+import LogoutDialog from '../components/LogoutDialog';
+import AppIcon from '../components/AppIcon';
 import React, { useCallback, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext';
-import BrandRow from '../components/BrandRow';
 import MenuRow from '../components/MenuRow';
-import ScreenBackground from '../components/ScreenBackground';
-import StatTiles from '../components/StatTiles';
-import type { StatItem } from '../components/StatTiles';
+import CampusScrollScreen from '../components/CampusScrollScreen';
+import MotionTouchable from '../components/MotionTouchable';
+import { statusMeta } from '../constants/catalog';
 import { SCREEN_BACKGROUNDS } from '../constants/backgrounds';
 import { getReportsByOwner } from '../data/reportRepository';
-import { colors, radius, shadow, spacing } from '../theme';
+import { colors, radius, spacing } from '../theme';
 import type { RootStackParamList } from '../navigation/types';
 
 function initials(nombre: string): string {
@@ -26,25 +27,43 @@ export default function ProfileScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
+  const [logoutVisible, setLogoutVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [total, setTotal] = useState(0);
   const [pendientes, setPendientes] = useState(0);
   const [solucionados, setSolucionados] = useState(0);
   const [revision, setRevision] = useState(0);
 
-  const load = useCallback(async () => {
-    if (!user) {
-      return;
-    }
-    const reports = await getReportsByOwner(user.id);
-    setTotal(reports.length);
-    setPendientes(reports.filter(r => r.estado === 'pendiente').length);
-    setSolucionados(reports.filter(r => r.estado === 'solucionado').length);
-    setRevision(reports.filter(r => r.estado === 'revision').length);
-  }, [user]);
+  const load = useCallback(
+    async (isActive: () => boolean = () => true) => {
+      if (!user) {
+        return;
+      }
+      try {
+        const reports = await getReportsByOwner(user.id);
+        if (!isActive()) return;
+        setTotal(reports.length);
+        setPendientes(reports.filter(r => r.estado === 'pendiente').length);
+        setSolucionados(reports.filter(r => r.estado === 'solucionado').length);
+        setRevision(reports.filter(r => r.estado === 'revision').length);
+        setLoadError(false);
+      } catch {
+        if (isActive()) setLoadError(true);
+      } finally {
+        if (isActive()) setLoading(false);
+      }
+    },
+    [user],
+  );
 
   useFocusEffect(
     useCallback(() => {
-      load();
+      let active = true;
+      load(() => active);
+      return () => {
+        active = false;
+      };
     }, [load]),
   );
 
@@ -55,73 +74,60 @@ export default function ProfileScreen() {
   const isEstudiante = user.rol === 'estudiante';
   const idLabel = isEstudiante ? 'Matrícula' : 'Código';
 
-  const confirmLogout = () => {
-    Alert.alert('Cerrar sesión', '¿Deseas salir de tu cuenta en NexoU?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Cerrar sesión', style: 'destructive', onPress: () => logout() },
-    ]);
-  };
-
-  const avisar = (titulo: string, mensaje: string) =>
-    Alert.alert(titulo, mensaje);
-
-  const tiles: StatItem[] = [
+  const tiles = [
     {
-      icon: '📄',
+      icon: 'FileText',
       label: 'Reportes',
       value: total,
-      color: colors.info,
+      color: colors.primary,
       soft: colors.revisionSoft,
     },
     {
-      icon: '📄',
+      icon: 'FileText',
       label: 'Pendientes',
       value: pendientes,
-      color: colors.danger,
-      soft: colors.dangerSoft,
+      color: statusMeta('pendiente').color,
+      soft: statusMeta('pendiente').soft,
     },
     {
-      icon: '✓',
+      icon: 'Check',
       label: 'Solucionados',
       value: solucionados,
-      color: colors.solucionado,
-      soft: colors.solucionadoSoft,
+      color: statusMeta('solucionado').color,
+      soft: statusMeta('solucionado').soft,
     },
     {
-      icon: '◷',
+      icon: 'Clock',
       label: 'En revisión',
       value: revision,
-      color: colors.pendiente,
-      soft: colors.pendienteSoft,
+      color: statusMeta('revision').color,
+      soft: statusMeta('revision').soft,
     },
   ];
 
-  const fondo = SCREEN_BACKGROUNDS.profile;
+  const fondo = SCREEN_BACKGROUNDS.login;
 
   return (
-    <ScreenBackground
-      source={fondo.source}
-      artBottom={fondo.artBottom}
-      overArt={
-        <View>
-          <BrandRow />
-          <Text style={styles.screenTitle}>Mi perfil</Text>
-        </View>
-      }
-    >
-      <ScrollView contentContainerStyle={styles.content}>
+    <>
+      <CampusScrollScreen
+        source={fondo.source}
+        campusRatio={0.32}
+        campusHeight={136}
+      >
+        <Text accessibilityRole="header" style={styles.screenTitle}>
+          Mi perfil
+        </Text>
         <View style={styles.profileCard}>
           <View style={styles.avatarBox}>
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>{initials(user.nombre)}</Text>
             </View>
-            <View style={styles.editBadge}>
-              <Text style={styles.editIcon}>✎</Text>
-            </View>
           </View>
 
           <View style={styles.profileInfo}>
-            <Text style={styles.name}>{user.nombre}</Text>
+            <Text selectable style={styles.name}>
+              {user.nombre}
+            </Text>
             <View
               style={[
                 styles.roleBadge,
@@ -134,188 +140,213 @@ export default function ProfileScreen() {
                   !isEstudiante && { color: colors.primaryDark },
                 ]}
               >
-                {isEstudiante ? '🎓 Estudiante' : '🛠 Personal universitario'}
+                {isEstudiante ? 'Estudiante' : 'Personal universitario'}
               </Text>
             </View>
 
             <View style={styles.metaRow}>
-              <Text style={styles.metaIcon}>🪪</Text>
-              <Text style={styles.metaText}>
+              <AppIcon name="IdCard" size={20} color={colors.primary} />
+              <Text selectable style={styles.metaText}>
                 {idLabel}: {user.matricula}
               </Text>
             </View>
             <View style={styles.metaRow}>
-              <Text style={styles.metaIcon}>✉</Text>
-              <Text style={styles.metaText} numberOfLines={1}>
+              <AppIcon name="Mail" size={20} color={colors.primary} />
+              <Text selectable style={styles.metaText}>
                 {user.email}
               </Text>
             </View>
           </View>
         </View>
 
-        <StatTiles items={tiles} style={styles.tiles} />
+        <View style={styles.group}>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>
+            Resumen de tus reportes
+          </Text>
+          {loading ? (
+            <ActivityIndicator
+              accessibilityLabel="Cargando resumen de reportes"
+              color={colors.primary}
+            />
+          ) : loadError ? (
+            <View style={styles.summaryError}>
+              <Text accessibilityLiveRegion="polite" style={styles.helper}>
+                No pudimos actualizar el resumen de tus reportes.
+              </Text>
+              <MotionTouchable
+                accessibilityRole="button"
+                onPress={() => {
+                  setLoading(true);
+                  load();
+                }}
+                style={styles.retry}
+              >
+                <Text style={styles.retryText}>Reintentar</Text>
+              </MotionTouchable>
+            </View>
+          ) : (
+            <View style={styles.tiles}>
+              {tiles.map(tile => (
+                <View key={tile.label} style={styles.tile}>
+                  <AppIcon name={tile.icon} size={22} color={tile.color} />
+                  <Text style={styles.tileValue}>{tile.value}</Text>
+                  <Text style={styles.tileLabel}>{tile.label}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+        <View style={styles.group}>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>
+            Cuenta y actividad
+          </Text>
 
-        <MenuRow
-          icon="👤"
-          title="Datos personales"
-          subtitle="Información de tu cuenta y credencial universitaria"
-          color={colors.info}
-          soft={colors.revisionSoft}
-          onPress={() =>
-            avisar(
-              'Datos personales',
-              `Nombre: ${user.nombre}\n${idLabel}: ${user.matricula}\nCorreo: ${user.email}`,
-            )
-          }
-        />
-        {isEstudiante ? (
           <MenuRow
-            icon="📋"
-            title="Mis reportes"
-            subtitle="Consulta el historial y seguimiento de tus reportes"
-            color={colors.solucionado}
-            soft={colors.solucionadoSoft}
-            onPress={() =>
-              navigation.navigate('StudentTabs', { screen: 'MyReports' })
-            }
+            icon="UserRound"
+            title="Datos personales"
+            subtitle="Consulta y edita la información de tu cuenta"
+            color={colors.primary}
+            soft={colors.revisionSoft}
+            onPress={() => navigation.navigate('PersonalData')}
           />
-        ) : (
+          {isEstudiante ? (
+            <MenuRow
+              icon="ClipboardList"
+              title="Mis reportes"
+              subtitle="Consulta el historial y seguimiento de tus reportes"
+              color={colors.primary}
+              soft={colors.solucionadoSoft}
+              onPress={() =>
+                navigation.navigate('StudentTabs', { screen: 'MyReports' })
+              }
+            />
+          ) : (
+            <MenuRow
+              icon="ChartColumn"
+              title="Panel de incidencias"
+              subtitle="Gestión de todos los reportes recibidos"
+              color={colors.solucionado}
+              soft={colors.solucionadoSoft}
+              onPress={() =>
+                navigation.navigate('StaffTabs', { screen: 'AllReports' })
+              }
+            />
+          )}
+        </View>
+        <View style={styles.group}>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>
+            Preferencias y ayuda
+          </Text>
           <MenuRow
-            icon="📊"
-            title="Panel de incidencias"
-            subtitle="Gestión de todos los reportes recibidos"
-            color={colors.solucionado}
-            soft={colors.solucionadoSoft}
-            onPress={() =>
-              navigation.navigate('StaffTabs', { screen: 'AllReports' })
-            }
+            icon="Settings"
+            title="Configuración"
+            subtitle="Accesibilidad y preferencias de este dispositivo"
+            color="#7C3AED"
+            soft="#EDE9FE"
+            onPress={() => navigation.navigate('Settings')}
           />
-        )}
-        <MenuRow
-          icon="⚙️"
-          title="Configuración"
-          subtitle="Ajustes de notificaciones y preferencias"
-          color="#7C3AED"
-          soft="#EDE9FE"
-          onPress={() =>
-            avisar(
-              'Configuración',
-              'Las notificaciones de seguimiento están activadas por defecto.',
-            )
-          }
-        />
-        <MenuRow
-          icon="❓"
-          title="Ayuda y soporte"
-          subtitle="Soporte técnico y ventanilla de atención universitaria"
-          color={colors.pendiente}
-          soft={colors.pendienteSoft}
-          onPress={() =>
-            avisar(
-              'Ayuda y soporte',
-              'Contacto: soporte.nexou@universidad.edu\nUbicación: Ventanilla de Atención Universitaria, Edificio Central.',
-            )
-          }
-        />
-        <MenuRow
-          icon="⏻"
-          title="Cerrar sesión"
-          subtitle="Salir de tu cuenta de forma segura"
-          color={colors.danger}
-          soft={colors.dangerSoft}
-          onPress={confirmLogout}
-        />
-
+          <MenuRow
+            icon="CircleHelp"
+            title="Ayuda y soporte"
+            subtitle="Soporte técnico y ventanilla de atención universitaria"
+            color={colors.primary}
+            soft={colors.pendienteSoft}
+            onPress={() => navigation.navigate('HelpSupport')}
+          />
+        </View>
+        <View style={styles.sessionGroup}>
+          <MenuRow
+            icon="LogOut"
+            title="Cerrar sesión"
+            subtitle="Salir de tu cuenta de forma segura"
+            color={colors.danger}
+            soft={colors.dangerSoft}
+            onPress={() => setLogoutVisible(true)}
+          />
+        </View>
         <Text style={styles.version}>
           NexoU v0.1.0 · Sistema Universitario de Incidencias
         </Text>
-      </ScrollView>
-    </ScreenBackground>
+      </CampusScrollScreen>
+      <LogoutDialog
+        visible={logoutVisible}
+        onClose={() => setLogoutVisible(false)}
+        onConfirm={logout}
+      />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  screenTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: colors.primary,
-    letterSpacing: -0.5,
-    marginTop: spacing.xs,
-  },
-  content: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl + 20,
-  },
-  profileCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    marginTop: -spacing.md,
-    ...shadow.card,
-  },
-  avatarBox: {
-    width: 88,
-    height: 88,
-  },
+  screenTitle: { fontSize: 28, fontWeight: '800', color: colors.primary },
+  profileCard: { marginTop: spacing.lg, gap: spacing.md },
+  avatarBox: { alignSelf: 'flex-start' },
   avatar: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
+    minWidth: 64,
+    minHeight: 64,
+    padding: spacing.md,
+    borderRadius: radius.pill,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: colors.textOnPrimary, fontSize: 26, fontWeight: '800' },
-  editBadge: {
-    position: 'absolute',
-    right: 0,
-    bottom: 0,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: colors.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  editIcon: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  profileInfo: {
-    flex: 1,
-    gap: 3,
-  },
-  name: {
-    fontSize: 19,
-    fontWeight: '800',
-    color: colors.primary,
-  },
+  avatarText: { color: colors.surface, fontSize: 26, fontWeight: '800' },
+  profileInfo: { gap: spacing.sm },
+  name: { fontSize: 26, fontWeight: '800', color: colors.primary },
   roleBadge: {
     alignSelf: 'flex-start',
     backgroundColor: colors.accentSoft,
     borderRadius: radius.pill,
-    paddingHorizontal: spacing.sm + 4,
-    paddingVertical: 4,
-    marginBottom: 2,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
-  roleText: { fontSize: 12, fontWeight: '700', color: colors.accentDark },
-  metaRow: {
+  roleText: { fontSize: 14, fontWeight: '700', color: colors.primary },
+  metaRow: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
+  metaText: { flex: 1, fontSize: 15, lineHeight: 23, color: colors.text },
+  group: { marginTop: spacing.lg },
+  sectionTitle: {
+    fontSize: 19,
+    fontWeight: '800',
+    color: colors.primary,
+    marginBottom: spacing.md,
+  },
+  tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  tile: {
+    flexBasis: '45%',
+    flexGrow: 1,
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
-    gap: spacing.xs,
+    gap: spacing.sm,
+    backgroundColor: colors.background,
+    borderRadius: radius.md,
+    padding: spacing.md,
   },
-  metaIcon: { fontSize: 13 },
-  metaText: { fontSize: 12.5, color: colors.text, flexShrink: 1 },
-  tiles: {
-    marginTop: spacing.md,
+  tileValue: { fontSize: 24, fontWeight: '800', color: colors.primary },
+  tileLabel: {
+    width: '100%',
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  summaryError: {
+    backgroundColor: colors.background,
+    padding: spacing.md,
+    borderRadius: radius.md,
+  },
+  helper: { fontSize: 15, lineHeight: 23, color: colors.text },
+  retry: { minHeight: 48, justifyContent: 'center', alignSelf: 'flex-start' },
+  retryText: { fontSize: 15, fontWeight: '700', color: colors.primary },
+  sessionGroup: {
+    marginTop: spacing.xl,
+    paddingTop: spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
   version: {
-    fontSize: 12,
-    color: colors.textMuted,
+    fontSize: 13,
+    lineHeight: 20,
+    color: colors.text,
     textAlign: 'center',
     marginTop: spacing.lg,
   },

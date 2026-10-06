@@ -1,6 +1,6 @@
 import type { ImageSourcePropType } from 'react-native';
 
-import FondoLogin from '../assets/NexoU_Fondo_Login.png';
+import FondoLogin from '../assets/NexoU_NewFondo_Login.png';
 import FondoRegistro from '../assets/NexoU_Fondo_Registro_Estudiante.png';
 import FondoNuevoReporte from '../assets/NexoU_Fondo_Nuevo_Reporte.png';
 import FondoInicio from '../assets/NexoU_Fondo_Inicio_Estudiante.png';

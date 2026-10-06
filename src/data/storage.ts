@@ -13,6 +13,8 @@ export const StorageKeys = {
   users: '@nexou/users',
   reports: '@nexou/reports',
   session: '@nexou/session',
+  pushRegistration: '@nexou/push-registration',
+  preferences: '@nexou/preferences',
   seeded: '@nexou/seeded',
 } as const;
 

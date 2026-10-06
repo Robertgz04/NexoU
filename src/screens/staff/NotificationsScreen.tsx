@@ -1,22 +1,25 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import TouchableOpacity from '../../components/MotionTouchable';
+import AppIcon from '../../components/AppIcon';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  RefreshControl,
+  StatusBar,
   SectionList,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import EmptyList from '../../components/EmptyList';
-import BrandRow from '../../components/BrandRow';
-import ScreenBackground from '../../components/ScreenBackground';
+import CampusListHeader from '../../components/CampusListHeader';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SegmentedControl from '../../components/SegmentedControl';
-import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
 import { statusMeta } from '../../constants/catalog';
 import { getAllReports } from '../../data/reportRepository';
 import type { RootStackParamList } from '../../navigation/types';
-import { colors, radius, shadow, spacing } from '../../theme';
+import { colors, radius, spacing } from '../../theme';
 import type { Report, ReportStatus } from '../../types';
 import { formatFechaRelativa } from '../../utils/dates';
 
@@ -37,6 +40,7 @@ interface Notificacion {
   titulo: string;
   texto: string;
   hora: string;
+  updatedAt: string;
   estado: ReportStatus;
 }
 
@@ -48,7 +52,7 @@ function mensajeDe(report: Report): { titulo: string; texto: string } {
         titulo: 'Reporte en revisión',
         texto:
           `El reporte "${report.titulo}" de ${report.ownerNombre} ` +
-          'está siendo atendido por el equipo de mantenimiento.',
+          'ha sido marcado como en revisión por el personal universitario.',
       };
     case 'solucionado':
       return {
@@ -65,32 +69,53 @@ function mensajeDe(report: Report): { titulo: string; texto: string } {
 
 /** Construye la lista de avisos a partir de los reportes existentes. */
 function notificacionesDe(reports: Report[]): Notificacion[] {
-  return reports.map(report => {
-    const meta = statusMeta(report.estado);
-    const { titulo, texto } = mensajeDe(report);
-    return {
-      id: `n_${report.id}`,
-      reportId: report.id,
-      icon: meta.icon,
-      color: meta.color,
-      soft: meta.soft,
-      titulo,
-      texto,
-      hora: formatFechaRelativa(report.updatedAt),
-      estado: report.estado,
-    };
-  });
+  return [...reports]
+    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .map(report => {
+      const meta = statusMeta(report.estado);
+      const { titulo, texto } = mensajeDe(report);
+      return {
+        id: `n_${report.id}`,
+        reportId: report.id,
+        icon: meta.icon,
+        color: meta.color,
+        soft: meta.soft,
+        titulo,
+        texto,
+        hora: formatFechaRelativa(report.updatedAt),
+        updatedAt: report.updatedAt,
+        estado: report.estado,
+      };
+    });
 }
 
 /** F10 – Notificaciones y avisos del panel del personal. */
 export default function NotificationsScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const insets = useSafeAreaInsets();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [asOf, setAsOf] = useState(() => new Date());
+  const pending = useRef(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [filtro, setFiltro] = useState<Filtro>('todas');
 
   const load = useCallback(async () => {
-    setReports(await getAllReports());
+    if (pending.current) return;
+    pending.current = true;
+    try {
+      setReports(await getAllReports());
+      setAsOf(new Date());
+      setError(null);
+    } catch {
+      setError('No pudimos actualizar las notificaciones. Intenta de nuevo.');
+    } finally {
+      pending.current = false;
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
 
   useFocusEffect(
@@ -113,8 +138,8 @@ export default function NotificationsScreen() {
 
   /** Agrupa por "Hoy" / "Ayer" / "Anteriores". */
   const secciones = useMemo(() => {
-    const hoy = new Date();
-    const ayer = new Date();
+    const hoy = new Date(asOf);
+    const ayer = new Date(asOf);
     ayer.setDate(ayer.getDate() - 1);
 
     const diaDe = (iso: string) => new Date(iso).toDateString();
@@ -126,8 +151,7 @@ export default function NotificationsScreen() {
     ];
 
     lista.forEach(item => {
-      const report = reports.find(r => r.id === item.reportId);
-      const dia = diaDe(report?.updatedAt ?? item.hora);
+      const dia = diaDe(item.updatedAt);
       if (dia === hoy.toDateString()) {
         grupos[0].data.push(item);
       } else if (dia === ayer.toDateString()) {
@@ -138,183 +162,215 @@ export default function NotificationsScreen() {
     });
 
     return grupos.filter(g => g.data.length > 0);
-  }, [lista, reports]);
+  }, [lista, asOf]);
 
-  const avatar = (
-    <TouchableOpacity
-      accessibilityRole="button"
-      accessibilityLabel="Ir a mi perfil"
-      activeOpacity={0.85}
-      onPress={() => navigation.navigate('StaffTabs', { screen: 'Profile' })}
-      style={styles.avatarButton}
-    >
-      <Text style={styles.avatarIcon}>👤</Text>
-    </TouchableOpacity>
-  );
-
+  const onRefresh = async () => {
+    if (pending.current) return;
+    setRefreshing(true);
+    await load();
+  };
   const encabezado = (
-    <View style={styles.headerBlock}>
-      <Text style={styles.screenTitle}>Notificaciones</Text>
-      <Text style={styles.screenSubtitle}>
-        Avisos en tiempo real sobre incidencias de los estudiantes.
-      </Text>
-
-      <SegmentedControl
-        testID="filtro-notificaciones"
-        options={FILTROS}
-        value={filtro}
-        onChange={v => setFiltro(v as Filtro)}
-        style={styles.filtros}
-      />
-    </View>
+    <CampusListHeader>
+      <View style={styles.header}>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>Notificaciones</Text>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Ir a mi perfil"
+            style={styles.avatar}
+            onPress={() =>
+              navigation.navigate('StaffTabs', { screen: 'Profile' })
+            }
+          >
+            <AppIcon name="UserRound" size={26} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+        <Text style={styles.body}>
+          Avisos según el estado actual de los reportes.
+        </Text>
+        <SegmentedControl
+          testID="filtro-notificaciones"
+          options={FILTROS}
+          value={filtro}
+          onChange={v => setFiltro(v as Filtro)}
+          style={styles.filters}
+        />
+        <Text style={styles.body}>
+          {filtro === 'estado'
+            ? 'Reportes en revisión o solucionados.'
+            : filtro === 'avisos'
+            ? 'Reportes pendientes de atención.'
+            : 'Estado incluye reportes en revisión o solucionados; Avisos incluye pendientes.'}
+        </Text>
+        {!loading && (!error || reports.length > 0) ? (
+          <Text style={styles.body} accessibilityLiveRegion="polite">
+            {lista.length} avisos
+          </Text>
+        ) : null}
+        {error ? (
+          <View style={styles.error}>
+            <Text accessibilityLiveRegion="polite" style={styles.body}>
+              {error}
+            </Text>
+            <TouchableOpacity
+              accessibilityRole="button"
+              disabled={refreshing}
+              onPress={onRefresh}
+              style={styles.retry}
+            >
+              <Text style={styles.action}>
+                {refreshing ? 'Actualizando…' : 'Reintentar'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+      </View>
+    </CampusListHeader>
   );
-
-  const fondo = SCREEN_BACKGROUNDS.notifications;
-
   return (
-    <ScreenBackground
-      source={fondo.source}
-      artBottom={fondo.artBottom}
-      overArt={<BrandRow right={avatar} />}
-    >
+    <View style={[styles.root, { paddingTop: insets.top }]}>
+      <StatusBar barStyle="dark-content" />
       <SectionList
         sections={secciones}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: spacing.xl + 20 + insets.bottom },
+        ]}
         ListHeaderComponent={encabezado}
         stickySectionHeadersEnabled={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.accent}
+          />
+        }
         renderSectionHeader={({ section }) => (
-          <Text style={styles.sectionTitle}>{section.title}</Text>
+          <Text accessibilityRole="header" style={styles.sectionTitle}>
+            {section.title}
+          </Text>
         )}
         renderItem={({ item }) => (
           <TouchableOpacity
             accessibilityRole="button"
-            activeOpacity={0.88}
+            accessibilityLabel={`Abrir reporte: ${item.titulo}. ${item.texto}. ${item.hora}`}
             style={styles.row}
             onPress={() =>
               navigation.navigate('ReportDetail', { reportId: item.reportId })
             }
           >
             <View style={[styles.iconBox, { backgroundColor: item.soft }]}>
-              <Text style={[styles.icon, { color: item.color }]}>
-                {item.icon}
-              </Text>
+              <AppIcon name={item.icon} size={22} color={item.color} />
             </View>
             <View style={styles.texts}>
-              <Text style={styles.rowTitle} numberOfLines={1}>
-                {item.titulo}
-              </Text>
-              <Text style={styles.rowText} numberOfLines={2}>
-                {item.texto}
-              </Text>
+              <Text style={styles.rowTitle}>{item.titulo}</Text>
+              <Text style={styles.body}>{item.texto}</Text>
+              <Text style={styles.date}>Última actualización: {item.hora}</Text>
             </View>
-            <View style={styles.metaBox}>
-              <Text style={styles.hora}>{item.hora}</Text>
-              <Text style={styles.chevron}>›</Text>
-            </View>
+            <AppIcon name="ChevronRight" size={20} color={colors.primary} />
           </TouchableOpacity>
         )}
         ListEmptyComponent={
-          <EmptyList
-            icon="🔔"
-            title="Sin notificaciones pendientes"
-            subtitle="Aquí verás las alertas cuando los estudiantes registren nuevos reportes."
-          />
+          loading ? (
+            <View style={styles.loading}>
+              <ActivityIndicator
+                color={colors.primary}
+                accessibilityLabel="Cargando notificaciones"
+              />
+              <Text style={styles.body}>Cargando notificaciones…</Text>
+            </View>
+          ) : error ? undefined : (
+            <EmptyList
+              icon="Bell"
+              title={
+                reports.length === 0
+                  ? 'Sin notificaciones'
+                  : 'No hay avisos con este filtro'
+              }
+              subtitle={
+                reports.length === 0
+                  ? 'Los avisos de los reportes registrados aparecerán aquí.'
+                  : 'Selecciona Todas para consultar los avisos disponibles.'
+              }
+              actionLabel={filtro !== 'todas' ? 'Ver todas' : undefined}
+              onAction={
+                filtro !== 'todas' ? () => setFiltro('todas') : undefined
+              }
+            />
+          )
         }
       />
-    </ScreenBackground>
+    </View>
   );
 }
-
 const styles = StyleSheet.create({
-  headerBlock: {
-    marginBottom: spacing.xs,
+  root: { flex: 1, backgroundColor: colors.surface },
+  content: { flexGrow: 1, backgroundColor: colors.surface },
+  header: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
   },
-  screenTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: colors.primary,
-    letterSpacing: -0.5,
-  },
-  screenSubtitle: {
-    fontSize: 13.5,
-    color: colors.textMuted,
-    marginTop: 2,
-    marginBottom: spacing.md,
-  },
-  avatarButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: colors.surface,
+  titleRow: { flexDirection: 'row', gap: spacing.sm, alignItems: 'center' },
+  title: { flex: 1, fontSize: 28, fontWeight: '800', color: colors.primary },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadow.card,
   },
-  avatarIcon: { fontSize: 19 },
-  filtros: {
-    marginBottom: spacing.xs,
+  body: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: colors.text,
+    marginTop: spacing.xs,
   },
-  content: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl + 20,
-    flexGrow: 1,
-  },
+  filters: { marginTop: spacing.lg, marginBottom: spacing.sm },
   sectionTitle: {
-    fontSize: 12,
+    fontSize: 19,
     fontWeight: '800',
     color: colors.primary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginTop: spacing.md,
-    marginBottom: spacing.xs,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
   },
   row: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm + 2,
+    alignItems: 'flex-start',
+    gap: spacing.sm,
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    padding: spacing.sm + 4,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginHorizontal: spacing.md,
     marginBottom: spacing.sm,
-    ...shadow.card,
   },
   iconBox: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  icon: {
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  texts: {
-    flex: 1,
-  },
-  rowTitle: {
+  texts: { flex: 1 },
+  rowTitle: { fontSize: 16, fontWeight: '700', color: colors.primary },
+  date: {
     fontSize: 14,
-    fontWeight: '800',
-    color: colors.primary,
+    lineHeight: 21,
+    color: colors.text,
+    marginTop: spacing.sm,
   },
-  rowText: {
-    fontSize: 12.5,
-    color: colors.textMuted,
-    lineHeight: 17,
-    marginTop: 2,
+  error: {
+    marginTop: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.dangerSoft,
   },
-  metaBox: {
-    alignItems: 'flex-end',
-    gap: 2,
-  },
-  hora: {
-    fontSize: 11,
-    color: colors.textMuted,
-  },
-  chevron: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.textMuted,
-  },
+  retry: { minHeight: 48, justifyContent: 'center', alignSelf: 'flex-start' },
+  action: { fontSize: 15, fontWeight: '700', color: colors.primary },
+  loading: { alignItems: 'center', padding: spacing.lg },
 });

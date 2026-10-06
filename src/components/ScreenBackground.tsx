@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
-import {
-  Image,
-  LayoutChangeEvent,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Image, LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radius, shadow, spacing } from '../theme';
 
@@ -14,8 +10,12 @@ interface Props {
   source: ImageSourcePropType;
   /** Fracción del alto donde termina la ilustración del campus. */
   artBottom: number;
+  /** Use stretch for full-screen artwork whose vertical boundary is known. */
+  resizeMode?: 'cover' | 'stretch';
   /** Envuelve el contenido en una hoja blanca con esquinas superiores redondeadas. */
   sheet?: boolean;
+  /** Curved campus transition with an opaque surface for readable content. */
+  curvedSheet?: boolean;
   /** Contenido que se dibuja sobre la ilustración (fila del logo, botón de vuelta). */
   overArt?: React.ReactNode;
   children?: React.ReactNode;
@@ -37,6 +37,8 @@ export default function ScreenBackground({
   source,
   artBottom,
   sheet = false,
+  curvedSheet = false,
+  resizeMode = 'cover',
   overArt,
   children,
 }: Props) {
@@ -54,16 +56,13 @@ export default function ScreenBackground({
     <View style={styles.root} onLayout={onLayout}>
       <Image
         source={source}
-        style={StyleSheet.absoluteFill}
-        resizeMode="cover"
+        style={[StyleSheet.absoluteFill, { width: '100%', height: '100%' }]}
+        resizeMode={resizeMode}
         pointerEvents="none"
       />
       {overArt ? (
         <View
-          style={[
-            styles.overArt,
-            { paddingTop: insets.top + spacing.sm },
-          ]}
+          style={[styles.overArt, { paddingTop: insets.top + spacing.sm }]}
           pointerEvents="box-none"
         >
           {overArt}
@@ -73,10 +72,27 @@ export default function ScreenBackground({
         <View
           style={[
             styles.sheet,
+            curvedSheet && styles.curvedSheet,
             { marginTop: artOffset },
             height === 0 && styles.hidden,
           ]}
         >
+          {curvedSheet ? (
+            <Svg
+              width="100%"
+              height={50}
+              viewBox="0 0 400 50"
+              preserveAspectRatio="none"
+              style={styles.sheetCurve}
+              pointerEvents="none"
+              accessible={false}
+            >
+              <Path
+                d="M0 38 C105 -12 270 -12 400 38 L400 50 L0 50 Z"
+                fill={colors.surface}
+              />
+            </Svg>
+          ) : null}
           {children}
         </View>
       ) : (
@@ -111,6 +127,18 @@ const styles = StyleSheet.create({
   },
   body: {
     flex: 1,
+  },
+  curvedSheet: {
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  sheetCurve: {
+    position: 'absolute',
+    top: -49,
+    left: 0,
+    right: 0,
   },
   sheet: {
     flex: 1,

@@ -5,8 +5,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as authRepository from '../src/data/authRepository';
 import * as reportRepository from '../src/data/reportRepository';
-import {StorageKeys} from '../src/data/storage';
-import {seedIfEmpty} from '../src/data/seed';
+import { StorageKeys } from '../src/data/storage';
+import { seedIfEmpty } from '../src/data/seed';
 
 jest.mock('@react-native-async-storage/async-storage', () => {
   // Mock en memoria (no depende de rutas internas del paquete).
@@ -120,7 +120,7 @@ describe('F03–F08 – Reportes', () => {
 
   it('filtra los reportes por dueño (F06)', async () => {
     await reportRepository.createReport(owner);
-    await reportRepository.createReport({...owner, ownerId: 'u_2'});
+    await reportRepository.createReport({ ...owner, ownerId: 'u_2' });
 
     const mine = await reportRepository.getReportsByOwner('u_1');
     expect(mine).toHaveLength(1);
@@ -145,6 +145,54 @@ describe('F03–F08 – Reportes', () => {
     expect(stored?.estado).toBe('solucionado');
   });
 
+  it('persiste notas y conserva todas las transiciones de un reporte anterior', async () => {
+    const report = await reportRepository.createReport(owner);
+    const author = { id: 'staff-1', nombre: 'María' };
+    await reportRepository.updateReportStatus(
+      report.id,
+      'revision',
+      '  Revisando equipo  ',
+      author,
+    );
+    await reportRepository.updateReportStatus(
+      report.id,
+      'solucionado',
+      'Equipo reparado',
+      author,
+    );
+    const updated = await reportRepository.updateReportStatus(
+      report.id,
+      'pendiente',
+    );
+    expect(updated.statusUpdates).toHaveLength(3);
+    expect(updated.statusUpdates![0]).toMatchObject({
+      from: 'pendiente',
+      to: 'revision',
+      note: 'Revisando equipo',
+      authorId: author.id,
+      authorName: author.nombre,
+    });
+    expect(updated.statusUpdates![2]).toMatchObject({
+      from: 'solucionado',
+      to: 'pendiente',
+      note: '',
+    });
+    expect(updated.statusUpdates![2].createdAt).toBe(updated.updatedAt);
+    expect(await reportRepository.getReportById(report.id)).toEqual(updated);
+    await expect(
+      reportRepository.updateReportStatus(
+        report.id,
+        'revision',
+        'x'.repeat(501),
+      ),
+    ).rejects.toThrow('500');
+    expect(await reportRepository.getReportById(report.id)).toEqual(updated);
+    expect(
+      (await reportRepository.updateReportStatus(report.id, 'pendiente'))
+        .statusUpdates,
+    ).toHaveLength(3);
+  });
+
   it('falla al actualizar un reporte inexistente', async () => {
     await expect(
       reportRepository.updateReportStatus('no-existe', 'revision'),
@@ -161,5 +209,79 @@ describe('Datos de demostración', () => {
     const firstUsers = users;
     await seedIfEmpty();
     expect(await AsyncStorage.getItem(StorageKeys.users)).toBe(firstUsers);
+  });
+});
+
+describe('Edición de datos personales', () => {
+  const input = {
+    nombre: 'Ana',
+    matricula: 'A001',
+    email: 'ana@nexou.mx',
+    password: 'Secreta123',
+    rol: 'estudiante' as const,
+  };
+  it('persiste nombre e identificador sin cambiar credenciales ni rol', async () => {
+    const user = await authRepository.register(input);
+    const updated = await authRepository.updatePersonalData(user.id, {
+      nombre: ' Ana López ',
+      matricula: ' A002 ',
+      email: input.email,
+    });
+    expect(updated).toMatchObject({
+      nombre: 'Ana López',
+      matricula: 'A002',
+      passwordHash: user.passwordHash,
+      rol: user.rol,
+      id: user.id,
+    });
+    expect(await authRepository.getUserById(user.id)).toEqual(updated);
+    expect(
+      (await authRepository.login(input.email, input.password)).nombre,
+    ).toBe('Ana López');
+  });
+  it('cambia el correo verificando la contraseña y mantiene válido el acceso', async () => {
+    const user = await authRepository.register(input);
+    await expect(
+      authRepository.updatePersonalData(user.id, {
+        ...input,
+        email: 'nuevo@nexou.mx',
+        currentPassword: 'incorrecta',
+      }),
+    ).rejects.toThrow('contraseña actual');
+    expect((await authRepository.getUserById(user.id))!.email).toBe(
+      input.email,
+    );
+    await authRepository.updatePersonalData(user.id, {
+      ...input,
+      email: ' NUEVO@nexou.mx ',
+      currentPassword: input.password,
+    });
+    expect(
+      (await authRepository.login('nuevo@nexou.mx', input.password)).id,
+    ).toBe(user.id);
+    await expect(
+      authRepository.login(input.email, input.password),
+    ).rejects.toThrow('incorrectos');
+  });
+  it('rechaza correo duplicado y campos inválidos sin modificar la cuenta', async () => {
+    const user = await authRepository.register(input);
+    await authRepository.register({ ...input, email: 'otro@nexou.mx' });
+    await expect(
+      authRepository.updatePersonalData(user.id, {
+        ...input,
+        email: 'otro@nexou.mx',
+        currentPassword: input.password,
+      }),
+    ).rejects.toThrow('otra cuenta');
+    await expect(
+      authRepository.updatePersonalData(user.id, { ...input, nombre: ' ' }),
+    ).rejects.toThrow('obligatorio');
+    await expect(
+      authRepository.updatePersonalData(user.id, {
+        ...input,
+        email: 'incorrecto',
+      }),
+    ).rejects.toThrow('válido');
+    expect(await authRepository.getUserById(user.id)).toEqual(user);
   });
 });

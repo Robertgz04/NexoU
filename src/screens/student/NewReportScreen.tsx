@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import TouchableOpacity from '../../components/MotionTouchable';
+import AppIcon from '../../components/AppIcon';
+import React, { useRef, useState } from 'react';
 import {
   Alert,
   Image,
-  KeyboardAvoidingView,
   Platform,
   PermissionsAndroid,
-  ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -20,10 +19,9 @@ import PrimaryButton from '../../components/PrimaryButton';
 import SelectField from '../../components/SelectField';
 import { AREAS, CATEGORIES, LIMITS } from '../../constants/catalog';
 import { createReport } from '../../data/reportRepository';
-import ScreenBackground from '../../components/ScreenBackground';
+import CampusScrollScreen from '../../components/CampusScrollScreen';
 import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
-import Logo from '../../assets/NexoU_Logo.png';
-import { colors, radius, shadow, spacing } from '../../theme';
+import { colors, radius, spacing } from '../../theme';
 import type { Category } from '../../types';
 import type { RootStackParamList } from '../../navigation/types';
 import { validateRequired } from '../../utils/validators';
@@ -48,6 +46,7 @@ export default function NewReportScreen() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [errors, setErrors] = useState<Errors>({});
   const [saving, setSaving] = useState(false);
+  const submissionLock = useRef(false);
 
   const pickImage = async (source: 'camera' | 'gallery') => {
     const options = {
@@ -59,7 +58,7 @@ export default function NewReportScreen() {
     };
 
     try {
-      if (source === 'camera') {
+      if (source === 'camera' && Platform.OS === 'android') {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.CAMERA,
         );
@@ -94,7 +93,10 @@ export default function NewReportScreen() {
       } else if (asset?.uri) {
         setPhoto(asset.uri);
       } else {
-        Alert.alert('Imagen no disponible', 'No se pudo procesar la fotografía.');
+        Alert.alert(
+          'Imagen no disponible',
+          'No se pudo procesar la fotografía.',
+        );
       }
     } catch {
       Alert.alert(
@@ -105,6 +107,7 @@ export default function NewReportScreen() {
   };
 
   const onSubmit = async () => {
+    if (submissionLock.current) return;
     const nextErrors: Errors = {
       titulo: validateRequired(titulo, 'título del reporte'),
       descripcion: validateRequired(descripcion, 'descripción detallada'),
@@ -119,6 +122,7 @@ export default function NewReportScreen() {
       return;
     }
 
+    submissionLock.current = true;
     setSaving(true);
     try {
       await createReport({
@@ -139,7 +143,7 @@ export default function NewReportScreen() {
       setErrors({});
 
       Alert.alert(
-        'Reporte enviado correctamente ✅',
+        'Reporte enviado correctamente',
         'Tu reporte ha sido registrado en estado "Pendiente". El personal universitario le dará seguimiento.',
         [
           {
@@ -156,273 +160,195 @@ export default function NewReportScreen() {
         e instanceof Error ? e.message : 'No se pudo enviar el reporte.',
       );
     } finally {
+      submissionLock.current = false;
       setSaving(false);
     }
   };
 
-  const fondo = SCREEN_BACKGROUNDS.newReport;
-
-  const backButton = (
-    <TouchableOpacity
-      accessibilityRole="button"
-      accessibilityLabel="Volver"
-      activeOpacity={0.85}
-      onPress={() => navigation.goBack()}
-      style={styles.backButton}
-    >
-      <Text style={styles.backIcon}>←</Text>
-    </TouchableOpacity>
-  );
+  const fondo = SCREEN_BACKGROUNDS.login;
 
   return (
-    <ScreenBackground
+    <CampusScrollScreen
       source={fondo.source}
-      artBottom={fondo.artBottom}
-      sheet
-      overArt={backButton}
+      campusRatio={0.32}
+      campusHeight={160}
+      keyboard
     >
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      <TouchableOpacity
+        accessibilityRole="button"
+        accessibilityLabel="Volver"
+        onPress={() => navigation.goBack()}
+        style={styles.backButton}
       >
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-        >
-          <Image source={Logo} style={styles.logo} resizeMode="contain" />
-          <Text style={styles.title}>Nuevo reporte de incidencia</Text>
-          <Text style={styles.subtitle}>
-            Ingresa la información detallada para que el área correspondiente pueda intervenir.
-          </Text>
+        <AppIcon name="ArrowLeft" size={22} color={colors.primary} />
+        <Text style={styles.backLabel}>Volver</Text>
+      </TouchableOpacity>
+      <Text style={styles.title}>Reportar una incidencia</Text>
+      <Text style={styles.subtitle}>
+        Cuéntanos qué ocurrió y dónde para que el personal pueda darle
+        seguimiento.
+      </Text>
 
-          <View style={styles.formCard}>
-            <FormField
-              label="Título del reporte"
-              value={titulo}
-              onChangeText={setTitulo}
-              error={errors.titulo}
-              placeholder="Ej. Silla rota o luminaria apagada en lab 3"
-              maxLength={LIMITS.titulo}
-            />
+      <View style={styles.formCard}>
+        <FormField
+          label="Título del reporte"
+          value={titulo}
+          onChangeText={value => {
+            setTitulo(value);
+            setErrors(prev => ({ ...prev, titulo: null }));
+          }}
+          error={errors.titulo}
+          placeholder="Ej. Silla rota o luminaria apagada en lab 3"
+          maxLength={LIMITS.titulo}
+        />
 
-            <SelectField
-              label="Ubicación o Área"
-              icon="📍"
-              value={area}
-              placeholder="Selecciona el área universitaria"
-              options={AREAS}
-              error={errors.area}
-              onSelect={value => {
-                setArea(value);
-                setErrors(prev => ({ ...prev, area: null }));
+        <SelectField
+          label="Área o ubicación"
+          icon="MapPin"
+          value={area}
+          placeholder="Selecciona el área universitaria"
+          options={AREAS}
+          error={errors.area}
+          onSelect={value => {
+            setArea(value);
+            setErrors(prev => ({ ...prev, area: null }));
+          }}
+        />
+
+        <SelectField
+          label="Categoría"
+          icon="Laptop"
+          value={categoria}
+          placeholder="Selecciona la categoría"
+          options={CATEGORIES}
+          error={errors.categoria}
+          onSelect={value => {
+            setCategoria(value as Category);
+            setErrors(prev => ({ ...prev, categoria: null }));
+          }}
+        />
+
+        <FormField
+          label="Descripción de la incidencia"
+          value={descripcion}
+          onChangeText={value => {
+            setDescripcion(value);
+            setErrors(prev => ({ ...prev, descripcion: null }));
+          }}
+          error={errors.descripcion}
+          placeholder="Describe lo ocurrido con el mayor detalle posible..."
+          multiline
+          maxLength={LIMITS.descripcion}
+        />
+        <Text style={styles.counter}>
+          {descripcion.length}/{LIMITS.descripcion}
+        </Text>
+      </View>
+
+      <View style={styles.evidenceCard}>
+        <Text style={styles.sectionTitle}>Evidencia fotográfica</Text>
+        <Text style={styles.sectionHint}>
+          Opcional. Una foto ayuda a identificar y atender la incidencia.
+        </Text>
+
+        {photo ? (
+          <View style={styles.previewBox}>
+            <Image
+              source={{
+                uri:
+                  photo.startsWith('data:') ||
+                  photo.startsWith('file:') ||
+                  photo.startsWith('content:')
+                    ? photo
+                    : `data:image/jpeg;base64,${photo}`,
               }}
+              style={styles.preview}
             />
-
-            <SelectField
-              label="Tipo o Cuestión"
-              icon="💻"
-              value={categoria}
-              placeholder="Selecciona la categoría"
-              options={CATEGORIES}
-              error={errors.categoria}
-              onSelect={value => {
-                setCategoria(value as Category);
-                setErrors(prev => ({ ...prev, categoria: null }));
-              }}
-            />
-
-            <FormField
-              label="Descripción de la incidencia"
-              value={descripcion}
-              onChangeText={setDescripcion}
-              error={errors.descripcion}
-              placeholder="Describe lo ocurrido con el mayor detalle posible..."
-              multiline
-              maxLength={LIMITS.descripcion}
-            />
-            <Text style={styles.counter}>
-              {descripcion.length}/{LIMITS.descripcion}
-            </Text>
+            <TouchableOpacity
+              accessibilityRole="button"
+              onPress={() => setPhoto(null)}
+              style={styles.removePhoto}
+            >
+              <Text style={styles.removePhotoText}>Eliminar evidencia</Text>
+            </TouchableOpacity>
           </View>
-
-          <View style={styles.evidenceCard}>
-            <Text style={styles.sectionTitle}>
-              Evidencia fotográfica{' '}
-              <Text style={styles.sectionHint}>(Opcional pero recomendable)</Text>
-            </Text>
-
-            {photo ? (
-              <View style={styles.previewBox}>
-                <Image
-                  source={{
-                    uri:
-                      photo.startsWith('data:') ||
-                      photo.startsWith('file:') ||
-                      photo.startsWith('content:')
-                        ? photo
-                        : `data:image/jpeg;base64,${photo}`,
-                  }}
-                  style={styles.preview}
-                />
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  onPress={() => setPhoto(null)}
-                  style={styles.removePhoto}
-                >
-                  <Text style={styles.removePhotoText}>✕ Eliminar evidencia</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <View style={styles.evidenceRow}>
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  activeOpacity={0.85}
-                  onPress={() => pickImage('gallery')}
-                  style={styles.dropzone}
-                >
-                  <Text style={styles.dropzoneIcon}>📷</Text>
-                  <Text style={styles.dropzoneText}>Adjuntar foto</Text>
-                </TouchableOpacity>
-
-                <View style={styles.evidenceButtons}>
-                  <PrimaryButton
-                    title="📷 Tomar foto"
-                    variant="outline"
-                    onPress={() => pickImage('camera')}
-                    style={styles.evidenceButton}
-                  />
-                  <PrimaryButton
-                    title="🖼 Seleccionar galería"
-                    variant="outline"
-                    onPress={() => pickImage('gallery')}
-                    style={styles.evidenceButton}
-                  />
-                </View>
-              </View>
-            )}
+        ) : (
+          <View style={styles.evidenceRow}>
+            <View style={styles.evidenceButtons}>
+              <PrimaryButton
+                title="Tomar foto"
+                variant="outline"
+                onPress={() => pickImage('camera')}
+                style={styles.evidenceButton}
+              />
+              <PrimaryButton
+                title="Seleccionar galería"
+                variant="outline"
+                onPress={() => pickImage('gallery')}
+                style={styles.evidenceButton}
+              />
+            </View>
           </View>
+        )}
+      </View>
 
-          <PrimaryButton
-            title="Enviar reporte a revisión"
-            withArrow
-            onPress={onSubmit}
-            loading={saving}
-            style={styles.submit}
-          />
+      <PrimaryButton
+        title="Enviar reporte"
+        withArrow
+        onPress={onSubmit}
+        loading={saving}
+        style={styles.submit}
+      />
 
-          <Text style={styles.footerHint}>
-            El reporte quedará visible en tu historial para dar seguimiento en tiempo real.
-          </Text>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </ScreenBackground>
+      <Text style={styles.footerHint}>
+        El reporte quedará visible en tu historial para dar seguimiento en
+        tiempo real.
+      </Text>
+    </CampusScrollScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
   backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: colors.surface,
+    minHeight: 48,
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    ...shadow.floating,
+    gap: spacing.sm,
+    paddingRight: spacing.md,
   },
-  backIcon: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  logo: {
-    height: 44,
-    width: 154,
-    alignSelf: 'center',
-  },
+  backLabel: { fontSize: 15, fontWeight: '700', color: colors.primary },
   title: {
-    fontSize: 22,
+    fontSize: 28,
     fontWeight: '800',
     color: colors.primary,
-    textAlign: 'center',
-    letterSpacing: -0.4,
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
   },
   subtitle: {
-    fontSize: 13.5,
+    fontSize: 15,
     color: colors.textMuted,
-    textAlign: 'center',
-    lineHeight: 18,
-    marginTop: spacing.xs,
+    lineHeight: 22,
+    marginTop: spacing.sm,
   },
-  content: {
-    padding: spacing.md,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.xl + 20,
-  },
-  formCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    marginTop: spacing.md,
-    ...shadow.card,
-  },
-  evidenceCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    marginTop: spacing.md,
-    ...shadow.card,
-  },
-  sectionTitle: {
-    fontSize: 15.5,
-    fontWeight: '800',
-    color: colors.primary,
-    marginBottom: spacing.sm,
-  },
+  formCard: { marginTop: spacing.lg },
+  evidenceCard: { marginTop: spacing.lg },
+  sectionTitle: { fontSize: 19, fontWeight: '800', color: colors.primary },
   sectionHint: {
-    fontSize: 12.5,
-    fontWeight: '500',
+    fontSize: 15,
     color: colors.textMuted,
+    lineHeight: 22,
+    marginTop: spacing.xs,
+    marginBottom: spacing.md,
   },
   counter: {
-    fontSize: 11.5,
+    fontSize: 13,
     color: colors.textMuted,
     textAlign: 'right',
-    marginTop: -spacing.md,
+    marginTop: -spacing.sm,
   },
-  evidenceRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  dropzone: {
-    width: 110,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing.md,
-    gap: spacing.xs,
-    backgroundColor: colors.background,
-  },
-  dropzoneIcon: {
-    fontSize: 28,
-  },
-  dropzoneText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.textMuted,
-  },
-  evidenceButtons: {
-    flex: 1,
-    gap: spacing.xs,
-    justifyContent: 'center',
-  },
-  evidenceButton: {
-    minHeight: 44,
-  },
+  evidenceRow: { gap: spacing.sm },
+  evidenceButtons: { gap: spacing.sm },
+  evidenceButton: { minHeight: 48, borderRadius: radius.md },
   previewBox: {
     borderRadius: radius.md,
     overflow: 'hidden',
@@ -432,17 +358,19 @@ const styles = StyleSheet.create({
   },
   preview: { width: '100%', height: 200, resizeMode: 'cover' },
   removePhoto: {
+    minHeight: 48,
     alignItems: 'center',
-    paddingVertical: spacing.sm,
+    justifyContent: 'center',
+    padding: spacing.sm,
     backgroundColor: colors.dangerSoft,
   },
-  removePhotoText: { color: colors.danger, fontWeight: '700', fontSize: 13.5 },
-  submit: { marginTop: spacing.lg },
+  removePhotoText: { color: colors.danger, fontWeight: '700', fontSize: 15 },
+  submit: { marginTop: spacing.lg, borderRadius: radius.xl },
   footerHint: {
-    fontSize: 12,
+    fontSize: 14,
+    lineHeight: 21,
     color: colors.textMuted,
     textAlign: 'center',
-    marginTop: spacing.sm,
-    marginBottom: spacing.md,
+    marginTop: spacing.md,
   },
 });

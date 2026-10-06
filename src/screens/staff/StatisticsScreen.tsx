@@ -1,9 +1,12 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import TouchableOpacity from '../../components/MotionTouchable';
+import AppIcon from '../../components/AppIcon';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
-  ScrollView,
+  ActivityIndicator,
+  RefreshControl,
+  useWindowDimensions,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -11,20 +14,18 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import DonutChart from '../../components/DonutChart';
 import LineChart from '../../components/LineChart';
 import type { LinePoint } from '../../components/LineChart';
-import BrandRow from '../../components/BrandRow';
-import ScreenBackground from '../../components/ScreenBackground';
+import CampusScrollScreen from '../../components/CampusScrollScreen';
+import EmptyList from '../../components/EmptyList';
 import SegmentedControl from '../../components/SegmentedControl';
 import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
 import { CATEGORIES, STATUSES } from '../../constants/catalog';
 import { getAllReports } from '../../data/reportRepository';
-import { useAuth } from '../../context/AuthContext';
 import type { RootStackParamList } from '../../navigation/types';
 import {
   CATEGORY_COLORS,
   CATEGORY_ICONS,
   colors,
   radius,
-  shadow,
   spacing,
 } from '../../theme';
 import type { Report, ReportStatus } from '../../types';
@@ -37,9 +38,6 @@ const PERIODOS = [
   { value: 'mes', label: 'Mes' },
   { value: 'anio', label: 'Año' },
 ];
-
-/** Alto del área de las barras por categoría. */
-const CHART_H = 110;
 
 /** Fecha límite inferior del periodo seleccionado. */
 function desde(periodo: Periodo, now: Date): number {
@@ -57,22 +55,19 @@ function desde(periodo: Periodo, now: Date): number {
 
 /** Cuenta los reportes creados en cada uno de los últimos `dias` días. */
 function serieDiaria(reports: Report[], dias: number, now: Date): LinePoint[] {
-  const counts: number[] = new Array(dias).fill(0);
-  const inicioHoy = new Date(now);
-  inicioHoy.setHours(0, 0, 0, 0);
-
-  reports.forEach(report => {
-    const t = new Date(report.createdAt).getTime();
-    const diff = Math.floor((inicioHoy.getTime() - t) / 86400000);
-    if (diff >= 0 && diff < dias) {
-      counts[dias - 1 - diff] += 1;
-    }
-  });
-
-  return counts.map((value, index) => {
-    const dia = new Date(inicioHoy);
-    dia.setDate(dia.getDate() - (dias - 1 - index));
-    return { label: `${dia.getDate()} ${MESES_CORTOS[dia.getMonth()]}`, value };
+  return Array.from({ length: dias }, (_, index) => {
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    start.setDate(start.getDate() - (dias - 1 - index));
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
+    return {
+      label: start.getDate() + ' ' + MESES_CORTOS[start.getMonth()],
+      value: reports.filter(r => {
+        const t = new Date(r.createdAt).getTime();
+        return t >= start.getTime() && t < end.getTime() && t <= now.getTime();
+      }).length,
+    };
   });
 }
 
@@ -80,13 +75,30 @@ function serieDiaria(reports: Report[], dias: number, now: Date): LinePoint[] {
 export default function StatisticsScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { user } = useAuth();
 
+  const { width, fontScale } = useWindowDimensions();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [asOf, setAsOf] = useState(() => new Date());
+  const pending = useRef(false);
   const [reports, setReports] = useState<Report[]>([]);
   const [periodo, setPeriodo] = useState<Periodo>('mes');
 
   const load = useCallback(async () => {
-    setReports(await getAllReports());
+    if (pending.current) return;
+    pending.current = true;
+    try {
+      setReports(await getAllReports());
+      setAsOf(new Date());
+      setError(null);
+    } catch {
+      setError('No pudimos actualizar las estadísticas. Intenta de nuevo.');
+    } finally {
+      pending.current = false;
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
 
   useFocusEffect(
@@ -98,9 +110,12 @@ export default function StatisticsScreen() {
   const diasSerie = 7;
 
   const enPeriodo = useMemo(() => {
-    const min = desde(periodo, new Date());
-    return reports.filter(r => new Date(r.createdAt).getTime() >= min);
-  }, [reports, periodo]);
+    const min = desde(periodo, asOf);
+    return reports.filter(r => {
+      const t = new Date(r.createdAt).getTime();
+      return t >= min && t <= asOf.getTime();
+    });
+  }, [reports, periodo, asOf]);
 
   const conteo = useMemo(() => {
     const map: Record<ReportStatus, number> = {
@@ -126,11 +141,10 @@ export default function StatisticsScreen() {
   );
 
   const maxCategoria = Math.max(...porCategoria.map(c => c.value), 1);
-  const maxEscala = Math.max(Math.ceil(maxCategoria / 5) * 5, 5);
 
   const serie = useMemo(
-    () => serieDiaria(enPeriodo, diasSerie, new Date()),
-    [enPeriodo, diasSerie],
+    () => serieDiaria(reports, diasSerie, asOf),
+    [reports, diasSerie, asOf],
   );
 
   const areaTop = useMemo(() => {
@@ -163,454 +177,307 @@ export default function StatisticsScreen() {
     percent: total > 0 ? Math.round((conteo[s.value] / total) * 100) : 0,
   }));
 
-  const avatar = (
-    <TouchableOpacity
-      accessibilityRole="button"
-      accessibilityLabel="Ir a mi perfil"
-      activeOpacity={0.85}
-      onPress={() => navigation.navigate('StaffTabs', { screen: 'Profile' })}
-      style={styles.avatarButton}
-    >
-      <Text style={styles.avatarIcon}>👤</Text>
-    </TouchableOpacity>
-  );
-
-  const fondo = SCREEN_BACKGROUNDS.statistics;
-
+  const onRefresh = async () => {
+    if (pending.current) return;
+    setRefreshing(true);
+    await load();
+  };
+  const interval =
+    periodo === 'semana'
+      ? 'Últimos 7 días'
+      : periodo === 'mes'
+      ? 'Últimos 30 días'
+      : 'Último año';
+  const showData = !loading && (!error || reports.length > 0);
   return (
-    <ScreenBackground
-      source={fondo.source}
-      artBottom={fondo.artBottom}
-      overArt={<BrandRow right={avatar} />}
-    >
-      <View style={styles.headerBlock}>
-        <Text style={styles.screenTitle}>Estadísticas y Métricas</Text>
-        <Text style={styles.screenSubtitle}>
-          Análisis de volumen e incidencias universitarias.
-        </Text>
-      </View>
-
-      <ScrollView contentContainerStyle={styles.content}>
-        <SegmentedControl
-          testID="periodo"
-          options={PERIODOS}
-          value={periodo}
-          onChange={v => setPeriodo(v as Periodo)}
-          style={styles.periods}
+    <CampusScrollScreen
+      source={SCREEN_BACKGROUNDS.login.source}
+      campusRatio={0.32}
+      campusHeight={136}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.accent}
         />
-
-        <View style={styles.tilesRow}>
-          <StatCard
-            icon="📄"
-            value={total}
-            label="Totales"
-            color={colors.info}
-            soft={colors.revisionSoft}
+      }
+    >
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>Estadísticas</Text>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Ir a mi perfil"
+          style={styles.avatar}
+          onPress={() =>
+            navigation.navigate('StaffTabs', { screen: 'Profile' })
+          }
+        >
+          <AppIcon name="UserRound" size={26} color={colors.primary} />
+        </TouchableOpacity>
+      </View>
+      <Text style={styles.body}>
+        Consulta el volumen y el estado de las incidencias del campus.
+      </Text>
+      <SegmentedControl
+        testID="periodo"
+        options={PERIODOS}
+        value={periodo}
+        onChange={v => setPeriodo(v as Periodo)}
+        style={styles.periods}
+      />
+      <Text style={styles.body}>
+        {interval} · Reportes según fecha de creación.
+      </Text>
+      <Text style={styles.body}>
+        Los estados corresponden a la situación actual de esos reportes.
+      </Text>
+      {loading ? (
+        <View style={styles.loading}>
+          <ActivityIndicator
+            accessibilityLabel="Cargando estadísticas"
+            color={colors.primary}
           />
-          <StatCard
-            icon="📄"
-            value={conteo.pendiente}
-            label="Pendientes"
-            color={colors.danger}
-            soft={colors.dangerSoft}
-          />
-          <StatCard
-            icon="◷"
-            value={conteo.revision}
-            label="En revisión"
-            color={colors.revision}
-            soft={colors.revisionSoft}
-          />
-          <StatCard
-            icon="✓"
-            value={conteo.solucionado}
-            label="Solucionados"
-            color={colors.solucionado}
-            soft={colors.solucionadoSoft}
-          />
+          <Text style={styles.body}>Cargando estadísticas…</Text>
         </View>
-
-        {/* Barras por categoría */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Reportes por categoría</Text>
-          <View style={styles.chartRow}>
-            <View style={styles.barAxis}>
-              {[1, 0.66, 0.33, 0].map(f => (
-                <Text key={f} style={styles.barAxisLabel}>
-                  {Math.round(maxEscala * f)}
+      ) : null}
+      {error ? (
+        <View style={styles.error}>
+          <Text accessibilityLiveRegion="polite" style={styles.body}>
+            {error}
+          </Text>
+          <TouchableOpacity
+            accessibilityRole="button"
+            onPress={onRefresh}
+            disabled={refreshing}
+            style={styles.retry}
+          >
+            <Text style={styles.action}>
+              {refreshing ? 'Actualizando…' : 'Reintentar'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+      {showData ? (
+        <>
+          <View style={styles.tiles}>
+            {[
+              {
+                value: 'total',
+                label: 'Reportes totales',
+                icon: 'FileText',
+                color: colors.primary,
+                soft: colors.primarySoft,
+              },
+              ...STATUSES,
+            ].map(item => (
+              <View
+                key={item.value}
+                style={[
+                  styles.tile,
+                  (width < 360 || fontScale > 1.3) && styles.fullTile,
+                  { backgroundColor: item.soft },
+                ]}
+              >
+                <AppIcon name={item.icon} size={22} color={item.color} />
+                <Text style={styles.value}>
+                  {item.value === 'total'
+                    ? total
+                    : conteo[item.value as ReportStatus]}
                 </Text>
-              ))}
-            </View>
-
-            <View style={styles.barsArea}>
-              {[0, 1, 2, 3].map(index => (
-                <View
-                  key={`bg-${index}`}
-                  style={[
-                    styles.barGrid,
-                    { bottom: (index / 3) * (CHART_H - 4) },
-                  ]}
-                />
-              ))}
-
-              <View style={styles.bars}>
-                {porCategoria.map(item => (
-                  <View key={item.categoria} style={styles.barSlot}>
-                    <Text style={styles.barValue}>{item.value}</Text>
-                    <View
-                      style={[
-                        styles.bar,
-                        {
-                          height: Math.max(
-                            (item.value / maxEscala) * (CHART_H - 4),
-                            item.value > 0 ? 6 : 0,
-                          ),
-                          backgroundColor: CATEGORY_COLORS[item.categoria],
-                        },
-                      ]}
-                    />
-                  </View>
-                ))}
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.barLabels}>
-            {porCategoria.map(item => (
-              <View key={item.categoria} style={styles.barLabelSlot}>
-                <Text style={styles.barIcon}>
-                  {CATEGORY_ICONS[item.categoria]}
-                </Text>
-                <Text style={styles.barLabel} numberOfLines={1}>
-                  {item.categoria}
-                </Text>
+                <Text style={styles.body}>{item.label}</Text>
               </View>
             ))}
           </View>
-        </View>
-
-        {/* Estado general + actividad reciente */}
-        <View style={styles.splitRow}>
-          <View style={[styles.card, styles.splitCard]}>
-            <Text style={styles.cardTitle}>Estado general</Text>
-            <View style={styles.donutBox}>
-              <DonutChart
-                slices={slices}
-                centerValue={total}
-                centerLabel="reportes"
-                size={98}
-                thickness={16}
-              />
-            </View>
-            <View style={styles.legend}>
-              {slices.map(slice => (
-                <View key={slice.label} style={styles.legendRow}>
-                  <View
-                    style={[styles.legendDot, { backgroundColor: slice.color }]}
+          {total === 0 ? (
+            <EmptyList
+              icon="ChartColumn"
+              title="Sin reportes en este periodo"
+              subtitle="Selecciona otro periodo para consultar las incidencias registradas."
+            />
+          ) : (
+            <>
+              <View style={styles.section}>
+                <Text accessibilityRole="header" style={styles.sectionTitle}>
+                  Reportes por categoría
+                </Text>
+                {porCategoria.map(item => (
+                  <View key={item.categoria} style={styles.category}>
+                    <View style={styles.row}>
+                      <AppIcon
+                        name={CATEGORY_ICONS[item.categoria]}
+                        size={20}
+                        color={colors.primary}
+                      />
+                      <Text style={styles.rowText}>
+                        {item.categoria}: {item.value} reportes
+                      </Text>
+                    </View>
+                    <View style={styles.track} accessible={false}>
+                      <View
+                        style={[
+                          styles.bar,
+                          {
+                            width: `${(item.value / maxCategoria) * 100}%`,
+                            backgroundColor: CATEGORY_COLORS[item.categoria],
+                          },
+                        ]}
+                      />
+                    </View>
+                  </View>
+                ))}
+              </View>
+              <View style={styles.section}>
+                <Text accessibilityRole="header" style={styles.sectionTitle}>
+                  Estado general
+                </Text>
+                <View
+                  style={styles.donut}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants"
+                >
+                  <DonutChart
+                    slices={slices}
+                    centerValue={total}
+                    centerLabel="reportes"
                   />
-                  <Text style={styles.legendValue}>{slice.value}</Text>
-                  <Text style={styles.legendLabel} numberOfLines={1}>
-                    {slice.label}
-                  </Text>
                 </View>
-              ))}
+                {slices.map(slice => (
+                  <View key={slice.label} style={styles.row}>
+                    <AppIcon
+                      name={STATUSES.find(x => x.label === slice.label)!.icon}
+                      size={20}
+                      color={slice.color}
+                    />
+                    <Text style={styles.rowText}>
+                      {slice.label}: {slice.value} ({slice.percent} %)
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
+          <View style={styles.section}>
+            <Text accessibilityRole="header" style={styles.sectionTitle}>
+              Actividad diaria
+            </Text>
+            <Text style={styles.body}>
+              Últimos 7 días · Independiente del periodo seleccionado.
+            </Text>
+            <View
+              style={styles.chart}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
+              <LineChart data={serie} height={140} gridLines={3} />
             </View>
-          </View>
-
-          <View style={[styles.card, styles.splitCard]}>
-            <Text style={styles.cardTitle}>Actividad diaria</Text>
-            <Text style={styles.cardSubtitle}>Últimos 7 días</Text>
-            <LineChart data={serie} height={100} gridLines={3} />
-          </View>
-        </View>
-
-        {/* Área con más incidencias */}
-        {areaTop ? (
-          <TouchableOpacity
-            accessibilityRole="button"
-            activeOpacity={0.88}
-            style={styles.areaCard}
-            onPress={() =>
-              navigation.navigate('StaffTabs', { screen: 'AllReports' })
-            }
-          >
-            <View style={styles.areaIconBox}>
-              <Text style={styles.areaIcon}>🏛</Text>
-            </View>
-            <View style={styles.areaTexts}>
-              <Text style={styles.areaLabel}>Área con mayor atención:</Text>
-              <Text style={styles.areaName} numberOfLines={1}>
-                {areaTop.area}
+            {serie.map(point => (
+              <Text key={point.label} style={styles.body}>
+                {point.label}: {point.value} reportes
               </Text>
-              <Text style={styles.areaMeta} numberOfLines={1}>
-                Categoría prevalente: {areaTop.categoria}
+            ))}
+          </View>
+          {areaTop ? (
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Abrir panel de reportes"
+              style={styles.section}
+              onPress={() =>
+                navigation.navigate('StaffTabs', { screen: 'AllReports' })
+              }
+            >
+              <Text style={styles.sectionTitle}>Área con más incidencias</Text>
+              <Text style={styles.area}>{areaTop.area}</Text>
+              <Text style={styles.body}>{areaTop.total} reportes</Text>
+              <Text style={styles.body}>
+                Categoría principal: {areaTop.categoria}
               </Text>
-            </View>
-            <Text style={styles.areaChevron}>›</Text>
-          </TouchableOpacity>
-        ) : null}
-
-        <Text style={styles.footer}>
-          Los datos se actualizan dinámicamente según la actividad del personal.
-        </Text>
-      </ScrollView>
-    </ScreenBackground>
+              <Text style={styles.action}>Ver panel de reportes</Text>
+            </TouchableOpacity>
+          ) : null}
+        </>
+      ) : null}
+    </CampusScrollScreen>
   );
 }
-
-function StatCard({
-  icon,
-  value,
-  label,
-  color,
-  soft,
-}: {
-  icon: string;
-  value: number;
-  label: string;
-  color: string;
-  soft: string;
-}) {
-  return (
-    <View style={styles.statCard}>
-      <View style={[styles.statIconBox, { backgroundColor: soft }]}>
-        <Text style={[styles.statIcon, { color }]}>{icon}</Text>
-      </View>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel} numberOfLines={1}>
-        {label}
-      </Text>
-    </View>
-  );
-}
-
 const styles = StyleSheet.create({
-  headerBlock: {
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.xs,
-  },
-  screenTitle: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: colors.primary,
-    letterSpacing: -0.5,
-  },
-  screenSubtitle: {
-    fontSize: 13.5,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  content: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl + 20,
-  },
-  avatarButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...shadow.card,
-  },
-  avatarIcon: { fontSize: 19 },
-  periods: {
-    marginVertical: spacing.sm,
-  },
-  tilesRow: {
-    flexDirection: 'row',
-    gap: spacing.xs,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: 2,
-    alignItems: 'center',
-    gap: 2,
-    ...shadow.card,
-  },
-  statIconBox: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 2,
-  },
-  statIcon: { fontSize: 14 },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.text,
-  },
-  statLabel: {
-    fontSize: 10,
-    color: colors.textMuted,
-    textAlign: 'center',
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    marginTop: spacing.md,
-    ...shadow.card,
-  },
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: colors.primary,
-  },
-  cardSubtitle: {
-    fontSize: 11.5,
-    color: colors.textMuted,
-    marginTop: 1,
-    marginBottom: spacing.xs,
-  },
-  chartRow: {
-    flexDirection: 'row',
-    marginTop: spacing.sm,
-  },
-  barAxis: {
-    width: 18,
-    height: CHART_H,
-    justifyContent: 'space-between',
-  },
-  barAxisLabel: {
-    fontSize: 9,
-    color: colors.chartAxis,
-    marginTop: -6,
-  },
-  barsArea: {
-    flex: 1,
-    height: CHART_H,
-  },
-  barGrid: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: colors.chartGrid,
-  },
-  bars: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    height: '100%',
-  },
-  barSlot: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-  },
-  barValue: {
-    fontSize: 10.5,
-    fontWeight: '800',
-    color: colors.text,
-    marginBottom: 2,
-  },
-  bar: {
-    width: '55%',
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
-  },
-  barLabels: {
-    flexDirection: 'row',
-    marginTop: spacing.sm,
-  },
-  barLabelSlot: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  barIcon: {
-    fontSize: 14,
-    color: colors.primary,
-  },
-  barLabel: {
-    fontSize: 9,
-    color: colors.textMuted,
-    textAlign: 'center',
-    marginTop: 2,
-  },
-  splitRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  splitCard: {
-    flex: 1,
-    padding: spacing.sm + 2,
-  },
-  donutBox: {
-    alignItems: 'center',
-    marginVertical: spacing.xs,
-  },
-  legend: {
-    gap: 4,
-  },
-  legendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  legendValue: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: colors.text,
-  },
-  legendLabel: {
-    flex: 1,
-    fontSize: 10,
-    color: colors.textMuted,
-  },
-  areaCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    marginTop: spacing.md,
-    ...shadow.card,
-  },
-  areaIconBox: {
+  titleRow: { flexDirection: 'row', gap: spacing.md, alignItems: 'center' },
+  title: { flex: 1, fontSize: 28, fontWeight: '800', color: colors.primary },
+  avatar: {
     width: 48,
     height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.purpleSoft,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  areaIcon: { fontSize: 22 },
-  areaTexts: { flex: 1 },
-  areaLabel: {
-    fontSize: 11.5,
-    color: colors.textMuted,
+  body: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: colors.text,
+    marginTop: spacing.xs,
   },
-  areaName: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: colors.primary,
-    marginTop: 1,
-  },
-  areaMeta: {
-    fontSize: 12,
-    color: colors.textMuted,
-    marginTop: 1,
-  },
-  areaChevron: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: colors.textMuted,
-  },
-  footer: {
-    fontSize: 11.5,
-    color: colors.textMuted,
-    textAlign: 'center',
+  periods: { marginTop: spacing.lg, marginBottom: spacing.sm },
+  tiles: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
     marginTop: spacing.lg,
   },
+  tile: {
+    flexBasis: '45%',
+    flexGrow: 1,
+    padding: spacing.md,
+    borderRadius: radius.md,
+  },
+  fullTile: { flexBasis: '100%' },
+  value: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.text,
+    marginTop: spacing.sm,
+  },
+  section: {
+    marginTop: spacing.lg,
+    paddingTop: spacing.lg,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  sectionTitle: {
+    fontSize: 19,
+    fontWeight: '800',
+    color: colors.primary,
+    marginBottom: spacing.md,
+  },
+  category: { marginBottom: spacing.md },
+  row: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  rowText: { flex: 1, fontSize: 15, lineHeight: 22, color: colors.text },
+  track: {
+    height: 8,
+    borderRadius: radius.sm,
+    backgroundColor: colors.background,
+    overflow: 'hidden',
+  },
+  bar: { height: '100%', borderRadius: radius.sm },
+  donut: { alignItems: 'center', marginBottom: spacing.md },
+  chart: { marginVertical: spacing.lg },
+  area: { fontSize: 19, fontWeight: '700', color: colors.primary },
+  action: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.primary,
+    marginTop: spacing.sm,
+  },
+  loading: { alignItems: 'center', padding: spacing.lg },
+  error: {
+    padding: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.dangerSoft,
+    marginTop: spacing.md,
+  },
+  retry: { minHeight: 48, justifyContent: 'center', alignSelf: 'flex-start' },
 });

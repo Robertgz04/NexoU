@@ -54,12 +54,12 @@ export const CATEGORY_COLORS: Record<string, string> = {
 
 /** Glifo e icono de cada categoría (mockups de Inicio y Estadísticas). */
 export const CATEGORY_ICONS: Record<string, string> = {
-  Mobiliario: '🪑',
-  Electricidad: '⚡',
-  Agua: '💧',
-  Limpieza: '🧹',
-  Equipos: '💻',
-  Otros: '•••',
+  Mobiliario: 'Armchair',
+  Electricidad: 'Plug',
+  Agua: 'Droplet',
+  Limpieza: 'BrushCleaning',
+  Equipos: 'Laptop',
+  Otros: 'Ellipsis',
 };
 
 export const spacing = {

@@ -1,176 +1,208 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   RefreshControl,
-  ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
-import BrandRow from '../../components/BrandRow';
-import Chip from '../../components/Chip';
+import AppIcon from '../../components/AppIcon';
+import MotionTouchable from '../../components/MotionTouchable';
+import CampusListHeader from '../../components/CampusListHeader';
 import EmptyList from '../../components/EmptyList';
 import ReportCard from '../../components/ReportCard';
-import ScreenBackground from '../../components/ScreenBackground';
-import StatTiles from '../../components/StatTiles';
-import type { StatItem } from '../../components/StatTiles';
-import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
+import SelectField from '../../components/SelectField';
 import { AREAS, STATUSES } from '../../constants/catalog';
 import { getAllReports } from '../../data/reportRepository';
-import { colors, radius, shadow, spacing } from '../../theme';
+import { colors, radius, spacing } from '../../theme';
 import type { Report, ReportStatus } from '../../types';
 import type { RootStackParamList } from '../../navigation/types';
 
-type EstadoFilter = ReportStatus | 'todas';
+type Filter = ReportStatus | 'todas';
 
-/** F07 – Panel con todos los reportes recibidos del personal universitario. */
 export default function AllReportsScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
-
+  const insets = useSafeAreaInsets();
   const [reports, setReports] = useState<Report[]>([]);
-  const [estadoFilter, setEstadoFilter] = useState<EstadoFilter>('todas');
-  const [areaFilter, setAreaFilter] = useState<string>('Todas');
+  const [estadoFilter, setEstadoFilter] = useState<Filter>('todas');
+  const [areaFilter, setAreaFilter] = useState('Todas');
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const pending = useRef(false);
 
   const load = useCallback(async () => {
-    const data = await getAllReports();
-    setReports(data);
+    if (pending.current) {
+      return;
+    }
+    pending.current = true;
+    try {
+      setReports(await getAllReports());
+      setError(null);
+    } catch {
+      setError('No pudimos actualizar los reportes. Intenta de nuevo.');
+    } finally {
+      pending.current = false;
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
-
   useFocusEffect(
     useCallback(() => {
       load();
     }, [load]),
   );
-
   const onRefresh = useCallback(async () => {
+    if (pending.current) {
+      return;
+    }
     setRefreshing(true);
     await load();
-    setRefreshing(false);
   }, [load]);
-
-  const filtered = reports.filter(r => {
-    const matchEstado = estadoFilter === 'todas' || r.estado === estadoFilter;
-    const matchArea = areaFilter === 'Todas' || r.area === areaFilter;
-    return matchEstado && matchArea;
-  });
-
-  const pendientes = reports.filter(r => r.estado === 'pendiente').length;
-  const enRevision = reports.filter(r => r.estado === 'revision').length;
-  const solucionados = reports.filter(r => r.estado === 'solucionado').length;
-
-  const tiles: StatItem[] = [
-    {
-      icon: '📄',
-      label: 'Pendientes',
-      value: pendientes,
-      color: colors.pendiente,
-      soft: colors.pendienteSoft,
-    },
-    {
-      icon: '↻',
-      label: 'En revisión',
-      value: enRevision,
-      color: colors.revision,
-      soft: colors.revisionSoft,
-    },
-    {
-      icon: '✓',
-      label: 'Solucionados',
-      value: solucionados,
-      color: colors.solucionado,
-      soft: colors.solucionadoSoft,
-    },
-  ];
-
-  const goProfile = () =>
-    navigation.navigate('StaffTabs', { screen: 'Profile' });
-
-  const avatar = (
-    <TouchableOpacity
-      accessibilityRole="button"
-      accessibilityLabel="Ir a mi perfil"
-      activeOpacity={0.85}
-      onPress={goProfile}
-      style={styles.avatarButton}
-    >
-      <Text style={styles.avatarIcon}>👤</Text>
-    </TouchableOpacity>
+  const clearFilters = () => {
+    setEstadoFilter('todas');
+    setAreaFilter('Todas');
+  };
+  const filtered = reports.filter(
+    r =>
+      (estadoFilter === 'todas' || r.estado === estadoFilter) &&
+      (areaFilter === 'Todas' || r.area === areaFilter),
   );
+  const hasFilters = estadoFilter !== 'todas' || areaFilter !== 'Todas';
+  const count = (status: Filter) =>
+    status === 'todas'
+      ? reports.length
+      : reports.filter(r => r.estado === status).length;
 
   const header = (
-    <View style={styles.headerBlock}>
-      <Text style={styles.title}>
-        Hola, {user?.nombre?.split(' ')[0] ?? 'personal'}
-      </Text>
-      <Text style={styles.subtitle}>Panel de atención de incidencias</Text>
-
-      <StatTiles items={tiles} style={styles.tiles} />
-
-      <Text style={styles.filterLabel}>Filtrar por estado</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterRow}
-      >
-        <Chip
-          label="Todos"
-          selected={estadoFilter === 'todas'}
-          onPress={() => setEstadoFilter('todas')}
+    <CampusListHeader>
+      <View style={styles.header}>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>Panel de incidencias</Text>
+          <MotionTouchable
+            accessibilityRole="button"
+            accessibilityLabel="Ir a mi perfil"
+            onPress={() =>
+              navigation.navigate('StaffTabs', { screen: 'Profile' })
+            }
+            style={styles.avatar}
+          >
+            <AppIcon name="UserRound" size={26} color={colors.primary} />
+          </MotionTouchable>
+        </View>
+        <Text style={styles.body}>
+          Hola, {user?.nombre?.split(' ')[0] ?? 'personal'}. Consulta y atiende
+          los reportes del campus.
+        </Text>
+        {(!loading && !error) || reports.length > 0 ? (
+          <View style={styles.summary}>
+            {STATUSES.map(s => (
+              <View
+                key={s.value}
+                style={[styles.tile, { backgroundColor: s.soft }]}
+              >
+                <AppIcon name={s.icon} size={22} color={s.color} />
+                <Text style={styles.value}>{count(s.value)}</Text>
+                <Text style={styles.tileLabel}>{s.label}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+        <Text style={styles.section}>Filtrar por estado</Text>
+        <View style={styles.filters}>
+          {[
+            { value: 'todas' as Filter, label: 'Todos', icon: 'FolderOpen' },
+            ...STATUSES,
+          ].map(s => {
+            const selected = estadoFilter === s.value;
+            return (
+              <MotionTouchable
+                key={s.value}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  s.label + ', ' + count(s.value) + ' reportes'
+                }
+                accessibilityState={{ selected }}
+                onPress={() => setEstadoFilter(s.value)}
+                style={[styles.filter, selected && styles.selected]}
+              >
+                <AppIcon
+                  name={s.icon}
+                  size={20}
+                  color={selected ? colors.surface : colors.primary}
+                />
+                <Text
+                  style={[styles.filterLabel, selected && styles.selectedLabel]}
+                >
+                  {s.label} ({loading ? '…' : count(s.value)})
+                </Text>
+              </MotionTouchable>
+            );
+          })}
+        </View>
+        <SelectField
+          label="Ubicación o área"
+          value={areaFilter}
+          placeholder="Todas"
+          options={['Todas', ...AREAS]}
+          onSelect={setAreaFilter}
+          icon="MapPin"
         />
-        {STATUSES.map(s => (
-          <Chip
-            key={s.value}
-            label={s.label}
-            color={s.color}
-            selected={estadoFilter === s.value}
-            onPress={() => setEstadoFilter(s.value)}
-          />
-        ))}
-      </ScrollView>
-
-      <Text style={styles.filterLabel}>Filtrar por ubicación o área</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterRow}
-      >
-        <Chip
-          label="Todas"
-          selected={areaFilter === 'Todas'}
-          onPress={() => setAreaFilter('Todas')}
-        />
-        {AREAS.map(a => (
-          <Chip
-            key={a}
-            label={a}
-            selected={areaFilter === a}
-            onPress={() => setAreaFilter(a)}
-          />
-        ))}
-      </ScrollView>
-    </View>
+        {hasFilters ? (
+          <MotionTouchable
+            accessibilityRole="button"
+            onPress={clearFilters}
+            style={styles.textButton}
+          >
+            <Text style={styles.action}>Limpiar filtros</Text>
+          </MotionTouchable>
+        ) : null}
+        {!loading && (!error || reports.length > 0) ? (
+          <Text accessibilityLiveRegion="polite" style={styles.body}>
+            {filtered.length} de {reports.length} reportes
+          </Text>
+        ) : null}
+        {error ? (
+          <View style={styles.error}>
+            <Text accessibilityLiveRegion="polite" style={styles.body}>
+              {error}
+            </Text>
+            <MotionTouchable
+              accessibilityRole="button"
+              accessibilityState={{ disabled: refreshing }}
+              disabled={refreshing}
+              onPress={onRefresh}
+              style={styles.textButton}
+            >
+              <Text style={styles.action}>
+                {refreshing ? 'Actualizando…' : 'Reintentar'}
+              </Text>
+            </MotionTouchable>
+          </View>
+        ) : null}
+      </View>
+    </CampusListHeader>
   );
 
-  const fondo = SCREEN_BACKGROUNDS.allReports;
-
   return (
-    <ScreenBackground
-      source={fondo.source}
-      artBottom={fondo.artBottom}
-      overArt={<BrandRow right={avatar} />}
-    >
+    <View style={[styles.root, { paddingTop: insets.top }]}>
+      <StatusBar barStyle="dark-content" />
       <FlatList
         data={filtered}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.list}
         ListHeaderComponent={header}
+        contentContainerStyle={[
+          styles.list,
+          { paddingBottom: spacing.xl + 20 + insets.bottom },
+        ]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -179,70 +211,131 @@ export default function AllReportsScreen() {
           />
         }
         renderItem={({ item }) => (
-          <ReportCard
-            report={item}
-            showOwner
-            onPress={() =>
-              navigation.navigate('ReportDetail', { reportId: item.id })
-            }
-          />
+          <View style={styles.item}>
+            <ReportCard
+              report={item}
+              showOwner
+              onPress={() =>
+                navigation.navigate('ReportDetail', { reportId: item.id })
+              }
+            />
+          </View>
         )}
         ListEmptyComponent={
-          <EmptyList
-            icon="🔍"
-            title="Sin reportes registrados"
-            subtitle="No se encontraron reportes con la combinación de filtros seleccionada."
-          />
+          loading ? (
+            <View style={styles.loading}>
+              <ActivityIndicator
+                color={colors.primary}
+                accessibilityLabel="Cargando reportes"
+              />
+              <Text style={styles.body}>Cargando reportes…</Text>
+            </View>
+          ) : error ? undefined : (
+            <EmptyList
+              icon="FolderOpen"
+              title={
+                reports.length === 0
+                  ? 'Sin reportes registrados'
+                  : 'Ningún reporte coincide con los filtros'
+              }
+              subtitle={
+                reports.length === 0
+                  ? 'Las incidencias registradas aparecerán aquí.'
+                  : 'Prueba otro estado o ubicación para encontrar una incidencia.'
+              }
+              actionLabel={hasFilters ? 'Limpiar filtros' : undefined}
+              onAction={hasFilters ? clearFilters : undefined}
+            />
+          )
         }
       />
-    </ScreenBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerBlock: {
-    marginBottom: spacing.xs,
+  root: { flex: 1, backgroundColor: colors.surface },
+  list: { flexGrow: 1, backgroundColor: colors.surface },
+  header: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
   },
-  title: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: colors.primary,
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: 13.5,
-    color: colors.textMuted,
-    marginTop: 2,
-  },
-  avatarButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: colors.surface,
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  title: { flex: 1, fontSize: 28, fontWeight: '800', color: colors.primary },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadow.card,
   },
-  avatarIcon: { fontSize: 19 },
-  tiles: {
-    marginTop: spacing.md,
+  body: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: colors.text,
+    marginTop: spacing.xs,
   },
-  filterLabel: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: colors.primary,
-    marginTop: spacing.md,
-    marginBottom: spacing.xs,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+  summary: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
   },
-  filterRow: {
+  tile: {
+    flexGrow: 1,
+    flexBasis: 100,
+    borderRadius: radius.md,
+    padding: spacing.md,
     gap: spacing.xs,
   },
-  list: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.xs,
-    paddingBottom: spacing.xl + 20,
-    flexGrow: 1,
+  value: { fontSize: 24, fontWeight: '800', color: colors.text },
+  tileLabel: { fontSize: 15, color: colors.text },
+  section: {
+    fontSize: 19,
+    fontWeight: '700',
+    color: colors.primary,
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
   },
+  filters: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  filter: {
+    flexBasis: '45%',
+    flexGrow: 1,
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: 12,
+    borderRadius: radius.md,
+    backgroundColor: colors.background,
+  },
+  selected: { backgroundColor: colors.primary },
+  filterLabel: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  selectedLabel: { color: colors.surface, fontWeight: '800' },
+  textButton: {
+    minHeight: 48,
+    justifyContent: 'center',
+    alignSelf: 'flex-start',
+  },
+  action: { fontSize: 15, fontWeight: '700', color: colors.primary },
+  error: {
+    backgroundColor: colors.dangerSoft,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    marginTop: spacing.md,
+  },
+  item: { paddingHorizontal: spacing.md },
+  loading: { alignItems: 'center', gap: spacing.sm, padding: spacing.lg },
 });

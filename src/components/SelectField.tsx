@@ -1,3 +1,5 @@
+import TouchableOpacity from './MotionTouchable';
+import AppIcon from './AppIcon';
 import React, { useState } from 'react';
 import {
   FlatList,
@@ -5,7 +7,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { colors, radius, shadow, spacing } from '../theme';
@@ -16,7 +17,7 @@ interface Props {
   placeholder: string;
   options: string[];
   onSelect: (value: string) => void;
-  /** Glifo a la izquierda del valor (mockups: 📍 para área, 💻 para tipo). */
+  /** Nombre del icono a la izquierda del valor. */
   icon?: string;
   error?: string | null;
   testID?: string;
@@ -45,19 +46,17 @@ export default function SelectField({
       <TouchableOpacity
         testID={testID}
         accessibilityRole="button"
+        accessibilityLabel={`${label}: ${value ?? placeholder}`}
         accessibilityState={{ expanded: open }}
         activeOpacity={0.85}
         onPress={() => setOpen(true)}
         style={[styles.control, !!error && styles.controlError]}
       >
-        {icon ? <Text style={styles.icon}>{icon}</Text> : null}
-        <Text
-          style={[styles.value, !value && styles.placeholder]}
-          numberOfLines={1}
-        >
+        {icon ? <AppIcon name={icon} size={20} color={colors.primary} /> : null}
+        <Text style={[styles.value, !value && styles.placeholder]}>
           {value ?? placeholder}
         </Text>
-        <Text style={styles.chevron}>⌄</Text>
+        <AppIcon name="ChevronDown" size={20} color={colors.primary} />
       </TouchableOpacity>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -85,6 +84,7 @@ export default function SelectField({
                 return (
                   <TouchableOpacity
                     accessibilityRole="button"
+                    accessibilityState={{ selected }}
                     activeOpacity={0.8}
                     onPress={() => {
                       onSelect(item);
@@ -97,7 +97,9 @@ export default function SelectField({
                     >
                       {item}
                     </Text>
-                    {selected ? <Text style={styles.check}>✓</Text> : null}
+                    {selected ? (
+                      <AppIcon name="Check" size={20} color={colors.primary} />
+                    ) : null}
                   </TouchableOpacity>
                 );
               }}
@@ -128,6 +130,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: radius.md + 2,
     paddingHorizontal: spacing.md,
+    minHeight: 48,
     paddingVertical: 14,
   },
   controlError: {
@@ -184,9 +187,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
+    minHeight: 48,
     paddingVertical: 14,
   },
   optionText: {
+    flex: 1,
     fontSize: 15,
     color: colors.text,
   },

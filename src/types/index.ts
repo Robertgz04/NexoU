@@ -8,6 +8,17 @@ export type Role = 'estudiante' | 'personal';
 /** Estados posibles de un reporte (F08). */
 export type ReportStatus = 'pendiente' | 'revision' | 'solucionado';
 
+/** Actualización registrada; no se reconstruyen eventos anteriores. */
+export interface ReportStatusUpdate {
+  id: string;
+  from: ReportStatus;
+  to: ReportStatus;
+  note: string;
+  createdAt: string;
+  authorId?: string;
+  authorName?: string;
+}
+
 /** Categorías de incidencia (F04). */
 export type Category =
   | 'Mobiliario'
@@ -45,6 +56,7 @@ export interface Report {
   photoBase64: string | null;
   createdAt: string;
   updatedAt: string;
+  statusUpdates?: ReportStatusUpdate[];
 }
 
 /** Datos de entrada para registro (F02). */
@@ -65,4 +77,12 @@ export interface CreateReportInput {
   area: string;
   categoria: Category;
   photoBase64: string | null;
+}
+
+/** Editable account data; role and identity remain unchanged. */
+export interface UpdatePersonalDataInput {
+  nombre: string;
+  matricula: string;
+  email: string;
+  currentPassword?: string;
 }

@@ -1,3 +1,5 @@
+import useReducedMotion from '../hooks/useReducedMotion';
+import AppIcon from '../components/AppIcon';
 import React, { useCallback, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -16,7 +18,7 @@ const Tab = createBottomTabNavigator<StaffTabParamList>();
 function tabIcon(icon: string) {
   return ({ color, focused }: { color: string; focused: boolean }) => (
     <View style={[styles.tabIconBox, focused && styles.tabIconBoxActive]}>
-      <Text style={[styles.tabIcon, { color }]}>{icon}</Text>
+      <AppIcon name={icon} size={26} color={color} />
     </View>
   );
 }
@@ -26,7 +28,7 @@ function notificationIcon(badge: number) {
   return ({ color, focused }: { color: string; focused: boolean }) => (
     <View>
       <View style={[styles.tabIconBox, focused && styles.tabIconBoxActive]}>
-        <Text style={[styles.tabIcon, { color }]}>🔔</Text>
+        <AppIcon name="Bell" size={26} color={color} />
       </View>
       {badge > 0 ? (
         <View style={styles.badge}>
@@ -50,7 +52,8 @@ const styles = StyleSheet.create({
   tabIconBoxActive: {
     backgroundColor: colors.accentSoft,
   },
-  badge: {    position: 'absolute',
+  badge: {
+    position: 'absolute',
     top: -4,
     right: -6,
     minWidth: 18,
@@ -74,6 +77,7 @@ const styles = StyleSheet.create({
  * dibujadas en el fondo de cada pantalla, por lo que la barra es opaca.
  */
 export default function StaffTabs() {
+  const reducedMotion = useReducedMotion();
   const [pendientes, setPendientes] = useState(0);
 
   const load = useCallback(async () => {
@@ -93,6 +97,8 @@ export default function StaffTabs() {
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
+          animation: reducedMotion ? 'none' : 'fade',
+          transitionSpec: { animation: 'timing', config: { duration: 180 } },
           tabBarActiveTintColor: colors.accentDark,
           tabBarInactiveTintColor: colors.textMuted,
           tabBarStyle: {
@@ -109,7 +115,7 @@ export default function StaffTabs() {
           options={{
             title: 'Panel de reportes',
             tabBarLabel: 'Reportes',
-            tabBarIcon: tabIcon('▦'),
+            tabBarIcon: tabIcon('LayoutDashboard'),
           }}
         />
         <Tab.Screen
@@ -118,7 +124,7 @@ export default function StaffTabs() {
           options={{
             title: 'Estadísticas',
             tabBarLabel: 'Estadísticas',
-            tabBarIcon: tabIcon('▥'),
+            tabBarIcon: tabIcon('ChartColumn'),
           }}
         />
         <Tab.Screen
@@ -136,7 +142,7 @@ export default function StaffTabs() {
           options={{
             title: 'Perfil',
             tabBarLabel: 'Perfil',
-            tabBarIcon: tabIcon('👤'),
+            tabBarIcon: tabIcon('UserRound'),
           }}
         />
       </Tab.Navigator>

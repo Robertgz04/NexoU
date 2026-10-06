@@ -40,23 +40,23 @@ export const STATUSES: StatusMeta[] = [
   {
     value: 'pendiente',
     label: 'Pendiente',
-    color: '#F59E0B',
-    soft: '#FEF3C7',
-    icon: '◷',
+    color: '#BE3348',
+    soft: '#FDECEF',
+    icon: 'FileText',
   },
   {
     value: 'revision',
     label: 'En revisión',
-    color: '#3B82F6',
-    soft: '#DBEAFE',
-    icon: '↻',
+    color: '#8A5900',
+    soft: '#FFF6E2',
+    icon: 'Clock',
   },
   {
     value: 'solucionado',
     label: 'Solucionado',
-    color: '#10B981',
+    color: '#08734D',
     soft: '#D1FAE5',
-    icon: '✓',
+    icon: 'Check',
   },
 ];
 
@@ -66,6 +66,7 @@ export function statusMeta(status: ReportStatus): StatusMeta {
 
 /** Límite de caracteres del formulario de reporte (F03). */
 export const LIMITS = {
+  statusNote: 500,
   titulo: 80,
   descripcion: 500,
   passwordMin: 6,

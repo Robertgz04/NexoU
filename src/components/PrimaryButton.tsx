@@ -1,9 +1,10 @@
+import TouchableOpacity from './MotionTouchable';
+import AppIcon from './AppIcon';
 import React from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
   Text,
-  TouchableOpacity,
   ViewStyle,
 } from 'react-native';
 import { colors, radius, shadow, spacing } from '../theme';
@@ -61,17 +62,19 @@ export default function PrimaryButton({
       {loading ? (
         <ActivityIndicator color={textColor} />
       ) : (
-        <Text style={[styles.label, { color: textColor }]}>
-          {title}
-          {withArrow ? '  →' : ''}
-        </Text>
+        <Text style={[styles.label, { color: textColor }]}>{title}</Text>
       )}
+      {!loading && withArrow ? (
+        <AppIcon name="ArrowRight" color={textColor} />
+      ) : null}
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   button: {
+    flexDirection: 'row',
+    gap: 10,
     minHeight: 52,
     borderRadius: radius.pill,
     alignItems: 'center',

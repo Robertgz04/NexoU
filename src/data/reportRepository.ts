@@ -1,6 +1,7 @@
-import type {CreateReportInput, Report, ReportStatus} from '../types';
-import {getJSON, setJSON, StorageKeys} from './storage';
-import {uid} from '../utils/validators';
+import type { CreateReportInput, Report, ReportStatus } from '../types';
+import { getJSON, setJSON, StorageKeys } from './storage';
+import { uid } from '../utils/validators';
+import { LIMITS } from '../constants/catalog';
 
 /**
  * Repositorio de reportes (F03–F08).
@@ -60,16 +61,38 @@ export async function createReport(input: CreateReportInput): Promise<Report> {
 export async function updateReportStatus(
   id: string,
   estado: ReportStatus,
+  note = '',
+  author?: { id: string; nombre: string },
 ): Promise<Report> {
+  const trimmedNote = note.trim();
+  if (trimmedNote.length > LIMITS.statusNote) {
+    throw new Error(
+      `La nota no puede superar ${LIMITS.statusNote} caracteres.`,
+    );
+  }
   const all = await getJSON<Report[]>(StorageKeys.reports, []);
   const index = all.findIndex(r => r.id === id);
   if (index === -1) {
     throw new Error('El reporte ya no existe.');
   }
+  const previous = all[index];
+  if (previous.estado === estado) return previous;
+  const now = new Date().toISOString();
   const updated: Report = {
     ...all[index],
     estado,
-    updatedAt: new Date().toISOString(),
+    updatedAt: now,
+    statusUpdates: [
+      ...(previous.statusUpdates ?? []),
+      {
+        id: uid('status_'),
+        from: previous.estado,
+        to: estado,
+        note: trimmedNote,
+        createdAt: now,
+        ...(author ? { authorId: author.id, authorName: author.nombre } : {}),
+      },
+    ],
   };
   all[index] = updated;
   await setJSON(StorageKeys.reports, all);
@@ -77,9 +100,6 @@ export async function updateReportStatus(
 }
 
 /** Conteo rápido para el resumen de los paneles. */
-export function countByStatus(
-  reports: Report[],
-  status: ReportStatus,
-): number {
+export function countByStatus(reports: Report[], status: ReportStatus): number {
   return reports.filter(r => r.estado === status).length;
 }

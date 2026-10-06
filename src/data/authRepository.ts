@@ -1,7 +1,7 @@
-import type {RegisterInput, User} from '../types';
-import {getJSON, setJSON, StorageKeys} from './storage';
-import {hashPassword} from '../utils/sha256';
-import {uid} from '../utils/validators';
+import type { RegisterInput, UpdatePersonalDataInput, User } from '../types';
+import { getJSON, setJSON, StorageKeys } from './storage';
+import { hashPassword } from '../utils/sha256';
+import { uid, validateRequired, validateEmail } from '../utils/validators';
 
 /**
  * Repositorio de usuarios (F01 Inicio de sesión, F02 Registro).
@@ -58,16 +58,55 @@ export async function getUserById(id: string): Promise<User | null> {
 
 /** Sesión persistente (se mantiene entre sesiones de la app). */
 export async function saveSession(userId: string): Promise<void> {
-  await setJSON(StorageKeys.session, {userId});
+  await setJSON(StorageKeys.session, { userId });
 }
 
 export async function getSessionUserId(): Promise<string | null> {
-  const data = await getJSON<{userId: string | null}>(StorageKeys.session, {
+  const data = await getJSON<{ userId: string | null }>(StorageKeys.session, {
     userId: null,
   });
   return data.userId;
 }
 
 export async function clearSession(): Promise<void> {
-  await setJSON(StorageKeys.session, {userId: null});
+  await setJSON(StorageKeys.session, { userId: null });
+}
+
+/** Updates the current account, rehashing credentials only after verification. */
+export async function updatePersonalData(
+  id: string,
+  input: UpdatePersonalDataInput,
+): Promise<User> {
+  const email = input.email.trim().toLowerCase();
+  const validation =
+    validateRequired(input.nombre, 'nombre') ||
+    validateRequired(input.matricula, 'identificador') ||
+    validateEmail(email);
+  if (validation) throw new Error(validation);
+  const users = await getUsers();
+  const index = users.findIndex(user => user.id === id);
+  if (index < 0) throw new Error('La cuenta ya no está disponible.');
+  const current = users[index];
+  if (users.some(user => user.id !== id && user.email.toLowerCase() === email))
+    throw new Error('El correo ya está registrado en otra cuenta.');
+  let passwordHash = current.passwordHash;
+  if (email !== current.email) {
+    if (
+      !input.currentPassword ||
+      hashPassword(current.email, input.currentPassword) !==
+        current.passwordHash
+    )
+      throw new Error('La contraseña actual es incorrecta.');
+    passwordHash = hashPassword(email, input.currentPassword);
+  }
+  const updated: User = {
+    ...current,
+    nombre: input.nombre.trim(),
+    matricula: input.matricula.trim(),
+    email,
+    passwordHash,
+  };
+  users[index] = updated;
+  await setJSON(StorageKeys.users, users);
+  return updated;
 }

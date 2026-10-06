@@ -1,25 +1,25 @@
+import TouchableOpacity from '../../components/MotionTouchable';
+import AppIcon from '../../components/AppIcon';
 import React, { useCallback, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
+  StatusBar,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../context/AuthContext';
-import BrandRow from '../../components/BrandRow';
-import Chip from '../../components/Chip';
 import EmptyList from '../../components/EmptyList';
-import ReportCard from '../../components/ReportCard';
-import ScreenBackground from '../../components/ScreenBackground';
-import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
-import { STATUSES, statusMeta } from '../../constants/catalog';
+import ReportHistoryCard from '../../components/ReportHistoryCard';
+import CampusListHeader from '../../components/CampusListHeader';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { STATUSES } from '../../constants/catalog';
 import { getReportsByOwner } from '../../data/reportRepository';
-import { colors, radius, shadow, spacing } from '../../theme';
+import { colors, radius, spacing } from '../../theme';
 import type { Report, ReportStatus } from '../../types';
 import type { RootStackParamList } from '../../navigation/types';
 
@@ -34,19 +34,19 @@ function notaDe(reporte: Report): {
   switch (reporte.estado) {
     case 'revision':
       return {
-        icon: '🔧',
+        icon: 'Wrench',
         title: 'Atendido por mantenimiento',
         text: 'Se ha asignado al equipo de mantenimiento para su revisión.',
       };
     case 'solucionado':
       return {
-        icon: '✅',
+        icon: 'CircleCheck',
         title: 'Problema solucionado',
         text: 'Mantenimiento terminó el trabajo. ¡Gracias por reportar!',
       };
     default:
       return {
-        icon: '🕐',
+        icon: 'Clock',
         title: 'En espera de atención',
         text: 'Tu reporte fue recibido y pronto será revisado por mantenimiento.',
       };
@@ -56,9 +56,12 @@ function notaDe(reporte: Report): {
 /** F06 – Consulta de los reportes propios del estudiante con filtros por estado. */
 export default function MyReportsScreen() {
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [reports, setReports] = useState<Report[]>([]);
   const [filter, setFilter] = useState<Filter>('todas');
   const [refreshing, setRefreshing] = useState(false);
@@ -68,8 +71,15 @@ export default function MyReportsScreen() {
     if (!user) {
       return;
     }
-    const data = await getReportsByOwner(user.id);
-    setReports(data);
+    try {
+      const data = await getReportsByOwner(user.id);
+      setReports(data);
+      setLoadError(null);
+    } catch {
+      setLoadError('No pudimos actualizar tus reportes. Intenta de nuevo.');
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
 
   useFocusEffect(
@@ -104,55 +114,88 @@ export default function MyReportsScreen() {
       onPress={goProfile}
       style={styles.avatarButton}
     >
-      <Text style={styles.avatarIcon}>👤</Text>
+      <AppIcon name="UserRound" size={26} color={colors.primary} />
     </TouchableOpacity>
   );
 
   const header = (
-    <View style={styles.headerBlock}>
-      <Text style={styles.title}>Mis reportes</Text>
-      <Text style={styles.subtitle}>
-        Consulta el estado y seguimiento en tiempo real de tus incidencias.
-      </Text>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filters}
-      >
-        <Chip
-          label={`Todos (${reports.length})`}
-          selected={filter === 'todas'}
-          onPress={() => setFilter('todas')}
-        />
-        {STATUSES.map(s => {
-          const count = reports.filter(r => r.estado === s.value).length;
-          return (
-            <Chip
-              key={s.value}
-              label={`${s.label} (${count})`}
-              color={s.color}
-              selected={filter === s.value}
-              onPress={() => setFilter(s.value)}
-            />
-          );
-        })}
-      </ScrollView>
-    </View>
+    <CampusListHeader>
+      <View style={styles.headerContent}>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>Mis reportes</Text>
+          {avatar}
+        </View>
+        <Text style={styles.subtitle}>
+          Consulta tus incidencias y su seguimiento.
+        </Text>
+        <View style={styles.filters}>
+          {[
+            { value: 'todas' as Filter, label: 'Todos', icon: 'FolderOpen' },
+            ...STATUSES,
+          ].map(s => {
+            const selected = filter === s.value;
+            const count =
+              s.value === 'todas'
+                ? reports.length
+                : reports.filter(r => r.estado === s.value).length;
+            return (
+              <TouchableOpacity
+                key={s.value}
+                accessibilityRole="button"
+                accessibilityLabel={s.label + ', ' + count + ' reportes'}
+                accessibilityState={{ selected }}
+                onPress={() => setFilter(s.value)}
+                style={[styles.filter, selected && styles.filterSelected]}
+              >
+                <AppIcon
+                  name={s.icon}
+                  size={20}
+                  color={selected ? colors.surface : colors.primary}
+                />
+                <Text
+                  style={[
+                    styles.filterLabel,
+                    selected && styles.filterLabelSelected,
+                  ]}
+                >
+                  {s.label} ({count})
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        {loadError ? (
+          <View style={styles.error}>
+            <Text accessibilityLiveRegion="polite" style={styles.errorText}>
+              {loadError}
+            </Text>
+            <TouchableOpacity
+              accessibilityRole="button"
+              onPress={onRefresh}
+              disabled={refreshing}
+              style={styles.retry}
+            >
+              <Text style={styles.retryText}>
+                {refreshing ? 'Actualizando…' : 'Reintentar'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+      </View>
+    </CampusListHeader>
   );
 
-  const fondo = SCREEN_BACKGROUNDS.myReports;
-
   return (
-    <ScreenBackground
-      source={fondo.source}
-      artBottom={fondo.artBottom}
-      overArt={<BrandRow right={avatar} />}
-    >
+    <View style={[styles.root, { paddingTop: insets.top }]}>
+      <StatusBar barStyle="dark-content" />
       <FlatList
         data={filtered}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[
+          styles.list,
+          { paddingBottom: spacing.xl + 20 + insets.bottom },
+        ]}
+        extraData={expandedId}
         ListHeaderComponent={header}
         refreshControl={
           <RefreshControl
@@ -162,7 +205,7 @@ export default function MyReportsScreen() {
           />
         }
         renderItem={({ item }) => (
-          <ReportCard
+          <ReportHistoryCard
             report={item}
             note={notaDe(item)}
             expanded={expandedId === item.id}
@@ -171,63 +214,103 @@ export default function MyReportsScreen() {
           />
         )}
         ListEmptyComponent={
-          <EmptyList
-            icon="🗂"
-            title={
-              filter === 'todas'
-                ? 'Aún no has creado reportes'
-                : `No hay reportes ${statusMeta(
-                    filter as ReportStatus,
-                  ).label.toLowerCase()}`
-            }
-            subtitle={
-              filter === 'todas'
-                ? 'Reporta cualquier problema en el campus con foto y da seguimiento aquí.'
-                : 'Selecciona otro filtro o crea un nuevo reporte.'
-            }
-            actionLabel="➕ Crear reporte"
-            onAction={() =>
-              navigation.navigate('StudentTabs', { screen: 'NewReport' })
-            }
-          />
+          loading ? (
+            <View style={styles.loading}>
+              <ActivityIndicator
+                color={colors.primary}
+                accessibilityLabel="Cargando reportes"
+              />
+              <Text style={styles.subtitle}>Cargando tus reportes…</Text>
+            </View>
+          ) : loadError ? undefined : (
+            <EmptyList
+              icon="FolderOpen"
+              title={
+                reports.length === 0
+                  ? 'Aún no has creado reportes'
+                  : 'No hay reportes con este estado'
+              }
+              subtitle={
+                reports.length === 0
+                  ? 'Crea tu primera incidencia y consulta aquí su seguimiento. La foto es opcional.'
+                  : 'Selecciona Todos para volver a ver tu historial.'
+              }
+              actionLabel={
+                reports.length === 0
+                  ? 'Crear reporte'
+                  : 'Ver todos los reportes'
+              }
+              onAction={() =>
+                reports.length === 0
+                  ? navigation.navigate('StudentTabs', { screen: 'NewReport' })
+                  : setFilter('todas')
+              }
+            />
+          )
         }
       />
-    </ScreenBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerBlock: {
-    marginBottom: spacing.xs,
+  root: { flex: 1, backgroundColor: colors.surface },
+  headerContent: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.sm,
   },
-  title: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: colors.primary,
-    letterSpacing: -0.5,
-  },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  title: { flex: 1, fontSize: 28, fontWeight: '800', color: colors.primary },
   subtitle: {
-    fontSize: 13.5,
-    color: colors.textMuted,
-    marginTop: 2,
+    fontSize: 15,
+    lineHeight: 22,
+    color: colors.text,
+    marginTop: spacing.xs,
   },
   avatarButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: colors.surface,
+    width: 48,
+    height: 48,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
-    ...shadow.card,
   },
-  avatarIcon: { fontSize: 19 },
   filters: {
-    paddingVertical: spacing.md,
-    gap: spacing.xs,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
   },
-  list: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl + 20,
+  filter: {
+    flexDirection: 'row',
     flexGrow: 1,
+    flexBasis: '45%',
+    minHeight: 48,
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.sm + 4,
+    borderRadius: radius.md,
+    backgroundColor: colors.background,
   },
+  filterSelected: { backgroundColor: colors.primary },
+  filterLabel: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  filterLabelSelected: { color: colors.surface, fontWeight: '800' },
+  list: { flexGrow: 1, backgroundColor: colors.surface },
+  loading: { alignItems: 'center', gap: spacing.sm, padding: spacing.lg },
+  error: {
+    padding: spacing.md,
+    backgroundColor: colors.dangerSoft,
+    borderRadius: radius.md,
+    marginBottom: spacing.md,
+  },
+  errorText: { fontSize: 15, lineHeight: 22, color: colors.text },
+  retry: { minHeight: 48, justifyContent: 'center', alignSelf: 'flex-start' },
+  retryText: { fontSize: 15, fontWeight: '700', color: colors.primary },
 });

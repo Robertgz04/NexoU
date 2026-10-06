@@ -6,9 +6,9 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import type {RegisterInput, User} from '../types';
+import type { RegisterInput, UpdatePersonalDataInput, User } from '../types';
 import * as authRepository from '../data/authRepository';
-import {seedIfEmpty} from '../data/seed';
+import { seedIfEmpty } from '../data/seed';
 
 /**
  * Estado global de autenticación (F01/F02).
@@ -21,11 +21,12 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
   logout: () => Promise<void>;
+  updatePersonalData: (input: UpdatePersonalDataInput) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-export function AuthProvider({children}: {children: React.ReactNode}) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [initializing, setInitializing] = useState(true);
 
@@ -69,9 +70,18 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
     setUser(null);
   }, []);
 
+  const updatePersonalData = useCallback(
+    async (input: UpdatePersonalDataInput) => {
+      if (!user) throw new Error('Inicia sesión para editar tus datos.');
+      const updated = await authRepository.updatePersonalData(user.id, input);
+      setUser(current => (current?.id === updated.id ? updated : current));
+    },
+    [user],
+  );
+
   const value = useMemo(
-    () => ({user, initializing, login, register, logout}),
-    [user, initializing, login, register, logout],
+    () => ({ user, initializing, login, register, logout, updatePersonalData }),
+    [user, initializing, login, register, logout, updatePersonalData],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

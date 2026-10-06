@@ -1,3 +1,4 @@
+import AppIcon from './AppIcon';
 import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { colors, radius, shadow, spacing } from '../theme';
@@ -38,9 +39,12 @@ export default function StatTiles({
           const color = item.color ?? colors.primary;
           const soft = item.soft ?? colors.primarySoft;
           return (
-            <View key={item.label} style={styles.inlineCard}>
+            <View
+              key={item.label}
+              style={[styles.inlineCard, { backgroundColor: soft }]}
+            >
               <View style={[styles.iconBox, { backgroundColor: soft }]}>
-                <Text style={[styles.icon, { color }]}>{item.icon}</Text>
+                <AppIcon name={item.icon} size={20} color={color} />
               </View>
               <View style={styles.inlineTexts}>
                 <Text style={styles.value}>{item.value}</Text>
@@ -68,7 +72,7 @@ export default function StatTiles({
         return (
           <View key={item.label} style={styles.item}>
             <View style={[styles.iconBox, { backgroundColor: soft }]}>
-              <Text style={[styles.icon, { color }]}>{item.icon}</Text>
+              <AppIcon name={item.icon} size={20} color={color} />
             </View>
             <Text style={styles.value}>{item.value}</Text>
             <Text style={styles.label} numberOfLines={1}>
@@ -98,7 +102,7 @@ const styles = StyleSheet.create({
   iconBox: {
     width: 38,
     height: 38,
-    borderRadius: radius.md,
+    borderRadius: 19,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.xs,

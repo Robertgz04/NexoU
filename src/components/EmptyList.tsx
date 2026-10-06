@@ -1,3 +1,4 @@
+import AppIcon from './AppIcon';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import PrimaryButton from './PrimaryButton';
@@ -22,7 +23,7 @@ export default function EmptyList({
   return (
     <View style={styles.container}>
       <View style={styles.iconBox}>
-        <Text style={styles.icon}>{icon}</Text>
+        <AppIcon name={icon} size={20} color={colors.primary} />
       </View>
       <Text style={styles.title}>{title}</Text>
       {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}

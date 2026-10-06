@@ -101,6 +101,13 @@ function textos(tree: renderer.ReactTestRenderer): string {
     .join(' | ');
 }
 
+const mountedTrees: renderer.ReactTestRenderer[] = [];
+afterEach(() => {
+  act(() => { mountedTrees.splice(0).forEach(tree => tree.unmount()); });
+  jest.clearAllTimers();
+  jest.useRealTimers();
+});
+
 /** Monta una pantalla dentro de los proveedores que necesita. */
 async function montar(Pantalla: React.ComponentType) {
   let tree!: renderer.ReactTestRenderer;
@@ -111,10 +118,12 @@ async function montar(Pantalla: React.ComponentType) {
       </AuthProvider>,
     );
   });
+  mountedTrees.push(tree);
   return tree;
 }
 
 beforeEach(async () => {
+  jest.useFakeTimers();
   await AsyncStorage.clear();
   await AsyncStorage.setItem(StorageKeys.reports, JSON.stringify([reporte]));
   await AsyncStorage.setItem(StorageKeys.users, JSON.stringify([usuario]));
@@ -130,7 +139,7 @@ describe('F09 – Estadísticas', () => {
     expect(txt).toContain('Reportes totales');
     expect(txt).toContain('Reportes por categoría');
     expect(txt).toContain('Estado general');
-    expect(txt).toContain('Actividad reciente');
+    expect(txt).toContain('Actividad diaria');
     expect(txt).toContain('Área con más incidencias');
   });
 

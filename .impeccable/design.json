@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-06T00:00:00Z",
+  "title": "Design System: NexoU Authentication",
+  "extensions": {
+    "shadows": [{"name": "native-primary-floating", "value": "shadowColor: colors.text; shadowOpacity: 0.16; shadowRadius: 16; shadowOffset: {width: 0, height: 6}; elevation: 5", "purpose": "Filled primary auth buttons on Android and iOS."}]
+  },
+  "narrative": {
+    "overview": "Scoped native login and registration following the supplied campus artwork, navy/turquoise logo, white fields, navy actions, and lower waves.",
+    "dos": ["Reuse existing auth artwork and preserve the external logo edit.", "Retain authentication validation, two account roles, native scrolling, and password visibility."],
+    "donts": ["Do not extend this auth design replacement to other screens."]
+  }
+}

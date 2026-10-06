@@ -21,6 +21,7 @@ interface Props {
   maxLength?: number;
   onBlur?: () => void;
   testID?: string;
+  editable?: boolean;
 }
 
 /** Campo de formulario con etiqueta y mensaje de error (F01–F03). */
@@ -37,12 +38,15 @@ export default function FormField({
   maxLength,
   onBlur,
   testID,
+  editable = true,
 }: Props) {
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
         testID={testID}
+        accessibilityLabel={label}
+        editable={editable}
         style={[
           styles.input,
           multiline && styles.multiline,

@@ -1,3 +1,4 @@
+import AppIcon from './AppIcon';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { ReportStatus } from '../types';
@@ -8,7 +9,7 @@ export default function StatusBadge({ status }: { status: ReportStatus }) {
   const meta = statusMeta(status);
   return (
     <View style={[styles.badge, { backgroundColor: meta.soft }]}>
-      <Text style={[styles.icon, { color: meta.color }]}>{meta.icon}</Text>
+      <AppIcon name={meta.icon} size={20} color={meta.color} />
       <Text style={[styles.label, { color: meta.color }]}>{meta.label}</Text>
     </View>
   );

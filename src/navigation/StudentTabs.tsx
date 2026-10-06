@@ -1,5 +1,7 @@
+import useReducedMotion from '../hooks/useReducedMotion';
+import AppIcon from '../components/AppIcon';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/student/HomeScreen';
 import MyReportsScreen from '../screens/student/MyReportsScreen';
@@ -14,7 +16,7 @@ const Tab = createBottomTabNavigator<StudentTabParamList>();
 function tabIcon(icon: string) {
   return ({ color, focused }: { color: string; focused: boolean }) => (
     <View style={[styles.tabIconBox, focused && styles.tabIconBoxActive]}>
-      <Text style={[styles.tabIcon, { color }]}>{icon}</Text>
+      <AppIcon name={icon} size={26} color={color} />
     </View>
   );
 }
@@ -30,7 +32,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabIconBoxActive: {
-    backgroundColor: colors.accentSoft,
+    backgroundColor: 'transparent',
   },
 });
 
@@ -39,18 +41,21 @@ const styles = StyleSheet.create({
  * dibujadas en el fondo de cada pantalla, por lo que la barra es opaca.
  */
 export default function StudentTabs() {
+  const reducedMotion = useReducedMotion();
   return (
     <View style={styles.root}>
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
+          animation: reducedMotion ? 'none' : 'fade',
+          transitionSpec: { animation: 'timing', config: { duration: 180 } },
           tabBarActiveTintColor: colors.accentDark,
           tabBarInactiveTintColor: colors.textMuted,
           tabBarStyle: {
             backgroundColor: colors.surface,
             borderTopColor: colors.border,
           },
-          tabBarLabelStyle: { fontWeight: '700', fontSize: 11 },
+          tabBarLabelStyle: { fontWeight: '600', fontSize: 12 },
         }}
       >
         <Tab.Screen
@@ -59,16 +64,7 @@ export default function StudentTabs() {
           options={{
             title: 'Inicio',
             tabBarLabel: 'Inicio',
-            tabBarIcon: tabIcon('🏠'),
-          }}
-        />
-        <Tab.Screen
-          name="MyReports"
-          component={MyReportsScreen}
-          options={{
-            title: 'Mis reportes',
-            tabBarLabel: 'Mis reportes',
-            tabBarIcon: tabIcon('📋'),
+            tabBarIcon: tabIcon('House'),
           }}
         />
         <Tab.Screen
@@ -77,7 +73,16 @@ export default function StudentTabs() {
           options={{
             title: 'Nuevo reporte',
             tabBarLabel: 'Reportar',
-            tabBarIcon: tabIcon('＋'),
+            tabBarIcon: tabIcon('CirclePlus'),
+          }}
+        />
+        <Tab.Screen
+          name="MyReports"
+          component={MyReportsScreen}
+          options={{
+            title: 'Mis reportes',
+            tabBarLabel: 'Mis reportes',
+            tabBarIcon: tabIcon('ClipboardList'),
           }}
         />
         <Tab.Screen
@@ -86,7 +91,7 @@ export default function StudentTabs() {
           options={{
             title: 'Perfil',
             tabBarLabel: 'Perfil',
-            tabBarIcon: tabIcon('👤'),
+            tabBarIcon: tabIcon('UserRound'),
           }}
         />
       </Tab.Navigator>
