@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1087677101015",
+    "project_id": "nexou-28a0f",
+    "storage_bucket": "nexou-28a0f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1087677101015:android:59812a61539301d55dd192",
+        "android_client_info": {
+          "package_name": "com.nexou"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyByNYLjc7OPrxLqA094laO1lDgUXf0w5xI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
