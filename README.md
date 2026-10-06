@@ -115,9 +115,12 @@ Las contraseñas permanecen en `.local/cuentas-iniciales.json`; no se incluyen e
 El registro público permite solo estudiantes; personal se provisiona por comando administrativo.
 No se importan automáticamente los usuarios/reportes locales anteriores.
 
-Configurar la URL pública en [src/config/api.ts](src/config/api.ts). Android emulador
-usa `10.0.2.2:3000`; teléfono físico usa IP LAN. Reconstruir la app por la nueva
-dependencia Keychain/Keystore. En macOS instalar los pods para iOS.
+La app usa `https://nexou-api.avorainc.com/api/v1` en debug y release,
+incluidos emuladores y teléfonos físicos. La URL está en [src/config/api.ts](src/config/api.ts).
+No hace falta `.env` para compilar la app ni compartir credenciales SQL.
+En macOS instalar los pods para iOS.
+
+Despliegue automático al hacer push a `master`: [configuración del servidor y GitHub Actions](deploy/README.md).
 
 Flujo de prueba: estudiante crea reporte → personal cambia estado con nota →
 estudiante vuelve al detalle o actualiza la lista. Cada dispositivo consulta SQL

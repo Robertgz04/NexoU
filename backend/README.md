@@ -30,7 +30,7 @@ Para crear personal, preparar un JSON privado con `nombre`, `matricula`, `email`
 Get-Content -Raw .local/personal-nuevo.json | npm --prefix backend run staff:create
 ```
 
-La app usa [src/config/api.ts](../src/config/api.ts), exclusivamente configuración pública. Android emulador: `10.0.2.2:3000`; simulador iOS: `localhost:3000`. Para teléfono físico configurar IP LAN del equipo y permitir acceso al puerto HTTP en la red local. Antes de compilar una versión de producción sustituir la URL HTTPS de ejemplo. No importar el `.env` SQL en Metro. Los tokens se guardan en Keychain/Keystore; reconstruir la app después de instalar estas dependencias. En macOS ejecutar `bundle exec pod install` dentro de `ios/`.
+La app usa [src/config/api.ts](../src/config/api.ts), exclusivamente configuración pública: `https://nexou-api.avorainc.com/api/v1` para debug y release en todos los dispositivos. No importar el `.env` SQL en Metro. Los tokens se guardan en Keychain/Keystore; reconstruir la app después de instalar estas dependencias. En macOS ejecutar `bundle exec pod install` dentro de `ios/`. Para pruebas con backend local, cambiar explícitamente esa URL. La configuración Docker de producción está en [deploy/README.md](../deploy/README.md).
 
 ## Reportes, fotos y estadísticas
 

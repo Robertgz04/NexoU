@@ -15,6 +15,8 @@ import { rows } from './db/pool.js';
 import { env } from './config/env.js';
 export const app = express();
 app.disable('x-powered-by');
+if (env.TRUST_PROXY)
+  app.set('trust proxy', env.TRUST_PROXY.split(',').map(address => address.trim()));
 app.use((_req, res, next) => {
   res.locals.requestId = randomUUID();
   res.set('X-Request-Id', res.locals.requestId);
