@@ -158,6 +158,12 @@ Para migrar a Firebase Auth + Firestore + Storage (Sprints 1–5):
 
 ## 7. Modelo de datos
 
+La definición relacional para MySQL, con diccionario, relaciones y reglas, está en
+[docs/modelo_datos_mysql.md](docs/modelo_datos_mysql.md). Los scripts están en
+[database/mysql/](database/mysql/): esquema, catálogos, diez consultas de reportes
+y validación de integridad. La aplicación mantiene su persistencia local hasta
+implementar la API que utilice esta base.
+
 ```ts
 User    { id, nombre, matricula, email, passwordHash, rol: 'estudiante'|'personal', createdAt }
 Report  { id, ownerId, ownerNombre, titulo, descripcion, area, categoria,
