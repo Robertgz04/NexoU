@@ -1,6 +1,6 @@
 import TouchableOpacity from '../../components/MotionTouchable';
 import AppIcon from '../../components/AppIcon';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   RefreshControl,
@@ -13,13 +13,12 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import DonutChart from '../../components/DonutChart';
 import LineChart from '../../components/LineChart';
-import type { LinePoint } from '../../components/LineChart';
 import CampusScrollScreen from '../../components/CampusScrollScreen';
 import EmptyList from '../../components/EmptyList';
 import SegmentedControl from '../../components/SegmentedControl';
 import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
 import { CATEGORIES, STATUSES } from '../../constants/catalog';
-import { getAllReports } from '../../data/reportRepository';
+import { getStatistics } from '../../data/reportRepository';
 import type { RootStackParamList } from '../../navigation/types';
 import {
   CATEGORY_COLORS,
@@ -28,8 +27,7 @@ import {
   radius,
   spacing,
 } from '../../theme';
-import type { Report, ReportStatus } from '../../types';
-import { MESES_CORTOS } from '../../utils/dates';
+import type { Statistics, ReportStatus } from '../../types';
 
 type Periodo = 'semana' | 'mes' | 'anio';
 
@@ -38,38 +36,6 @@ const PERIODOS = [
   { value: 'mes', label: 'Mes' },
   { value: 'anio', label: 'Año' },
 ];
-
-/** Fecha límite inferior del periodo seleccionado. */
-function desde(periodo: Periodo, now: Date): number {
-  const d = new Date(now);
-  if (periodo === 'semana') {
-    d.setDate(d.getDate() - 6);
-  } else if (periodo === 'mes') {
-    d.setDate(d.getDate() - 29);
-  } else {
-    d.setFullYear(d.getFullYear() - 1);
-  }
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
-}
-
-/** Cuenta los reportes creados en cada uno de los últimos `dias` días. */
-function serieDiaria(reports: Report[], dias: number, now: Date): LinePoint[] {
-  return Array.from({ length: dias }, (_, index) => {
-    const start = new Date(now);
-    start.setHours(0, 0, 0, 0);
-    start.setDate(start.getDate() - (dias - 1 - index));
-    const end = new Date(start);
-    end.setDate(end.getDate() + 1);
-    return {
-      label: start.getDate() + ' ' + MESES_CORTOS[start.getMonth()],
-      value: reports.filter(r => {
-        const t = new Date(r.createdAt).getTime();
-        return t >= start.getTime() && t < end.getTime() && t <= now.getTime();
-      }).length,
-    };
-  });
-}
 
 /** F09 – Estadísticas e indicadores del panel de personal. */
 export default function StatisticsScreen() {
@@ -80,26 +46,33 @@ export default function StatisticsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [asOf, setAsOf] = useState(() => new Date());
   const pending = useRef(false);
-  const [reports, setReports] = useState<Report[]>([]);
+  const version = useRef(0);
+  const [data, setData] = useState<Statistics | null>(null);
+  const confirmed = useRef<Statistics | null>(null);
   const [periodo, setPeriodo] = useState<Periodo>('mes');
 
   const load = useCallback(async () => {
-    if (pending.current) return;
+    const current = ++version.current;
     pending.current = true;
     try {
-      setReports(await getAllReports());
-      setAsOf(new Date());
+      const result = await getStatistics(periodo);
+      if (current !== version.current) return;
+      confirmed.current = result;
+      setData(result);
       setError(null);
     } catch {
+      if (current !== version.current) return;
       setError('No pudimos actualizar las estadísticas. Intenta de nuevo.');
+      if (confirmed.current) setPeriodo(confirmed.current.periodo);
     } finally {
-      pending.current = false;
-      setLoading(false);
-      setRefreshing(false);
+      if (current === version.current) {
+        pending.current = false;
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
-  }, []);
+  }, [periodo]);
 
   useFocusEffect(
     useCallback(() => {
@@ -107,69 +80,13 @@ export default function StatisticsScreen() {
     }, [load]),
   );
 
-  const diasSerie = 7;
-
-  const enPeriodo = useMemo(() => {
-    const min = desde(periodo, asOf);
-    return reports.filter(r => {
-      const t = new Date(r.createdAt).getTime();
-      return t >= min && t <= asOf.getTime();
-    });
-  }, [reports, periodo, asOf]);
-
-  const conteo = useMemo(() => {
-    const map: Record<ReportStatus, number> = {
-      pendiente: 0,
-      revision: 0,
-      solucionado: 0,
-    };
-    enPeriodo.forEach(r => {
-      map[r.estado] += 1;
-    });
-    return map;
-  }, [enPeriodo]);
-
-  const total = enPeriodo.length;
-
-  const porCategoria = useMemo(
-    () =>
-      CATEGORIES.map(categoria => ({
-        categoria,
-        value: enPeriodo.filter(r => r.categoria === categoria).length,
-      })),
-    [enPeriodo],
-  );
-
+  const conteo = data?.counts || { pendiente: 0, revision: 0, solucionado: 0 };
+  const total = data?.total || 0;
+  const porCategoria =
+    data?.categories || CATEGORIES.map(categoria => ({ categoria, value: 0 }));
   const maxCategoria = Math.max(...porCategoria.map(c => c.value), 1);
-
-  const serie = useMemo(
-    () => serieDiaria(reports, diasSerie, asOf),
-    [reports, diasSerie, asOf],
-  );
-
-  const areaTop = useMemo(() => {
-    const mapa = new Map<
-      string,
-      { area: string; total: number; cats: Map<string, number> }
-    >();
-    enPeriodo.forEach(r => {
-      const item = mapa.get(r.area) ?? {
-        area: r.area,
-        total: 0,
-        cats: new Map<string, number>(),
-      };
-      item.total += 1;
-      item.cats.set(r.categoria, (item.cats.get(r.categoria) ?? 0) + 1);
-      mapa.set(r.area, item);
-    });
-    const top = [...mapa.values()].sort((a, b) => b.total - a.total)[0];
-    if (!top) {
-      return null;
-    }
-    const catTop = [...top.cats.entries()].sort((a, b) => b[1] - a[1])[0];
-    return { area: top.area, total: top.total, categoria: catTop?.[0] };
-  }, [enPeriodo]);
-
+  const serie = data?.serie || [];
+  const areaTop = data?.areaTop || null;
   const slices = STATUSES.map(s => ({
     value: conteo[s.value],
     color: s.color,
@@ -188,7 +105,7 @@ export default function StatisticsScreen() {
       : periodo === 'mes'
       ? 'Últimos 30 días'
       : 'Último año';
-  const showData = !loading && (!error || reports.length > 0);
+  const showData = !loading && data !== null;
   return (
     <CampusScrollScreen
       source={SCREEN_BACKGROUNDS.login.source}

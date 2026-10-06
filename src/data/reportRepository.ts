@@ -1,105 +1,112 @@
-import type { CreateReportInput, Report, ReportStatus } from '../types';
-import { getJSON, setJSON, StorageKeys } from './storage';
-import { uid } from '../utils/validators';
-import { LIMITS } from '../constants/catalog';
-
-/**
- * Repositorio de reportes (F03–F08).
- * Implementación local sobre AsyncStorage.
- *
- * Para conectar Firestore (plan de trabajo, Sprints 3–7) reemplaza el
- * interior de estas funciones por las llamadas de `firebase/firestore`
- * manteniendo firmas. La subida de la foto a Firebase Storage se haría
- * con `photoBase64` → `uploadBytes` y en su lugar se guardaría la URL.
- */
-
+import type {
+  CreateReportInput,
+  Report,
+  ReportStatus,
+  ReportSummary,
+  Statistics,
+  Notice,
+} from '../types';
+import { request } from '../services/api';
+export interface Page<T> {
+  items: T[];
+  nextCursor: string | null;
+  total: number;
+}
+export interface ReportQuery {
+  own?: boolean;
+  estado?: ReportStatus;
+  area?: string;
+  search?: string;
+  cursor?: string;
+  limit?: number;
+}
+export function queryString(params: Record<string, unknown>) {
+  const entries = Object.entries(params).filter(
+    ([, value]) => value !== undefined && value !== '',
+  );
+  return entries.length
+    ? '?' +
+        entries
+          .map(
+            ([key, value]) =>
+              `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`,
+          )
+          .join('&')
+    : '';
+}
+export function getReportPage(params: ReportQuery = {}) {
+  return request<Page<Report>>('/reports' + queryString({ ...params }));
+}
 export async function getReports(): Promise<Report[]> {
-  const reports = await getJSON<Report[]>(StorageKeys.reports, []);
-  // Más recientes primero
-  return reports.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const all: Report[] = [];
+  let cursor: string | undefined;
+  do {
+    const page = await getReportPage({ cursor });
+    all.push(...page.items);
+    cursor = page.nextCursor || undefined;
+  } while (cursor);
+  return all;
 }
-
-/** Reportes propios del estudiante (F06). */
-export async function getReportsByOwner(ownerId: string): Promise<Report[]> {
-  const all = await getReports();
-  return all.filter(r => r.ownerId === ownerId);
+export async function getReportsByOwner(_ownerId: string) {
+  return (await getReportPage({ own: true })).items;
 }
-
-/** Todos los reportes para el panel del personal (F07). */
-export async function getAllReports(): Promise<Report[]> {
-  return getReports();
+export async function getAllReports() {
+  return (await getReportPage()).items;
 }
-
-export async function getReportById(id: string): Promise<Report | null> {
-  const all = await getJSON<Report[]>(StorageKeys.reports, []);
-  return all.find(r => r.id === id) ?? null;
+export function getReportById(id: string) {
+  return request<Report>(`/reports/${encodeURIComponent(id)}`);
 }
-
-/** Crea un reporte con título, descripción, área, categoría y foto (F03–F05). */
+export function getSummary(own = false) {
+  return request<ReportSummary>('/reports/summary' + queryString({ own }));
+}
+export function getStatistics(periodo: 'semana' | 'mes' | 'anio') {
+  return request<Statistics>('/staff/statistics' + queryString({ periodo }));
+}
+export function getNotices(
+  params: { tipo?: 'todas' | 'aviso' | 'estado'; cursor?: string } = {},
+) {
+  return request<Page<Notice>>('/staff/notices' + queryString(params));
+}
+export interface Catalogs {
+  areas: { id: number; nombre: string }[];
+  categorias: { id: number; nombre: string }[];
+  estados: { codigo: ReportStatus; nombre: string }[];
+}
+export function getCatalogs() {
+  return request<Catalogs>('/catalogs');
+}
 export async function createReport(input: CreateReportInput): Promise<Report> {
-  const now = new Date().toISOString();
-  const report: Report = {
-    id: uid('r_'),
-    ownerId: input.ownerId,
-    ownerNombre: input.ownerNombre,
-    titulo: input.titulo.trim(),
-    descripcion: input.descripcion.trim(),
-    area: input.area,
-    categoria: input.categoria,
-    estado: 'pendiente',
-    photoBase64: input.photoBase64,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  const all = await getJSON<Report[]>(StorageKeys.reports, []);
-  await setJSON(StorageKeys.reports, [...all, report]);
-  return report;
+  const catalogs = await getCatalogs();
+  const area = catalogs.areas.find(a => a.nombre === input.area);
+  const categoria = catalogs.categorias.find(c => c.nombre === input.categoria);
+  if (!area || !categoria)
+    throw new Error(
+      'El área o categoría ya no está disponible. Actualiza el formulario.',
+    );
+  const form = new FormData();
+  form.append('titulo', input.titulo.trim());
+  form.append('descripcion', input.descripcion.trim());
+  form.append('areaId', String(area.id));
+  form.append('categoriaId', String(categoria.id));
+  if (input.photo)
+    form.append('photo', {
+      uri: input.photo.uri,
+      type: input.photo.type,
+      name: input.photo.name,
+    } as unknown as Blob);
+  return request<Report>('/reports', { method: 'POST', multipart: form });
 }
-
-/** Cambia el estado de un reporte (F08). */
-export async function updateReportStatus(
+export function updateReportStatus(
   id: string,
   estado: ReportStatus,
   note = '',
-  author?: { id: string; nombre: string },
-): Promise<Report> {
-  const trimmedNote = note.trim();
-  if (trimmedNote.length > LIMITS.statusNote) {
-    throw new Error(
-      `La nota no puede superar ${LIMITS.statusNote} caracteres.`,
-    );
-  }
-  const all = await getJSON<Report[]>(StorageKeys.reports, []);
-  const index = all.findIndex(r => r.id === id);
-  if (index === -1) {
-    throw new Error('El reporte ya no existe.');
-  }
-  const previous = all[index];
-  if (previous.estado === estado) return previous;
-  const now = new Date().toISOString();
-  const updated: Report = {
-    ...all[index],
-    estado,
-    updatedAt: now,
-    statusUpdates: [
-      ...(previous.statusUpdates ?? []),
-      {
-        id: uid('status_'),
-        from: previous.estado,
-        to: estado,
-        note: trimmedNote,
-        createdAt: now,
-        ...(author ? { authorId: author.id, authorName: author.nombre } : {}),
-      },
-    ],
-  };
-  all[index] = updated;
-  await setJSON(StorageKeys.reports, all);
-  return updated;
+  _author?: { id: string; nombre: string },
+) {
+  return request<Report>(`/reports/${encodeURIComponent(id)}/status`, {
+    method: 'PATCH',
+    body: { estado, note },
+  });
 }
-
-/** Conteo rápido para el resumen de los paneles. */
-export function countByStatus(reports: Report[], status: ReportStatus): number {
+export function countByStatus(reports: Report[], status: ReportStatus) {
   return reports.filter(r => r.estado === status).length;
 }

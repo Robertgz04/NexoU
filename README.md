@@ -1,5 +1,7 @@
 # NexoU — App Móvil 📱
 
+Para iniciar la app Android, Metro, la API y MariaDB en este equipo: [guía de arranque local](docs/guia_arranque_local.md).
+
 Aplicación móvil para **registrar y consultar reportes de problemas dentro de una universidad**. Desarrollada con **React Native + Android Studio** para la asignatura _Desarrollo Móvil Integral_ (Ingeniería en Desarrollo y Gestión de Software, UTM / Extensión de la UTSC).
 
 |                 |                                                                                                  |
@@ -16,9 +18,9 @@ Aplicación móvil para **registrar y consultar reportes de problemas dentro de 
 | ID      | Funcionalidad                                                                                                       | Dónde vive                                                         |
 | ------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | **F01** | Inicio de sesión con redirección según rol                                                                          | `src/screens/LoginScreen.tsx` + `src/navigation/RootNavigator.tsx` |
-| **F02** | Registro (nombre, matrícula/código, correo, contraseña, rol)                                                        | `src/screens/RegisterScreen.tsx` + `src/data/authRepository.ts`    |
+| **F02** | Registro público de estudiantes con correo coincidente con matrícula                                                        | `src/screens/RegisterScreen.tsx` + `src/data/authRepository.ts`    |
 | **F03** | Levantar reporte (título + descripción con validaciones)                                                            | `src/screens/student/NewReportScreen.tsx`                          |
-| **F04** | Selección de **área** (edificio/espacio) y **categoría** (mobiliario, electricidad, agua, limpieza, equipos, otros) | `src/constants/catalog.ts` (chips en el formulario)                |
+| **F04** | Selección de **área** (edificio/espacio) y **categoría** (mobiliario, electricidad, agua, limpieza, equipos, otros) | API `/catalogs` (IDs activos en el formulario)                |
 | **F05** | Evidencia fotográfica desde **cámara o galería**                                                                    | `NewReportScreen.tsx` (`react-native-image-picker`)                |
 | **F06** | "Mis reportes" con estado y filtros (pendiente / en revisión / solucionado)                                         | `src/screens/student/MyReportsScreen.tsx`                          |
 | **F07** | Panel del personal con **todos** los reportes + filtros por estado y área                                           | `src/screens/staff/AllReportsScreen.tsx`                           |
@@ -30,11 +32,11 @@ Aplicación móvil para **registrar y consultar reportes de problemas dentro de 
 
 - **React Native 0.87** (TypeScript estricto) — CLI oficial, sin Expo
 - **Navegación:** `@react-navigation/native` + `native-stack` + `bottom-tabs`
-- **Persistencia:** `@react-native-async-storage/async-storage` detrás de una capa de repositorios
-- **Fotos:** `react-native-image-picker` (cámara/galería, base64 comprimido a 1280 px / calidad 0.5)
-- **Seguridad básica:** contraseñas con **SHA-256 + sal** (`src/utils/sha256.ts`, verificada contra Node crypto en pruebas)
-- **Arquitectura:** pantallas → repositorios → storage (capa única, lista para Firebase, ver §6)
-- **Pruebas:** Jest (22 pruebas) · **Calidad:** ESLint + `tsc --noEmit`
+- **Persistencia:** API Express 5 + MariaDB; AsyncStorage solo para preferencias y metadatos locales
+- **Fotos:** `react-native-image-picker` (cámara/galería, archivo multipart, hasta 5 MiB)
+- **Autenticación:** bcrypt en servidor, sesiones opacas revocables y Keychain/Keystore en móvil
+- **Arquitectura:** pantallas → repositorios HTTP → API → MariaDB; evidencia en almacenamiento privado
+- **Pruebas:** Jest móvil + pruebas backend e integración SQL aislada; ESLint y TypeScript
 
 ## 3. Estructura del proyecto
 
@@ -51,7 +53,6 @@ NexoU/
 │   │   ├── storage.ts           # Capa AsyncStorage (único punto de persistencia)
 │   │   ├── authRepository.ts    # Usuarios + sesión (F01/F02)
 │   │   ├── reportRepository.ts  # Reportes + estados (F03–F08)
-│   │   └── seed.ts              # Usuarios/reportes de demostración
 │   ├── navigation/              # RootNavigator (por rol) + StudentTabs/StaffTabs
 │   ├── screens/
 │   │   ├── LoginScreen.tsx  RegisterScreen.tsx  ProfileScreen.tsx
@@ -61,6 +62,7 @@ NexoU/
 │   ├── theme.ts                 # Paleta y espaciados
 │   ├── types/index.ts           # User, Report, Role, ReportStatus, Category
 │   └── utils/                   # sha256 · validators · dates · photo
+├── backend/                     # API, OpenAPI, pruebas, cola push
 ├── android/                     # ← Proyecto nativo (ábrelo en Android Studio)
 ├── __tests__/                   # sha256.test.ts · repositories.test.ts
 ├── docs/fuentes/                # Texto de los PDFs de origen
@@ -79,7 +81,10 @@ NexoU/
 
 ```powershell
 # 1) Dependencias (sólo la primera vez)
-npm install
+npm ci
+npm --prefix backend ci
+npm run db:migrate
+npm run api:dev # mantener en otra terminal
 
 # 2) Metro, el bundler JavaScript (terminal 1)
 npm start
@@ -103,75 +108,58 @@ cd android
 > Nota para macOS/Linux: usa `./gradlew` en lugar de `gradlew.bat`.
 > Compilación verificada el 27/09/2026: `BUILD SUCCESSFUL` (app-debug.apk, 147 MB).
 
-### Cuentas de demostración (sembradas en el primer arranque)
+### Cuentas iniciales e integración
 
-| Rol                    | Correo                | Contraseña |
-| ---------------------- | --------------------- | ---------- |
-| Estudiante             | `estudiante@nexou.mx` | `Demo1234` |
-| Personal universitario | `personal@nexou.mx`   | `Demo1234` |
+Los correos son `nexou-e001@virtual.utsc.edu.mx` y `nexou-p001@virtual.utsc.edu.mx`.
+Las contraseñas permanecen en `.local/cuentas-iniciales.json`; no se incluyen en Git.
+El registro público permite solo estudiantes; personal se provisiona por comando administrativo.
+No se importan automáticamente los usuarios/reportes locales anteriores.
 
-Con la cuenta de estudiante verás 3 reportes de ejemplo (uno por estado); con la
-de personal se prueba el panel completo y el cambio de estado (F08).
+Configurar la URL pública en [src/config/api.ts](src/config/api.ts). Android emulador
+usa `10.0.2.2:3000`; teléfono físico usa IP LAN. Reconstruir la app por la nueva
+dependencia Keychain/Keystore. En macOS instalar los pods para iOS.
 
-**Flujo completo recomendado para la demo:**
-
-1. Entrar como estudiante → pestaña **Nuevo** → llenar título, descripción, área,
-   categoría y tomar una foto → **Publicar reporte**.
-2. Cerrar sesión → entrar como **personal** → abrir el reporte → cambiar estado a
-   _En revisión_ / _Solucionado_.
-3. Volver a la sesión del estudiante → el reporte muestra el nuevo estado (F08).
+Flujo de prueba: estudiante crea reporte → personal cambia estado con nota →
+estudiante vuelve al detalle o actualiza la lista. Cada dispositivo consulta SQL
+mediante la API, sin credenciales SQL en el bundle.
 
 ## 5. Comandos de calidad (Definition of Done)
 
 ```powershell
 npx tsc --noEmit     # Tipos estrictos     → 0 errores
-npx eslint .         # Lint                → 0 errores
-npx jest             # Pruebas (22)        → todas pasan
+npm run lint         # Lint                → 0 errores
+npx jest             # Pruebas móviles        → todas pasan
 npm test             # alias de jest
 ```
 
-Las pruebas cubren: SHA-256 contra Node crypto, registro (correo duplicado),
-login (credenciales inválidas), creación/filtrado/actualización de reportes
-(F03–F08) y siembra única de los datos demo.
+Las pruebas cubren contratos HTTP, almacenamiento seguro de sesión, pantallas,
+filtros/paginación, conservación del formulario y fallos de actualización.
+El backend añade validación, ventanas temporales y una integración MariaDB aislada.
 
-## 6. Conexión a servicios en la nube (Firebase) — ruta prevista en el plan
+## 6. API y notificaciones
 
-Hoy la app funciona **100 % offline** con almacenamiento local para que el equipo
-pueda demorar F01–F08 sin depender de configuración externa (riesgo #1 del plan:
-"retraso en configuración de servicios en la nube"). La arquitectura ya está
-preparada: **sólo los dos repositorios conocen el storage**.
-
-Para migrar a Firebase Auth + Firestore + Storage (Sprints 1–5):
-
-1. `npm install @react-native-firebase/app @react-native-firebase/auth @react-native-firebase/firestore @react-native-firebase/storage`
-2. Crear el proyecto en la consola de Firebase, registrar la app Android con
-   `applicationId` **`com.nexou`** y descargar `google-services.json` a
-   `android/app/`.
-3. Reemplazar el interior de `src/data/authRepository.ts`:
-   `register/login` → `createUserWithEmailAndPassword` / `signInWithEmailAndPassword`;
-   guardar el `uid` como sesión.
-4. Reemplazar el interior de `src/data/reportRepository.ts`:
-   colección `reports` en Firestore; `photoBase64` → subida a Storage y guardar la
-   URL en el campo.
-5. **Ninguna pantalla se modifica** — sólo se reimplementan las funciones con las
-   mismas firmas (ver comentario de cada repositorio).
+Arranque, configuración, alta administrativa, pruebas, mantenimiento y despliegue
+en [backend/README.md](backend/README.md). Contrato en
+[backend/openapi.json](backend/openapi.json).
+Firebase se usa únicamente para mensajería: el backend tiene un outbox duradero,
+reintentos y eliminación de tokens inválidos. El envío real requiere conectar las
+credenciales Firebase/APNs. La app ofrece recarga manual; no hay cola offline.
 
 ## 7. Modelo de datos
 
 La definición relacional para MySQL, con diccionario, relaciones y reglas, está en
 [docs/modelo_datos_mysql.md](docs/modelo_datos_mysql.md). Los scripts están en
 [database/mysql/](database/mysql/): esquema, catálogos, diez consultas de reportes
-y validación de integridad. La aplicación mantiene su persistencia local hasta
-implementar la API que utilice esta base.
+y validación de integridad. La aplicación utiliza esta base mediante la API HTTP.
 
 ```ts
-User    { id, nombre, matricula, email, passwordHash, rol: 'estudiante'|'personal', createdAt }
-Report  { id, ownerId, ownerNombre, titulo, descripcion, area, categoria,
+User    { id, nombre, matricula, email, rol: 'estudiante'|'personal', createdAt }
+Report  { id, folio, ownerId, ownerNombre, titulo, descripcion, area, categoria,
           estado: 'pendiente'|'revision'|'solucionado',
-          photoBase64: string|null, createdAt, updatedAt }
+          evidenceUrl: string|null, createdAt, updatedAt }
 ```
 
-Claves AsyncStorage: `@nexou/users`, `@nexou/reports`, `@nexou/session`, `@nexou/seeded`.
+AsyncStorage conserva preferencias e instalación; Keychain/Keystore guarda el token. Las claves históricas locales no se leen como credenciales ni se importan al servidor.
 
 ## 8. Notas para el equipo (Sprints)
 

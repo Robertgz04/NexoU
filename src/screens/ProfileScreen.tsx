@@ -10,7 +10,7 @@ import CampusScrollScreen from '../components/CampusScrollScreen';
 import MotionTouchable from '../components/MotionTouchable';
 import { statusMeta } from '../constants/catalog';
 import { SCREEN_BACKGROUNDS } from '../constants/backgrounds';
-import { getReportsByOwner } from '../data/reportRepository';
+import { getSummary } from '../data/reportRepository';
 import { colors, radius, spacing } from '../theme';
 import type { RootStackParamList } from '../navigation/types';
 
@@ -41,12 +41,12 @@ export default function ProfileScreen() {
         return;
       }
       try {
-        const reports = await getReportsByOwner(user.id);
+        const summary = await getSummary(true);
         if (!isActive()) return;
-        setTotal(reports.length);
-        setPendientes(reports.filter(r => r.estado === 'pendiente').length);
-        setSolucionados(reports.filter(r => r.estado === 'solucionado').length);
-        setRevision(reports.filter(r => r.estado === 'revision').length);
+        setTotal(summary.total);
+        setPendientes(summary.pendiente);
+        setSolucionados(summary.solucionado);
+        setRevision(summary.revision);
         setLoadError(false);
       } catch {
         if (isActive()) setLoadError(true);

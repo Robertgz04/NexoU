@@ -74,11 +74,11 @@ test('registro usa el rol recibido y rechaza contraseñas distintas', async () =
   await act(async () => {
     tree = renderer.create(<RegisterScreen />);
   });
-  expect(tree.root.findByType(AuthRoles).props.value).toBe('personal');
+  expect(tree.root.findAllByType(AuthRoles)).toHaveLength(0);
   const values = [
     'Ana López',
     'P0001',
-    'ana@universidad.edu',
+    'p0001@virtual.utsc.edu.mx',
     'Password123',
     'Diferente123',
   ];
@@ -102,7 +102,7 @@ test('registro usa el rol recibido y rechaza contraseñas distintas', async () =
   });
   expect(mockRegister).toHaveBeenCalledWith(
     expect.objectContaining({
-      rol: 'personal',
+      rol: 'estudiante',
       nombre: 'Ana López',
       matricula: 'P0001',
     }),

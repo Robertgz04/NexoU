@@ -8,7 +8,7 @@ import AllReportsScreen from '../screens/staff/AllReportsScreen';
 import NotificationsScreen from '../screens/staff/NotificationsScreen';
 import StatisticsScreen from '../screens/staff/StatisticsScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import { getAllReports } from '../data/reportRepository';
+import { getSummary } from '../data/reportRepository';
 import { colors, shadow, spacing } from '../theme';
 import type { StaffTabParamList } from './types';
 
@@ -81,8 +81,11 @@ export default function StaffTabs() {
   const [pendientes, setPendientes] = useState(0);
 
   const load = useCallback(async () => {
-    const reports = await getAllReports();
-    setPendientes(reports.filter(r => r.estado === 'pendiente').length);
+    try {
+      setPendientes((await getSummary()).pendiente);
+    } catch {
+      /* Preserve the last confirmed count during connection failures. */
+    }
   }, []);
 
   // El contador se refresca cada vez que el panel vuelve al primer plano.

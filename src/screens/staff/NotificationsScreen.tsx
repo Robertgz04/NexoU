@@ -17,10 +17,10 @@ import CampusListHeader from '../../components/CampusListHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import SegmentedControl from '../../components/SegmentedControl';
 import { statusMeta } from '../../constants/catalog';
-import { getAllReports } from '../../data/reportRepository';
+import { getNotices } from '../../data/reportRepository';
 import type { RootStackParamList } from '../../navigation/types';
 import { colors, radius, spacing } from '../../theme';
-import type { Report, ReportStatus } from '../../types';
+import type { Notice, ReportStatus } from '../../types';
 import { formatFechaRelativa } from '../../utils/dates';
 
 type Filtro = 'todas' | 'estado' | 'avisos';
@@ -45,7 +45,7 @@ interface Notificacion {
 }
 
 /** Mensaje asociado a cada estado del reporte. */
-function mensajeDe(report: Report): { titulo: string; texto: string } {
+function mensajeDe(report: Notice): { titulo: string; texto: string } {
   switch (report.estado) {
     case 'revision':
       return {
@@ -68,9 +68,9 @@ function mensajeDe(report: Report): { titulo: string; texto: string } {
 }
 
 /** Construye la lista de avisos a partir de los reportes existentes. */
-function notificacionesDe(reports: Report[]): Notificacion[] {
+function notificacionesDe(reports: Notice[]): Notificacion[] {
   return [...reports]
-    .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+    .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
     .map(report => {
       const meta = statusMeta(report.estado);
       const { titulo, texto } = mensajeDe(report);
@@ -82,8 +82,8 @@ function notificacionesDe(reports: Report[]): Notificacion[] {
         soft: meta.soft,
         titulo,
         texto,
-        hora: formatFechaRelativa(report.updatedAt),
-        updatedAt: report.updatedAt,
+        hora: formatFechaRelativa(report.occurredAt),
+        updatedAt: report.occurredAt,
         estado: report.estado,
       };
     });
@@ -99,14 +99,23 @@ export default function NotificationsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [asOf, setAsOf] = useState(() => new Date());
   const pending = useRef(false);
-  const [reports, setReports] = useState<Report[]>([]);
+  const [reports, setReports] = useState<Notice[]>([]);
   const [filtro, setFiltro] = useState<Filtro>('todas');
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
+  const version = useRef(0);
 
   const load = useCallback(async () => {
-    if (pending.current) return;
+    const current = ++version.current;
     pending.current = true;
     try {
-      setReports(await getAllReports());
+      const page = await getNotices({
+        tipo: filtro === 'avisos' ? 'aviso' : filtro,
+      });
+      if (current !== version.current) return;
+      setReports(page.items);
+      setCursor(page.nextCursor);
+      setTotal(page.total);
       setAsOf(new Date());
       setError(null);
     } catch {
@@ -116,7 +125,7 @@ export default function NotificationsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [filtro]);
 
   useFocusEffect(
     useCallback(() => {
@@ -169,6 +178,28 @@ export default function NotificationsScreen() {
     setRefreshing(true);
     await load();
   };
+  const loadMore = async () => {
+    if (!cursor || pending.current) return;
+    pending.current = true;
+    const current = version.current;
+    try {
+      const page = await getNotices({
+        tipo: filtro === 'avisos' ? 'aviso' : filtro,
+        cursor,
+      });
+      if (current !== version.current) return;
+      setReports(previous => [
+        ...previous,
+        ...page.items.filter(n => !previous.some(p => p.id === n.id)),
+      ]);
+      setCursor(page.nextCursor);
+      setError(null);
+    } catch {
+      setError('No pudimos cargar más avisos. Intenta de nuevo.');
+    } finally {
+      pending.current = false;
+    }
+  };
   const encabezado = (
     <CampusListHeader>
       <View style={styles.header}>
@@ -204,7 +235,7 @@ export default function NotificationsScreen() {
         </Text>
         {!loading && (!error || reports.length > 0) ? (
           <Text style={styles.body} accessibilityLiveRegion="polite">
-            {lista.length} avisos
+            {total} avisos
           </Text>
         ) : null}
         {error ? (
@@ -231,6 +262,14 @@ export default function NotificationsScreen() {
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" />
       <SectionList
+        onEndReached={loadMore}
+        ListFooterComponent={
+          cursor ? (
+            <TouchableOpacity onPress={loadMore}>
+              <Text>Cargar más</Text>
+            </TouchableOpacity>
+          ) : undefined
+        }
         sections={secciones}
         keyExtractor={item => item.id}
         contentContainerStyle={[

@@ -1,6 +1,6 @@
 import TouchableOpacity from '../../components/MotionTouchable';
 import AppIcon from '../../components/AppIcon';
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Image,
@@ -17,13 +17,14 @@ import { useAuth } from '../../context/AuthContext';
 import FormField from '../../components/FormField';
 import PrimaryButton from '../../components/PrimaryButton';
 import SelectField from '../../components/SelectField';
-import { AREAS, CATEGORIES, LIMITS } from '../../constants/catalog';
-import { createReport } from '../../data/reportRepository';
+import { LIMITS } from '../../constants/catalog';
+import { createReport, getCatalogs } from '../../data/reportRepository';
 import CampusScrollScreen from '../../components/CampusScrollScreen';
 import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
 import { colors, radius, spacing } from '../../theme';
 import type { Category } from '../../types';
 import type { RootStackParamList } from '../../navigation/types';
+import { MAX_PHOTO_BYTES } from '../../config/api';
 import { validateRequired } from '../../utils/validators';
 
 type Errors = {
@@ -43,7 +44,30 @@ export default function NewReportScreen() {
   const [descripcion, setDescripcion] = useState('');
   const [area, setArea] = useState<string | null>(null);
   const [categoria, setCategoria] = useState<Category | null>(null);
-  const [photo, setPhoto] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<{
+    uri: string;
+    type: string;
+    name: string;
+  } | null>(null);
+  const [areas, setAreas] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const loadCatalogs = useCallback(function retryCatalogs() {
+    return getCatalogs()
+      .then(c => {
+        setAreas(c.areas.map(a => a.nombre));
+        setCategories(c.categorias.map(category => category.nombre));
+      })
+      .catch(() =>
+        Alert.alert(
+          'Sin conexión',
+          'No pudimos cargar las áreas y categorías.',
+          [{ text: 'Reintentar', onPress: retryCatalogs }],
+        ),
+      );
+  }, []);
+  useEffect(() => {
+    loadCatalogs();
+  }, [loadCatalogs]);
   const [errors, setErrors] = useState<Errors>({});
   const [saving, setSaving] = useState(false);
   const submissionLock = useRef(false);
@@ -54,7 +78,7 @@ export default function NewReportScreen() {
       quality: 0.5 as const,
       maxWidth: 1280,
       maxHeight: 1280,
-      includeBase64: true,
+      includeBase64: false,
     };
 
     try {
@@ -88,10 +112,19 @@ export default function NewReportScreen() {
       }
 
       const asset = response.assets?.[0];
-      if (asset?.base64) {
-        setPhoto(asset.base64);
-      } else if (asset?.uri) {
-        setPhoto(asset.uri);
+      if (asset?.uri) {
+        if ((asset.fileSize || 0) > MAX_PHOTO_BYTES) {
+          Alert.alert(
+            'Foto demasiado grande',
+            'Adjunta una foto de hasta 5 MiB.',
+          );
+          return;
+        }
+        setPhoto({
+          uri: asset.uri,
+          type: asset.type || 'image/jpeg',
+          name: asset.fileName || 'evidencia.jpg',
+        });
       } else {
         Alert.alert(
           'Imagen no disponible',
@@ -132,7 +165,7 @@ export default function NewReportScreen() {
         descripcion,
         area,
         categoria,
-        photoBase64: photo,
+        photo,
       });
 
       setTitulo('');
@@ -207,7 +240,7 @@ export default function NewReportScreen() {
           icon="MapPin"
           value={area}
           placeholder="Selecciona el área universitaria"
-          options={AREAS}
+          options={areas}
           error={errors.area}
           onSelect={value => {
             setArea(value);
@@ -220,7 +253,7 @@ export default function NewReportScreen() {
           icon="Laptop"
           value={categoria}
           placeholder="Selecciona la categoría"
-          options={CATEGORIES}
+          options={categories}
           error={errors.categoria}
           onSelect={value => {
             setCategoria(value as Category);
@@ -255,12 +288,7 @@ export default function NewReportScreen() {
           <View style={styles.previewBox}>
             <Image
               source={{
-                uri:
-                  photo.startsWith('data:') ||
-                  photo.startsWith('file:') ||
-                  photo.startsWith('content:')
-                    ? photo
-                    : `data:image/jpeg;base64,${photo}`,
+                uri: photo.uri,
               }}
               style={styles.preview}
             />

@@ -8,7 +8,9 @@ import React, {
 } from 'react';
 import type { RegisterInput, UpdatePersonalDataInput, User } from '../types';
 import * as authRepository from '../data/authRepository';
-import { seedIfEmpty } from '../data/seed';
+import { HttpError, onSessionExpired } from '../services/api';
+import { getPushRegistration } from '../services/pushNotifications';
+import { linkDevice } from '../services/deviceRegistration';
 
 /**
  * Estado global de autenticación (F01/F02).
@@ -18,6 +20,8 @@ interface AuthContextValue {
   user: User | null;
   /** true mientras se restaura la sesión inicial. */
   initializing: boolean;
+  initializationError: string | null;
+  retrySession: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
   logout: () => Promise<void>;
@@ -29,19 +33,21 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [initializing, setInitializing] = useState(true);
+  const [initializationError, setInitializationError] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        await seedIfEmpty();
-        const sessionId = await authRepository.getSessionUserId();
-        if (sessionId) {
-          const sessionUser = await authRepository.getUserById(sessionId);
-          if (!cancelled) {
-            setUser(sessionUser);
-          }
-        }
+        const sessionUser = await authRepository.restoreSession();
+        if (!cancelled) setUser(sessionUser);
+      } catch (error) {
+        if (!cancelled && !(error instanceof HttpError && error.status === 401))
+          setInitializationError(
+            'No pudimos restaurar tu sesión. Revisa la conexión e intenta de nuevo.',
+          );
       } finally {
         if (!cancelled) {
           setInitializing(false);
@@ -53,15 +59,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  const retrySession = useCallback(async () => {
+    setInitializing(true);
+    setInitializationError(null);
+    try {
+      setUser(await authRepository.restoreSession());
+    } catch (error) {
+      if (!(error instanceof HttpError && error.status === 401))
+        setInitializationError(
+          'No pudimos restaurar tu sesión. Revisa la conexión e intenta de nuevo.',
+        );
+    } finally {
+      setInitializing(false);
+    }
+  }, []);
+
+  useEffect(() => onSessionExpired(() => setUser(null)), []);
+  useEffect(() => {
+    if (!user) return;
+    getPushRegistration()
+      .then(r => {
+        if (r.enabled && r.token) return linkDevice(r.token);
+      })
+      .catch(() => {});
+  }, [user]);
+
   const login = useCallback(async (email: string, password: string) => {
     const logged = await authRepository.login(email, password);
-    await authRepository.saveSession(logged.id);
     setUser(logged);
   }, []);
 
   const register = useCallback(async (input: RegisterInput) => {
     const created = await authRepository.register(input);
-    await authRepository.saveSession(created.id);
     setUser(created);
   }, []);
 
@@ -80,8 +109,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ user, initializing, login, register, logout, updatePersonalData }),
-    [user, initializing, login, register, logout, updatePersonalData],
+    () => ({
+      user,
+      initializing,
+      initializationError,
+      retrySession,
+      login,
+      register,
+      logout,
+      updatePersonalData,
+    }),
+    [
+      user,
+      initializing,
+      initializationError,
+      retrySession,
+      login,
+      register,
+      logout,
+      updatePersonalData,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

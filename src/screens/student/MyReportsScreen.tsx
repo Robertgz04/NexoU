@@ -12,13 +12,12 @@ import {
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useAuth } from '../../context/AuthContext';
 import EmptyList from '../../components/EmptyList';
 import ReportHistoryCard from '../../components/ReportHistoryCard';
 import CampusListHeader from '../../components/CampusListHeader';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { STATUSES } from '../../constants/catalog';
-import { getReportsByOwner } from '../../data/reportRepository';
+import useReportList from '../../hooks/useReportList';
 import { colors, radius, spacing } from '../../theme';
 import type { Report, ReportStatus } from '../../types';
 import type { RootStackParamList } from '../../navigation/types';
@@ -55,32 +54,27 @@ function notaDe(reporte: Report): {
 
 /** F06 – Consulta de los reportes propios del estudiante con filtros por estado. */
 export default function MyReportsScreen() {
-  const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [reports, setReports] = useState<Report[]>([]);
   const [filter, setFilter] = useState<Filter>('todas');
-  const [refreshing, setRefreshing] = useState(false);
+  const {
+    reports,
+    summary,
+    loading,
+    error: loadError,
+    refreshing,
+    load,
+    refresh: onRefresh,
+    loadMore,
+    loadingMore,
+    hasMore,
+  } = useReportList({
+    own: true,
+    estado: filter === 'todas' ? undefined : filter,
+  });
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    if (!user) {
-      return;
-    }
-    try {
-      const data = await getReportsByOwner(user.id);
-      setReports(data);
-      setLoadError(null);
-    } catch {
-      setLoadError('No pudimos actualizar tus reportes. Intenta de nuevo.');
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
 
   useFocusEffect(
     useCallback(() => {
@@ -88,14 +82,7 @@ export default function MyReportsScreen() {
     }, [load]),
   );
 
-  const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await load();
-    setRefreshing(false);
-  }, [load]);
-
-  const filtered =
-    filter === 'todas' ? reports : reports.filter(r => r.estado === filter);
+  const filtered = reports;
 
   const goProfile = () =>
     navigation.navigate('StudentTabs', { screen: 'Profile' });
@@ -135,9 +122,7 @@ export default function MyReportsScreen() {
           ].map(s => {
             const selected = filter === s.value;
             const count =
-              s.value === 'todas'
-                ? reports.length
-                : reports.filter(r => r.estado === s.value).length;
+              s.value === 'todas' ? summary.total : summary[s.value];
             return (
               <TouchableOpacity
                 key={s.value}
@@ -189,6 +174,15 @@ export default function MyReportsScreen() {
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" />
       <FlatList
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.3}
+        ListFooterComponent={
+          hasMore ? (
+            <TouchableOpacity onPress={loadMore} accessibilityRole="button">
+              <Text>{loadingMore ? 'Cargando…' : 'Cargar más'}</Text>
+            </TouchableOpacity>
+          ) : undefined
+        }
         data={filtered}
         keyExtractor={item => item.id}
         contentContainerStyle={[
@@ -226,22 +220,20 @@ export default function MyReportsScreen() {
             <EmptyList
               icon="FolderOpen"
               title={
-                reports.length === 0
+                summary.total === 0
                   ? 'Aún no has creado reportes'
                   : 'No hay reportes con este estado'
               }
               subtitle={
-                reports.length === 0
+                summary.total === 0
                   ? 'Crea tu primera incidencia y consulta aquí su seguimiento. La foto es opcional.'
                   : 'Selecciona Todos para volver a ver tu historial.'
               }
               actionLabel={
-                reports.length === 0
-                  ? 'Crear reporte'
-                  : 'Ver todos los reportes'
+                summary.total === 0 ? 'Crear reporte' : 'Ver todos los reportes'
               }
               onAction={() =>
-                reports.length === 0
+                summary.total === 0
                   ? navigation.navigate('StudentTabs', { screen: 'NewReport' })
                   : setFilter('todas')
               }

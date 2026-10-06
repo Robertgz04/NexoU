@@ -7,7 +7,7 @@ const mockSave = jest.fn();
 const mockUser = {
   nombre: 'Ana López',
   matricula: 'A001',
-  email: 'ana@nexou.mx',
+  email: 'a001@virtual.utsc.edu.mx',
   rol: 'estudiante',
 };
 jest.mock('@react-navigation/native', () => ({
@@ -43,8 +43,11 @@ test('presenta los datos existentes y valida antes de guardar', async () => {
   expect(tree.root.findAllByType(FormField)[0].props.error).toBeTruthy();
 });
 test('requiere contraseña solo al cambiar correo y conserva valores ante error', async () => {
+  act(() => tree.root.findAllByType(FormField)[1].props.onChangeText('A002'));
   act(() =>
-    tree.root.findAllByType(FormField)[2].props.onChangeText('nuevo@nexou.mx'),
+    tree.root
+      .findAllByType(FormField)[2]
+      .props.onChangeText('a002@virtual.utsc.edu.mx'),
   );
   await act(async () => {
     await tree.root.findByType(PrimaryButton).props.onPress();
@@ -59,11 +62,11 @@ test('requiere contraseña solo al cambiar correo y conserva valores ante error'
   });
   expect(mockSave).toHaveBeenCalledWith({
     nombre: mockUser.nombre,
-    matricula: mockUser.matricula,
-    email: 'nuevo@nexou.mx',
+    matricula: 'A002',
+    email: 'a002@virtual.utsc.edu.mx',
     currentPassword: 'Secreta123',
   });
   expect(tree.root.findAllByType(FormField)[2].props.value).toBe(
-    'nuevo@nexou.mx',
+    'a002@virtual.utsc.edu.mx',
   );
 });

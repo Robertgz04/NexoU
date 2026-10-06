@@ -39,7 +39,8 @@ const report: Report = {
   area: 'Pasillos y áreas comunes del edificio universitario',
   categoria: 'Mobiliario',
   estado: 'revision',
-  photoBase64: null,
+  evidenceUrl: null,
+  folio: 'NX-1',
   createdAt: '2026-10-05T12:00:00Z',
   updatedAt: '2026-10-06T12:00:00Z',
 };
@@ -115,7 +116,7 @@ test('un reporte inexistente ofrece regreso', async () => {
 test('la evidencia que no carga tiene alternativa legible', async () => {
   mockGetReport.mockResolvedValue({
     ...report,
-    photoBase64: 'data:image/jpeg;base64,test',
+    evidenceUrl: '/reports/report-1/evidence',
   });
   await mount();
   act(() => tree.root.findByType(Image).props.onError());

@@ -14,6 +14,13 @@ jest.mock('../src/context/AuthContext', () => ({
   useAuth: () => ({ user: { id: 'student-1', nombre: 'Ana López' } }),
 }));
 jest.mock('../src/data/reportRepository', () => ({
+  getCatalogs: jest
+    .fn()
+    .mockResolvedValue({
+      areas: [{ id: 1, nombre: 'Edificio A' }],
+      categorias: [{ id: 1, nombre: 'Mobiliario' }],
+      estados: [],
+    }),
   createReport: (...args: unknown[]) => mockCreateReport(...args),
 }));
 jest.mock('react-native-image-picker', () => ({
@@ -84,7 +91,7 @@ test('bloquea pulsaciones duplicadas y conserva los datos si falla el envío', a
   expect(mockCreateReport.mock.calls[0][0]).toMatchObject({
     ownerId: 'student-1',
     titulo: 'Silla rota',
-    photoBase64: null,
+    photo: null,
   });
   await act(async () => {
     rejectReport(new Error('Sin conexión'));

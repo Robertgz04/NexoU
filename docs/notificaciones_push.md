@@ -2,17 +2,24 @@
 
 ## Estado actual
 
-Se añadieron React Native Firebase App y Messaging, permiso Android 13+, registro y eliminación de token, renovación de token y avisos en primer plano. Firebase no está configurado: el control permanece deshabilitado. La recepción en segundo plano usa mensajes FCM con payload notification y depende del permiso del sistema. Los mensajes data-only y la apertura automática de reportes no están implementados.
+La app registra/renueva/desvincula instalaciones mediante sesión de la API.
+El backend usa Firebase Admin y un outbox SQL por evento/instalación creado
+en la misma transacción del historial. Revalida actividad y asociación antes
+de enviar; elimina tokens inválidos y reintenta fallos temporales.
+Los mensajes son genéricos y llevan al detalle autorizado. La app deduplica
+eventos en primer plano y atiende apertura desde segundo plano/inicio.
+El registro y envío real requieren conectar Firebase y sus credenciales.
 
-Las cuentas y los reportes siguen siendo locales. No existe un backend de dispositivos por usuario ni envío automático al cambiar de estado. Esta etapa permite preparar recepción y probar mensajes genéricos por token desde Firebase Console cuando se configure el proyecto. No enviar información de reportes personales a estos tokens hasta disponer de registro autenticado por usuario, desvinculación al cerrar sesión y autorización del remitente.
+Ver [operación del backend](../backend/README.md). No hay envío desde el móvil
+ni credenciales de cuenta de servicio en su bundle.
 
 ## Android
 
 1. Crear un proyecto en Firebase Console y registrar la aplicación Android con applicationId com.nexou.
 2. Descargar google-services.json y colocarlo en android/app/google-services.json. El plugin de Google Services solo se aplica cuando existe el archivo.
 3. Recompilar con npm run android; una recarga de Metro no instala los módulos nativos nuevos.
-4. En Configuración, activar Recibir notificaciones push y conceder el permiso del dispositivo. El token de prueba aparece en esa sección.
-5. En Firebase Console, crear un mensaje de notificación y usar Enviar mensaje de prueba con ese token. Verificar app abierta, en segundo plano y cerrada. La entrega requiere conexión y Google Play Services compatibles.
+4. En Configuración, activar Recibir notificaciones push y conceder el permiso del dispositivo. La instalación queda asociada a tu usuario autenticado.
+5. Conectar Firebase Admin en el servidor, habilitar `PUSH_ENABLED` y probar creación/cambio de un reporte con los destinatarios autenticados. Verificar app abierta, en segundo plano y cerrada. La entrega requiere conexión y Google Play Services compatibles.
 
 ## iOS
 
@@ -23,9 +30,12 @@ Las cuentas y los reportes siguen siendo locales. No existe un backend de dispos
 5. Configurar la clave APNs del proyecto en Firebase Cloud Messaging. Nunca agregar la clave privada al repositorio ni al bundle móvil.
 6. Recompilar y comprobar entrega en un dispositivo compatible con APNs.
 
-## Envío automático pendiente
+## Envío automático
 
-El envío de avisos de estado debe ejecutarse en un servidor de confianza mediante Firebase Admin SDK o FCM HTTP v1. Se requiere autenticación real compartida entre dispositivos, almacenamiento remoto de reportes y tokens vinculados al usuario, permisos de personal, eliminación de tokens inválidos, preferencias por destinatario y desvinculación al cerrar sesión. No incluir credenciales de servicio en la app ni enviar directamente desde el cliente móvil.
+Configurar `GOOGLE_APPLICATION_CREDENTIALS` y `PUSH_ENABLED=true` solo
+en el servidor. Los reportes nuevos se avisan a personal asociado; los cambios
+de estado, al estudiante propietario. Sin dispositivo asociado no se crea
+un envío retroactivo. FCM es al menos una vez; no se promete entrega exacta.
 
 ## Verificación
 

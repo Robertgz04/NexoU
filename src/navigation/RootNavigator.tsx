@@ -21,6 +21,7 @@ import ReportDetailScreen from '../screens/ReportDetailScreen';
 import StudentTabs from './StudentTabs';
 import StaffTabs from './StaffTabs';
 import type { RootStackParamList } from './types';
+import PrimaryButton from '../components/PrimaryButton';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -29,14 +30,21 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
  */
 export default function RootNavigator() {
   const reducedMotion = useReducedMotion();
-  const { user, initializing } = useAuth();
+  const { user, initializing, initializationError, retrySession } = useAuth();
 
-  if (initializing) {
+  if (initializing || initializationError) {
     return (
       <ImageBackground source={FondoSplash} style={styles.splash}>
         <Image source={Logo} style={styles.splashLogo} resizeMode="contain" />
         <Text style={styles.brand}>Reporta y da seguimiento</Text>
-        <ActivityIndicator color={colors.primary} style={styles.spinner} />
+        {initializationError ? (
+          <>
+            <Text style={styles.brand}>{initializationError}</Text>
+            <PrimaryButton title="Reintentar conexión" onPress={retrySession} />
+          </>
+        ) : (
+          <ActivityIndicator color={colors.primary} style={styles.spinner} />
+        )}
       </ImageBackground>
     );
   }

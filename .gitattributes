@@ -1,0 +1,2 @@
+# Conservar bytes exactos de migraciones para sus checksums SHA-256.
+database/mysql/migrations/*.sql -text

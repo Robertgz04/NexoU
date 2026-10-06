@@ -36,6 +36,10 @@
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
+	<key>NSCameraUsageDescription</key>
+	<string>Adjuntar una foto como evidencia de tu reporte.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Seleccionar una foto como evidencia de tu reporte.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>

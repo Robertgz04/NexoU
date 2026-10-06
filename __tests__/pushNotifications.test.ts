@@ -1,3 +1,7 @@
+jest.mock('../src/services/deviceRegistration', () => ({
+  linkDevice: jest.fn().mockResolvedValue(undefined),
+  unlinkDevice: jest.fn().mockResolvedValue(undefined),
+}));
 import {
   enablePush,
   disablePush,

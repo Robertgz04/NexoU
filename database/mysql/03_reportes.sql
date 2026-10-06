@@ -94,7 +94,7 @@ FROM reportes WHERE estado_codigo = 'solucionado'
 
 -- R09. Trazabilidad. La API verifica propietario o rol personal antes de consultar.
 SELECT h.id, h.estado_anterior, h.estado_nuevo,
-  h.cambiado_por, u.nombre AS usuario_nombre, h.cambiado_en
+  h.cambiado_por, u.nombre AS usuario_nombre, h.nota, h.cambiado_en
 FROM historial_estados h JOIN usuarios u ON u.id = h.cambiado_por
 WHERE h.reporte_id = @reporte_id ORDER BY h.cambiado_en, h.id;
 
@@ -105,5 +105,7 @@ ORDER BY ocurrido_en DESC, reporte_id DESC LIMIT 50;
 
 -- F08: la API toma actualizado_por de la sesion, nunca del cuerpo de la peticion.
 -- Ejemplo (comentado para que este archivo sea de solo lectura):
--- UPDATE reportes SET estado_codigo = 'revision', actualizado_por = ? WHERE id = ?;
+-- CALL cambiar_estado_reporte(?, 'revision', ?, ?);
+-- Parametros: reporte_id, actor autenticado, nota opcional.
+-- Requiere migraciones; la rutina administra su propia transaccion.
 -- Los triggers guardan el historial y las fechas en la misma transaccion.

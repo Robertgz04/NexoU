@@ -13,6 +13,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { AuthProvider } from './src/context/AuthContext';
 import { PreferencesProvider } from './src/context/PreferencesContext';
 import RootNavigator from './src/navigation/RootNavigator';
+import { navigationRef } from './src/navigation/navigationRef';
 
 function App() {
   return (
@@ -20,7 +21,7 @@ function App() {
       <PreferencesProvider>
         <AuthProvider>
           <PushListener />
-          <NavigationContainer>
+          <NavigationContainer ref={navigationRef}>
             <StatusBar barStyle="light-content" />
             <RootNavigator />
           </NavigationContainer>

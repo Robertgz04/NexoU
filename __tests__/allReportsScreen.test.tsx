@@ -2,88 +2,95 @@ import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import { FlatList, Text } from 'react-native';
 import AllReportsScreen from '../src/screens/staff/AllReportsScreen';
-import ReportCard from '../src/components/ReportCard';
-import SelectField from '../src/components/SelectField';
 import MotionTouchable from '../src/components/MotionTouchable';
-import EmptyList from '../src/components/EmptyList';
-import type { Report } from '../src/types';
-
-const mockNavigate = jest.fn();
-const mockGetReports = jest.fn();
+import SelectField from '../src/components/SelectField';
+const mockPage = jest.fn(),
+  mockSummary = jest.fn();
 jest.mock('@react-navigation/native', () => ({
-  useNavigation: () => ({ navigate: mockNavigate }),
+  useNavigation: () => ({ navigate: jest.fn() }),
   useFocusEffect: (effect: () => void) =>
-    require('react').useEffect(effect, []),
+    require('react').useEffect(effect, [effect]),
 }));
 jest.mock('../src/context/AuthContext', () => ({
-  useAuth: () => ({ user: { id: 'student-1' } }),
+  useAuth: () => ({ user: { id: 'staff' } }),
 }));
 jest.mock('../src/data/reportRepository', () => ({
-  getAllReports: (...args: unknown[]) => mockGetReports(...args),
+  getReportPage: (...args: unknown[]) => mockPage(...args),
+  getSummary: (...args: unknown[]) => mockSummary(...args),
+  getCatalogs: jest
+    .fn()
+    .mockResolvedValue({ areas: [{ nombre: 'Biblioteca' }] }),
 }));
 jest.mock('react-native-safe-area-context', () => ({
-  useSafeAreaInsets: () => ({ top: 24, bottom: 0, left: 0, right: 0 }),
+  useSafeAreaInsets: () => ({ top: 0, bottom: 0 }),
 }));
-
-const report: Report = {
-  id: 'report-1',
-  ownerId: 'student-1',
-  ownerNombre: 'Ana López',
-  titulo: 'Silla rota',
-  descripcion: 'Una silla rota en biblioteca',
+const report = {
+  id: 'r1',
+  folio: 'NX-100',
+  ownerId: 'u1',
+  ownerNombre: 'Ana',
+  titulo: 'Silla',
+  descripcion: 'Rota',
   area: 'Biblioteca',
   categoria: 'Mobiliario',
   estado: 'pendiente',
-  photoBase64: null,
+  evidenceUrl: null,
   createdAt: '2026-10-06T12:00:00Z',
   updatedAt: '2026-10-06T12:00:00Z',
 };
 let tree: renderer.ReactTestRenderer;
 beforeEach(() => {
-  jest.useFakeTimers();
-  mockGetReports.mockResolvedValue([report]);
+  mockPage.mockResolvedValue({
+    items: [report],
+    nextCursor: 'next',
+    total: 101,
+  });
+  mockSummary.mockResolvedValue({
+    total: 101,
+    pendiente: 100,
+    revision: 1,
+    solucionado: 0,
+  });
 });
 afterEach(() => {
   act(() => tree.unmount());
   jest.clearAllMocks();
-  jest.clearAllTimers();
-  jest.useRealTimers();
 });
 async function mount() {
   await act(async () => {
     tree = renderer.create(<AllReportsScreen />);
   });
 }
-function select(label: string) {
-  act(() =>
+test('badges usan conteo completo y filtros se consultan en servidor', async () => {
+  await mount();
+  expect(
     tree.root
       .findAllByType(MotionTouchable)
-      .find(node => node.props.accessibilityLabel === label)!
-      .props.onPress(),
-  );
-}
-
-test('combina estado y área, limpia filtros y abre el detalle correcto', async () => {
-  mockGetReports.mockResolvedValue([
-    report,
-    { ...report, id: 'report-2', area: 'Edificio A', estado: 'revision' },
-  ]);
-  await mount();
-  select('Pendiente, 1 reportes');
-  act(() => tree.root.findByType(SelectField).props.onSelect('Edificio A'));
-  expect(tree.root.findByType(FlatList).props.data).toEqual([]);
-  act(() => tree.root.findByType(EmptyList).props.onAction());
-  expect(tree.root.findByType(FlatList).props.data).toHaveLength(2);
-  act(() => tree.root.findAllByType(ReportCard)[0].props.onPress());
-  expect(mockNavigate).toHaveBeenCalledWith('ReportDetail', {
-    reportId: 'report-1',
+      .some(n => n.props.accessibilityLabel === 'Pendiente, 100 reportes'),
+  ).toBe(true);
+  mockPage.mockResolvedValue({ items: [], nextCursor: null, total: 0 });
+  await act(async () => {
+    tree.root.findByType(SelectField).props.onSelect('Biblioteca');
   });
+  expect(mockPage).toHaveBeenLastCalledWith({ area: 'Biblioteca' });
+  expect(tree.root.findByType(FlatList).props.data).toEqual([]);
 });
-
-test('un fallo inicial permite reintentar sin mostrar un falso vacío', async () => {
-  mockGetReports.mockRejectedValueOnce(new Error('Storage'));
+test('carga la siguiente página sin repetir filas y conserva datos ante fallo', async () => {
   await mount();
-  expect(tree.root.findAllByType(EmptyList)).toHaveLength(0);
+  mockPage.mockResolvedValueOnce({
+    items: [report, { ...report, id: 'r2' }],
+    nextCursor: null,
+    total: 101,
+  });
+  await act(async () => {
+    await tree.root.findByType(FlatList).props.onEndReached();
+  });
+  expect(tree.root.findByType(FlatList).props.data).toHaveLength(2);
+  mockPage.mockRejectedValueOnce(new Error('Sin red'));
+  await act(async () => {
+    await tree.root.findByType(FlatList).props.refreshControl.props.onRefresh();
+  });
+  expect(tree.root.findByType(FlatList).props.data).toHaveLength(2);
   expect(
     tree.root
       .findAllByType(Text)
@@ -93,32 +100,4 @@ test('un fallo inicial permite reintentar sin mostrar un falso vacío', async ()
           'No pudimos actualizar los reportes. Intenta de nuevo.',
       ),
   ).toBe(true);
-  mockGetReports.mockResolvedValue([report]);
-  await act(async () => {
-    await tree.root.findByType(FlatList).props.refreshControl.props.onRefresh();
-  });
-  expect(tree.root.findByType(FlatList).props.data).toEqual([report]);
-});
-
-test('actualización fallida conserva datos y filtros y termina la carga', async () => {
-  await mount();
-  select('Pendiente, 1 reportes');
-  act(() => tree.root.findByType(SelectField).props.onSelect('Biblioteca'));
-  mockGetReports.mockRejectedValueOnce(new Error('Storage'));
-  await act(async () => {
-    await tree.root.findByType(FlatList).props.refreshControl.props.onRefresh();
-  });
-  expect(tree.root.findByType(FlatList).props.data).toEqual([report]);
-  expect(tree.root.findByType(SelectField).props.value).toBe('Biblioteca');
-  expect(
-    tree.root.findByType(FlatList).props.refreshControl.props.refreshing,
-  ).toBe(false);
-});
-
-test('repositorio vacío tiene un mensaje propio', async () => {
-  mockGetReports.mockResolvedValue([]);
-  await mount();
-  expect(tree.root.findByType(EmptyList).props.title).toBe(
-    'Sin reportes registrados',
-  );
 });

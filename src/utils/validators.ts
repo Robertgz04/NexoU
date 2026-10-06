@@ -32,7 +32,32 @@ export function validatePassword(
   if (password.length < minLength) {
     return `La contraseña debe tener al menos ${minLength} caracteres.`;
   }
+  if (utf8Bytes(password) > 72)
+    return 'La contraseña admite como máximo 72 bytes UTF-8.';
   return null;
+}
+
+function utf8Bytes(value: string): number {
+  return Array.from(value).reduce((total, char) => {
+    const code = char.codePointAt(0)!;
+    return (
+      total + (code <= 0x7f ? 1 : code <= 0x7ff ? 2 : code <= 0xffff ? 3 : 4)
+    );
+  }, 0);
+}
+export function institutionalEmail(matricula: string) {
+  return `${matricula.trim().toLowerCase()}@virtual.utsc.edu.mx`;
+}
+export function validateInstitutionalEmail(
+  email: string,
+  matricula: string,
+): string | null {
+  return (
+    validateEmail(email) ||
+    (email.trim().toLowerCase() === institutionalEmail(matricula)
+      ? null
+      : 'El correo debe coincidir con tu matrícula: matrícula@virtual.utsc.edu.mx.')
+  );
 }
 
 /** Folio corto y estable a partir del id del reporte (mockup: "NX-2031"). */

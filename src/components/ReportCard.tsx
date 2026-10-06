@@ -1,11 +1,12 @@
 import TouchableOpacity from './MotionTouchable';
 import AppIcon from './AppIcon';
-import React from 'react';
+import React, { useContext } from 'react';
+import { PreferencesContext } from '../context/PreferencesState';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import type { Report } from '../types';
 import { colors, radius, spacing } from '../theme';
 import { formatFechaRelativa } from '../utils/dates';
-import { photoUri } from '../utils/photo';
+import { evidenceSource } from '../services/api';
 import StatusBadge from './StatusBadge';
 
 interface Props {
@@ -34,7 +35,13 @@ export default function ReportCard({
   expanded = false,
   onToggleNote,
 }: Props) {
-  const uri = photoUri(report.photoBase64);
+  const preferences = useContext(PreferencesContext);
+  const uri =
+    preferences?.preferences.showReportPhotos === false
+      ? null
+      : report.evidenceUrl
+      ? evidenceSource(report.evidenceUrl)
+      : null;
   return (
     <TouchableOpacity
       accessibilityRole="button"
@@ -44,7 +51,7 @@ export default function ReportCard({
       style={[styles.card, expanded && styles.cardExpanded]}
     >
       {uri ? (
-        <Image source={{ uri }} style={styles.thumb} />
+        <Image source={uri!} style={styles.thumb} />
       ) : (
         <View style={[styles.thumb, styles.thumbPlaceholder]}>
           <AppIcon name="ClipboardList" size={32} color={colors.primary} />

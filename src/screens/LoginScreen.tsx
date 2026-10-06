@@ -25,22 +25,10 @@ export default function LoginScreen() {
   const { login } = useAuth();
 
   const [rol, setRol] = useState<Role>('estudiante');
-  const [showDemo, setShowDemo] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
-
-  const fillDemo = (role: 'estudiante' | 'personal') => {
-    setRol(role);
-    if (role === 'estudiante') {
-      setEmail('estudiante@nexou.mx');
-    } else {
-      setEmail('personal@nexou.mx');
-    }
-    setPassword('Demo1234');
-    setErrors({});
-  };
 
   const onSubmit = async () => {
     const emailError = validateEmail(email);
@@ -119,32 +107,6 @@ export default function LoginScreen() {
           <Text style={styles.createText}>Crear cuenta</Text>
         </TouchableOpacity>
       </View>
-      <TouchableOpacity
-        accessibilityRole="button"
-        accessibilityState={{ expanded: showDemo }}
-        onPress={() => setShowDemo(!showDemo)}
-        style={styles.demo}
-      >
-        <Text style={styles.demoText}>Probar cuentas de demostración</Text>
-      </TouchableOpacity>
-      {showDemo && (
-        <View style={styles.demoOptions}>
-          <TouchableOpacity
-            accessibilityRole="button"
-            onPress={() => fillDemo('estudiante')}
-            style={styles.demo}
-          >
-            <Text style={styles.demoText}>Estudiante</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            accessibilityRole="button"
-            onPress={() => fillDemo('personal')}
-            style={styles.demo}
-          >
-            <Text style={styles.demoText}>Personal</Text>
-          </TouchableOpacity>
-        </View>
-      )}
     </AuthLayout>
   );
 }

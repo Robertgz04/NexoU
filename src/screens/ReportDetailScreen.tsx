@@ -29,8 +29,7 @@ import { colors, radius, spacing } from '../theme';
 import type { Report, ReportStatus } from '../types';
 import type { RootStackParamList } from '../navigation/types';
 import { formatFechaHora } from '../utils/dates';
-import { folioDe } from '../utils/validators';
-import { photoUri } from '../utils/photo';
+import { evidenceSource } from '../services/api';
 
 type DetailRoute = RouteProp<RootStackParamList, 'ReportDetail'>;
 
@@ -172,7 +171,7 @@ export default function ReportDetailScreen() {
     );
   }
 
-  const uri = photoUri(report.photoBase64);
+  const uri = report.evidenceUrl ? evidenceSource(report.evidenceUrl) : null;
   const current = statusMeta(report.estado);
   const statusDescription =
     report.estado === 'pendiente'
@@ -202,7 +201,7 @@ export default function ReportDetailScreen() {
           <StatusBadge status={report.estado} />
         </View>
         <Text selectable style={styles.folio}>
-          Folio: {folioDe(report.id)}
+          Folio: {report.folio}
         </Text>
 
         <View style={styles.section}>
@@ -238,7 +237,7 @@ export default function ReportDetailScreen() {
           </Text>
           {uri && !imageFailed ? (
             <Image
-              source={{ uri }}
+              source={uri!}
               style={styles.photo}
               resizeMode="contain"
               accessibilityLabel="Evidencia fotográfica del reporte"

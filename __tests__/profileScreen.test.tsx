@@ -25,7 +25,21 @@ jest.mock('../src/context/AuthContext', () => ({
   useAuth: () => ({ user: { ...mockUser, rol: mockRole }, logout: mockLogout }),
 }));
 jest.mock('../src/data/reportRepository', () => ({
-  getReportsByOwner: (...args: unknown[]) => mockReports(...args),
+  getSummary: async (...args: unknown[]) => {
+    const reports = await mockReports(...args);
+    return {
+      total: reports.length,
+      pendiente: reports.filter(
+        (r: { estado: string }) => r.estado === 'pendiente',
+      ).length,
+      revision: reports.filter(
+        (r: { estado: string }) => r.estado === 'revision',
+      ).length,
+      solucionado: reports.filter(
+        (r: { estado: string }) => r.estado === 'solucionado',
+      ).length,
+    };
+  },
 }));
 jest.mock('react-native-safe-area-context', () => ({
   useSafeAreaInsets: () => ({ top: 24, bottom: 0, left: 0, right: 0 }),
@@ -58,7 +72,7 @@ test('mantiene nombre y correo completos y la navegación del estudiante', async
       .find(node => node.props.children === value)!;
     expect(text.props.numberOfLines).toBeUndefined();
   }
-  expect(mockReports).toHaveBeenCalledWith('student-1');
+  expect(mockReports).toHaveBeenCalledWith(true);
   act(() =>
     tree.root
       .findAllByType(MenuRow)

@@ -1,13 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
- * Capa de persistencia sobre AsyncStorage.
- *
- * IMPORTANTE (arquitectura): todas las pantallas y repositorios dependen
- * exclusivamente de esta capa. Para migrar a servicios en la nube (Firebase
- * Auth / Firestore, ver plan de trabajo) basta con reimplementar los
- * repositorios `authRepository` y `reportRepository` manteniendo las mismas
- * funciones; ninguna pantalla se modifica. Ver README.md → "Conexión a nube".
+ * Preferencias y metadatos locales. Usuarios y reportes se consultan por HTTP;
+ * los tokens de autenticación se guardan exclusivamente en Keychain/Keystore.
+ * Las claves históricas se conservan para una posible importación explícita.
  */
 export const StorageKeys = {
   users: '@nexou/users',

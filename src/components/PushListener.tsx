@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Alert } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { navigationRef } from '../navigation/navigationRef';
 import {
   listenForPush,
   onPushRegistrationChange,
@@ -16,7 +17,24 @@ export default function PushListener() {
     const refresh = () => {
       const current = ++version;
       stop();
-      listenForPush((title, body) => Alert.alert(title, body))
+      const openReport = (id: string) => {
+        if (active && navigationRef.isReady())
+          navigationRef.navigate('ReportDetail', { reportId: id });
+      };
+      listenForPush(
+        (title, body, reportId) =>
+          Alert.alert(
+            title,
+            body,
+            reportId
+              ? [
+                  { text: 'Cerrar', style: 'cancel' },
+                  { text: 'Ver reporte', onPress: () => openReport(reportId) },
+                ]
+              : undefined,
+          ),
+        openReport,
+      )
         .then(unsubscribe => {
           if (active && current === version) stop = unsubscribe;
           else unsubscribe();

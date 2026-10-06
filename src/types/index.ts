@@ -34,8 +34,6 @@ export interface User {
   nombre: string;
   matricula: string;
   email: string;
-  /** SHA-256 con sal derivada del correo. Nunca se guarda la contraseña en claro. */
-  passwordHash: string;
   rol: Role;
   createdAt: string;
 }
@@ -43,6 +41,7 @@ export interface User {
 /** Reporte de incidencia (F03–F08). */
 export interface Report {
   id: string;
+  folio: string;
   ownerId: string;
   ownerNombre: string;
   titulo: string;
@@ -52,8 +51,9 @@ export interface Report {
   /** Categoría de incidencia (F04). */
   categoria: Category;
   estado: ReportStatus;
-  /** Evidencia fotográfica en base64 (F05). `null` si no se adjuntó. */
-  photoBase64: string | null;
+  areaId?: string;
+  categoriaId?: string;
+  evidenceUrl: string | null;
   createdAt: string;
   updatedAt: string;
   statusUpdates?: ReportStatusUpdate[];
@@ -76,7 +76,35 @@ export interface CreateReportInput {
   descripcion: string;
   area: string;
   categoria: Category;
-  photoBase64: string | null;
+  photo?: { uri: string; type: string; name: string } | null;
+}
+
+export interface ReportSummary {
+  total: number;
+  pendiente: number;
+  revision: number;
+  solucionado: number;
+}
+export interface Statistics {
+  periodo: 'semana' | 'mes' | 'anio';
+  asOf: string;
+  total: number;
+  counts: Omit<ReportSummary, 'total'>;
+  categories: { categoria: Category; value: number }[];
+  areaTop: { area: string; total: number; categoria: Category } | null;
+  serie: { date: string; label: string; value: number }[];
+}
+export interface Notice {
+  id: string;
+  reportId: string;
+  folio: string;
+  titulo: string;
+  ownerNombre: string;
+  area: string;
+  estado: ReportStatus;
+  tipo: 'aviso' | 'estado';
+  tituloAviso: string;
+  occurredAt: string;
 }
 
 /** Editable account data; role and identity remain unchanged. */

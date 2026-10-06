@@ -24,10 +24,15 @@ import StatusBadge from '../../components/StatusBadge';
 import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
 import { CATEGORIES } from '../../constants/catalog';
 import { useAuth } from '../../context/AuthContext';
-import { getReportsByOwner } from '../../data/reportRepository';
+import { getReportsByOwner, getSummary } from '../../data/reportRepository';
 import type { RootStackParamList } from '../../navigation/types';
 import { colors, radius, shadow, spacing } from '../../theme';
-import type { Category, Report, ReportStatus } from '../../types';
+import type {
+  Category,
+  Report,
+  ReportStatus,
+  ReportSummary,
+} from '../../types';
 import { formatFecha } from '../../utils/dates';
 
 interface CatMeta {
@@ -60,14 +65,25 @@ export default function HomeScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [reports, setReports] = useState<Report[]>([]);
+  const [summary, setSummary] = useState<ReportSummary | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     if (!user) {
       return;
     }
-    const data = await getReportsByOwner(user.id);
-    setReports(data);
+    try {
+      const [data, counts] = await Promise.all([
+        getReportsByOwner(user.id),
+        getSummary(true),
+      ]);
+      setReports(data);
+      setSummary(counts);
+      setLoadError(false);
+    } catch {
+      setLoadError(true);
+    }
   }, [user]);
 
   useFocusEffect(
@@ -87,8 +103,7 @@ export default function HomeScreen() {
   const goMyReports = () =>
     navigation.navigate('StudentTabs', { screen: 'MyReports' });
 
-  const count = (status: ReportStatus) =>
-    reports.filter(r => r.estado === status).length;
+  const count = (status: ReportStatus) => summary?.[status] || 0;
 
   const tiles: StatItem[] = [
     {
@@ -138,6 +153,11 @@ export default function HomeScreen() {
       style={styles.root}
       onLayout={event => setViewportHeight(event.nativeEvent.layout.height)}
     >
+      {loadError ? (
+        <Text accessibilityLiveRegion="polite">
+          No pudimos actualizar tus reportes. Desliza para reintentar.
+        </Text>
+      ) : null}
       <StatusBar barStyle="dark-content" />
       <Animated.Image
         source={fondo.source}
@@ -307,7 +327,8 @@ export default function HomeScreen() {
 
             {recent.length > 0 ? (
               recent.map(report => {
-                const meta = CATEGORY_META[report.categoria];
+                const meta =
+                  CATEGORY_META[report.categoria] || CATEGORY_META.Otros;
                 return (
                   <TouchableOpacity
                     key={report.id}

@@ -10,6 +10,37 @@ import { AuthProvider } from '../src/context/AuthContext';
 import StatisticsScreen from '../src/screens/staff/StatisticsScreen';
 import NotificationsScreen from '../src/screens/staff/NotificationsScreen';
 import { StorageKeys } from '../src/data/storage';
+jest.mock('../src/data/reportRepository', () => ({
+  getStatistics: jest
+    .fn()
+    .mockResolvedValue({
+      periodo: 'mes',
+      asOf: '2026-10-06T18:00:00Z',
+      total: 1,
+      counts: { pendiente: 1, revision: 0, solucionado: 0 },
+      categories: [{ categoria: 'Electricidad', value: 1 }],
+      areaTop: { area: 'Biblioteca', total: 1, categoria: 'Electricidad' },
+      serie: [{ label: '6 oct', value: 1 }],
+    }),
+  getNotices: jest
+    .fn()
+    .mockResolvedValue({
+      items: [
+        {
+          id: 'r_1',
+          reportId: 'r_1',
+          titulo: 'Lámpara fundida',
+          ownerNombre: 'Ana López',
+          area: 'Biblioteca',
+          estado: 'pendiente',
+          tipo: 'aviso',
+          occurredAt: '2026-10-06T12:00:00Z',
+        },
+      ],
+      total: 1,
+      nextCursor: null,
+    }),
+}));
 
 jest.mock('@react-native-async-storage/async-storage', () => {
   const store = new Map<string, string>();
@@ -66,7 +97,8 @@ const reporte = {
   area: 'Biblioteca',
   categoria: 'Electricidad',
   estado: 'pendiente',
-  photoBase64: null,
+  evidenceUrl: null,
+  folio: 'NX-1',
   createdAt: ahora,
   updatedAt: ahora,
 };
@@ -103,7 +135,9 @@ function textos(tree: renderer.ReactTestRenderer): string {
 
 const mountedTrees: renderer.ReactTestRenderer[] = [];
 afterEach(() => {
-  act(() => { mountedTrees.splice(0).forEach(tree => tree.unmount()); });
+  act(() => {
+    mountedTrees.splice(0).forEach(tree => tree.unmount());
+  });
   jest.clearAllTimers();
   jest.useRealTimers();
 });

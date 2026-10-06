@@ -1,5 +1,6 @@
 import { PermissionsAndroid, Platform } from 'react-native';
 import { getJSON, setJSON, StorageKeys } from '../data/storage';
+import { linkDevice, unlinkDevice } from './deviceRegistration';
 
 export interface PushRegistration {
   enabled: boolean;
@@ -59,6 +60,7 @@ export async function enablePush(): Promise<PushRegistration> {
   await api.setAutoInitEnabled(messaging, true);
   try {
     const token = await api.getToken(messaging);
+    await linkDevice(token);
     const registration = { enabled: true, token };
     await setJSON(StorageKeys.pushRegistration, registration);
     listeners.forEach(listener => listener());
@@ -70,6 +72,7 @@ export async function enablePush(): Promise<PushRegistration> {
   }
 }
 export async function disablePush() {
+  await unlinkDevice();
   const { api, messaging } = await client();
   await api.setAutoInitEnabled(messaging, false);
   await api.deleteToken(messaging);
@@ -77,30 +80,56 @@ export async function disablePush() {
   listeners.forEach(listener => listener());
   return OFF;
 }
-/** Generic notifications only: account-targeted registration needs a trusted backend. */
+/** Generic text; details are loaded through the authenticated API. */
 export async function listenForPush(
-  onMessage: (title: string, body: string) => void,
+  onMessage: (title: string, body: string, reportId?: string) => void,
+  onOpen?: (reportId: string) => void,
 ) {
   const registration = await getPushRegistration();
   if (!registration.enabled || !(await isPushConfigured())) return () => {};
   const { api, messaging } = await client();
-  const messageSubscription = api.onMessage(messaging, message => {
+  const validReportId = (id: unknown): string | undefined =>
+    typeof id === 'string' && /^[a-f0-9-]{36}$/.test(id) ? id : undefined;
+  const seen = new Set<string>();
+  const messageSubscription = api.onMessage(messaging, async message => {
+    const eventId =
+      typeof message.data?.eventId === 'string'
+        ? message.data.eventId
+        : undefined;
+    if (eventId) {
+      const key = `nexou:push-events`;
+      const previous = await getJSON<string[]>(key, []);
+      if (seen.has(eventId) || previous.includes(eventId)) return;
+      seen.add(eventId);
+      await setJSON(key, [...previous, eventId].slice(-100)).catch(() => {});
+    }
     if (message.notification)
       onMessage(
         message.notification.title ?? 'NexoU',
         message.notification.body ?? 'Tienes una nueva notificación.',
+        validReportId(message.data?.reportId),
       );
   });
+  const openedSubscription = api.onNotificationOpenedApp(messaging, message => {
+    const id = validReportId(message.data?.reportId);
+    if (id) onOpen?.(id);
+  });
+  const initial = await api.getInitialNotification(messaging).catch(() => null);
+  const initialId = validReportId(initial?.data?.reportId);
+  if (initialId) onOpen?.(initialId);
   const tokenSubscription = api.onTokenRefresh(messaging, async token => {
     const current = await getPushRegistration();
-    if (current.enabled)
+    if (current.enabled) {
+      await linkDevice(token).catch(() => {});
       await setJSON(StorageKeys.pushRegistration, {
         enabled: true,
         token,
       }).catch(() => {});
+    }
   });
   return () => {
     messageSubscription();
     tokenSubscription();
+    openedSubscription();
   };
 }

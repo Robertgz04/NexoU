@@ -66,6 +66,14 @@ yarn-error.log
 # testing
 /coverage
 
+# Credenciales locales del backend y migraciones
+.env
+.env.*
+!.env.example
+/.local/
+/backend/dist/
+/backend/coverage/
+
 # Yarn
 .yarn/*
 !.yarn/patches

@@ -13,7 +13,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import FormField from '../components/FormField';
 import PrimaryButton from '../components/PrimaryButton';
-import { validateEmail, validateRequired } from '../utils/validators';
+import {
+  validateInstitutionalEmail,
+  validateRequired,
+} from '../utils/validators';
 import { colors, radius, spacing } from '../theme';
 
 export default function PersonalDataScreen() {
@@ -55,7 +58,7 @@ export default function PersonalDataScreen() {
         matricula,
         user.rol === 'estudiante' ? 'matrícula' : 'código',
       ),
-      email: validateEmail(email),
+      email: validateInstitutionalEmail(email, matricula),
       password: emailChanged
         ? validateRequired(password, 'contraseña actual')
         : null,
@@ -158,7 +161,8 @@ export default function PersonalDataScreen() {
             autoCapitalize="none"
           />
           <Text style={styles.help}>
-            Este correo se utiliza para iniciar sesión.
+            El correo debe coincidir con tu matrícula:
+            matrícula@virtual.utsc.edu.mx.
           </Text>
           {emailChanged ? (
             <View style={styles.password}>

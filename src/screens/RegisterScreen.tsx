@@ -2,22 +2,15 @@ import TouchableOpacity from '../components/MotionTouchable';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Mail, LockKeyhole, UserRound, IdCard } from 'lucide-react-native';
-import {
-  useNavigation,
-  useRoute,
-  type RouteProp,
-} from '@react-navigation/native';
-import type { RootStackParamList } from '../navigation/types';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import AuthLayout from '../components/AuthLayout';
 import AuthField from '../components/AuthField';
-import AuthRoles from '../components/AuthRoles';
 import PrimaryButton from '../components/PrimaryButton';
 import { LIMITS } from '../constants/catalog';
 import { colors } from '../theme';
-import type { Role } from '../types';
 import {
-  validateEmail,
+  validateInstitutionalEmail,
   validatePassword,
   validateRequired,
 } from '../utils/validators';
@@ -36,8 +29,7 @@ export default function RegisterScreen() {
   const navigation = useNavigation();
   const { register } = useAuth();
 
-  const route = useRoute<RouteProp<RootStackParamList, 'Register'>>();
-  const [rol, setRol] = useState<Role>(route.params?.rol ?? 'estudiante');
+  const rol = 'estudiante' as const;
   const [nombre, setNombre] = useState('');
   const [matricula, setMatricula] = useState('');
   const [email, setEmail] = useState('');
@@ -53,7 +45,7 @@ export default function RegisterScreen() {
         matricula,
         rol === 'estudiante' ? 'matrícula' : 'código de personal',
       ),
-      email: validateEmail(email),
+      email: validateInstitutionalEmail(email, matricula),
       password: validatePassword(password, LIMITS.passwordMin),
       confirm: confirm === password ? null : 'Las contraseñas no coinciden.',
     };
@@ -82,7 +74,9 @@ export default function RegisterScreen() {
         Regístrate como {rol === 'estudiante' ? 'estudiante' : 'personal'} para
         {'\n'}comenzar a reportar incidencias.
       </Text>
-      <AuthRoles value={rol} onChange={setRol} compact />
+      <Text style={styles.muted}>
+        Las cuentas de personal las habilita la universidad.
+      </Text>
       <View style={styles.form}>
         {errors.general && (
           <Text accessibilityLiveRegion="polite" style={styles.error}>
@@ -121,7 +115,7 @@ export default function RegisterScreen() {
           onChangeText={setEmail}
           error={errors.email}
           placeholder="Correo institucional"
-          hint="Ej. tu.correo@universidad.edu"
+          hint="matricula@virtual.utsc.edu.mx"
           keyboardType="email-address"
           autoCapitalize="none"
         />
@@ -133,7 +127,7 @@ export default function RegisterScreen() {
           onChangeText={setPassword}
           error={errors.password}
           placeholder="Contraseña"
-          hint={`Mínimo ${LIMITS.passwordMin} caracteres`}
+          hint={`Mínimo ${LIMITS.passwordMin} caracteres; máximo 72 bytes UTF-8`}
           secureTextEntry
           autoCapitalize="none"
         />

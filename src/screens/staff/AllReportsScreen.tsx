@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -18,10 +18,11 @@ import CampusListHeader from '../../components/CampusListHeader';
 import EmptyList from '../../components/EmptyList';
 import ReportCard from '../../components/ReportCard';
 import SelectField from '../../components/SelectField';
-import { AREAS, STATUSES } from '../../constants/catalog';
-import { getAllReports } from '../../data/reportRepository';
+import { STATUSES } from '../../constants/catalog';
+import { getCatalogs } from '../../data/reportRepository';
+import useReportList from '../../hooks/useReportList';
 import { colors, radius, spacing } from '../../theme';
-import type { Report, ReportStatus } from '../../types';
+import type { ReportStatus } from '../../types';
 import type { RootStackParamList } from '../../navigation/types';
 
 type Filter = ReportStatus | 'todas';
@@ -31,56 +32,43 @@ export default function AllReportsScreen() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
-  const [reports, setReports] = useState<Report[]>([]);
   const [estadoFilter, setEstadoFilter] = useState<Filter>('todas');
   const [areaFilter, setAreaFilter] = useState('Todas');
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const pending = useRef(false);
-
-  const load = useCallback(async () => {
-    if (pending.current) {
-      return;
-    }
-    pending.current = true;
-    try {
-      setReports(await getAllReports());
-      setError(null);
-    } catch {
-      setError('No pudimos actualizar los reportes. Intenta de nuevo.');
-    } finally {
-      pending.current = false;
-      setLoading(false);
-      setRefreshing(false);
-    }
+  const [areas, setAreas] = useState<string[]>([]);
+  useEffect(() => {
+    getCatalogs()
+      .then(c => setAreas(c.areas.map(a => a.nombre)))
+      .catch(() => {});
   }, []);
+  const {
+    reports,
+    summary,
+    total,
+    loading,
+    refreshing,
+    error,
+    load,
+    refresh: onRefresh,
+    loadMore,
+    loadingMore,
+    hasMore,
+  } = useReportList({
+    estado: estadoFilter === 'todas' ? undefined : estadoFilter,
+    area: areaFilter === 'Todas' ? undefined : areaFilter,
+  });
   useFocusEffect(
     useCallback(() => {
       load();
     }, [load]),
   );
-  const onRefresh = useCallback(async () => {
-    if (pending.current) {
-      return;
-    }
-    setRefreshing(true);
-    await load();
-  }, [load]);
   const clearFilters = () => {
     setEstadoFilter('todas');
     setAreaFilter('Todas');
   };
-  const filtered = reports.filter(
-    r =>
-      (estadoFilter === 'todas' || r.estado === estadoFilter) &&
-      (areaFilter === 'Todas' || r.area === areaFilter),
-  );
+  const filtered = reports;
   const hasFilters = estadoFilter !== 'todas' || areaFilter !== 'Todas';
   const count = (status: Filter) =>
-    status === 'todas'
-      ? reports.length
-      : reports.filter(r => r.estado === status).length;
+    status === 'todas' ? summary.total : summary[status];
 
   const header = (
     <CampusListHeader>
@@ -152,7 +140,10 @@ export default function AllReportsScreen() {
           label="Ubicación o área"
           value={areaFilter}
           placeholder="Todas"
-          options={['Todas', ...AREAS]}
+          options={[
+            'Todas',
+            ...Array.from(new Set([...areas, ...reports.map(r => r.area)])),
+          ]}
           onSelect={setAreaFilter}
           icon="MapPin"
         />
@@ -167,7 +158,7 @@ export default function AllReportsScreen() {
         ) : null}
         {!loading && (!error || reports.length > 0) ? (
           <Text accessibilityLiveRegion="polite" style={styles.body}>
-            {filtered.length} de {reports.length} reportes
+            {filtered.length} de {total} reportes
           </Text>
         ) : null}
         {error ? (
@@ -196,6 +187,15 @@ export default function AllReportsScreen() {
     <View style={[styles.root, { paddingTop: insets.top }]}>
       <StatusBar barStyle="dark-content" />
       <FlatList
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.3}
+        ListFooterComponent={
+          hasMore ? (
+            <MotionTouchable onPress={loadMore} accessibilityRole="button">
+              <Text>{loadingMore ? 'Cargando…' : 'Cargar más'}</Text>
+            </MotionTouchable>
+          ) : undefined
+        }
         data={filtered}
         keyExtractor={item => item.id}
         ListHeaderComponent={header}
@@ -234,12 +234,12 @@ export default function AllReportsScreen() {
             <EmptyList
               icon="FolderOpen"
               title={
-                reports.length === 0
+                summary.total === 0
                   ? 'Sin reportes registrados'
                   : 'Ningún reporte coincide con los filtros'
               }
               subtitle={
-                reports.length === 0
+                summary.total === 0
                   ? 'Las incidencias registradas aparecerán aquí.'
                   : 'Prueba otro estado o ubicación para encontrar una incidencia.'
               }

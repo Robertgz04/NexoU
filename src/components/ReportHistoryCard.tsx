@@ -7,7 +7,7 @@ import StatusBadge from './StatusBadge';
 import type { Report } from '../types';
 import { colors, radius, shadow, spacing } from '../theme';
 import { formatFechaRelativa } from '../utils/dates';
-import { photoUri } from '../utils/photo';
+import { evidenceSource } from '../services/api';
 
 interface Props {
   report: Report;
@@ -29,7 +29,7 @@ export default function ReportHistoryCard({
   const uri =
     preferences?.preferences.showReportPhotos === false
       ? null
-      : photoUri(report.photoBase64);
+      : report.evidenceUrl ? evidenceSource(report.evidenceUrl) : null;
   return (
     <View style={styles.card}>
       <MotionTouchable
@@ -47,7 +47,7 @@ export default function ReportHistoryCard({
         </Text>
         <View style={styles.summary}>
           {uri ? (
-            <Image source={{ uri }} style={styles.photo} accessible={false} />
+            <Image source={uri!} style={styles.photo} accessible={false} />
           ) : null}
           <View style={styles.metadata}>
             <View style={styles.metaRow}>

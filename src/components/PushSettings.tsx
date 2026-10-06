@@ -13,7 +13,6 @@ import { colors, spacing } from '../theme';
 export default function PushSettings() {
   const [configured, setConfigured] = useState(false);
   const [enabled, setEnabled] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const lock = useRef(false);
@@ -26,7 +25,6 @@ export default function PushSettings() {
           if (!active) return;
           setConfigured(ready);
           setEnabled(registration.enabled);
-          setToken(registration.token);
           setBusy(false);
         })
         .catch(() => {
@@ -50,7 +48,6 @@ export default function PushSettings() {
     try {
       const next = value ? await enablePush() : await disablePush();
       setEnabled(next.enabled);
-      setToken(next.token);
     } catch (reason) {
       setError(
         reason instanceof Error
@@ -100,16 +97,6 @@ export default function PushSettings() {
           }}
         />
       ) : null}
-      {enabled && token ? (
-        <View>
-          <Text style={styles.help}>
-            Token de este dispositivo para una prueba desde Firebase Console:
-          </Text>
-          <Text selectable style={styles.token}>
-            {token}
-          </Text>
-        </View>
-      ) : null}
     </View>
   );
 }
@@ -119,5 +106,4 @@ const styles = StyleSheet.create({
   label: { flex: 1, fontSize: 16, fontWeight: '700', color: colors.primary },
   help: { fontSize: 15, lineHeight: 23, color: colors.text },
   error: { fontSize: 15, lineHeight: 23, color: colors.danger },
-  token: { fontSize: 13, color: colors.text, marginTop: spacing.sm },
 });
