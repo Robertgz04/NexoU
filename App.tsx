@@ -1,3 +1,4 @@
+import { ToastProvider } from './src/components/ToastProvider';
 import PushListener from './src/components/PushListener';
 /**
  * NexoU – Punto de entrada de la aplicación.
@@ -20,11 +21,13 @@ function App() {
     <SafeAreaProvider>
       <PreferencesProvider>
         <AuthProvider>
-          <PushListener />
-          <NavigationContainer ref={navigationRef}>
-            <StatusBar barStyle="light-content" />
-            <RootNavigator />
-          </NavigationContainer>
+          <ToastProvider>
+            <PushListener />
+            <NavigationContainer ref={navigationRef}>
+              <StatusBar barStyle="light-content" />
+              <RootNavigator />
+            </NavigationContainer>
+          </ToastProvider>
         </AuthProvider>
       </PreferencesProvider>
     </SafeAreaProvider>

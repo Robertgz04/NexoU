@@ -1,3 +1,4 @@
+import { useToast } from '../../components/ToastProvider';
 import TouchableOpacity from '../../components/MotionTouchable';
 import AppIcon from '../../components/AppIcon';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -37,6 +38,7 @@ type Errors = {
 /** Formulario para levantar un reporte de incidencia universitaria. */
 export default function NewReportScreen() {
   const { user } = useAuth();
+  const toast = useToast();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -175,23 +177,23 @@ export default function NewReportScreen() {
       setPhoto(null);
       setErrors({});
 
-      Alert.alert(
-        'Reporte enviado correctamente',
-        'Tu reporte ha sido registrado en estado "Pendiente". El personal universitario le dará seguimiento.',
-        [
-          {
-            text: 'Ver mis reportes',
-            onPress: () =>
-              navigation.navigate('StudentTabs', { screen: 'MyReports' }),
-          },
-          { text: 'Aceptar', style: 'cancel' },
-        ],
-      );
+      toast({
+        title: 'Reporte enviado correctamente',
+        message:
+          'Tu reporte quedó en estado Pendiente. El personal universitario le dará seguimiento.',
+        kind: 'success',
+        action: {
+          label: 'Ver mis reportes',
+          onPress: () =>
+            navigation.navigate('StudentTabs', { screen: 'MyReports' }),
+        },
+      });
     } catch (e) {
-      Alert.alert(
-        'Error',
-        e instanceof Error ? e.message : 'No se pudo enviar el reporte.',
-      );
+      toast({
+        title: 'No se pudo enviar el reporte',
+        message: e instanceof Error ? e.message : 'Intenta de nuevo.',
+        kind: 'error',
+      });
     } finally {
       submissionLock.current = false;
       setSaving(false);

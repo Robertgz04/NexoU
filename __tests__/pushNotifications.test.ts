@@ -6,7 +6,14 @@ import {
   enablePush,
   disablePush,
   isPushConfigured,
+  listenForPush,
 } from '../src/services/pushNotifications';
+const mockMessage = jest.fn();
+const mockOpened = jest.fn();
+const mockRefresh = jest.fn();
+const mockUnsubscribe = jest.fn();
+const mockInitial = jest.fn().mockResolvedValue(null);
+const mockRead = jest.fn();
 const mockApps = jest.fn();
 const mockWrite = jest.fn();
 const mockToken = jest.fn();
@@ -23,7 +30,7 @@ jest.mock('react-native', () => ({
 }));
 jest.mock('../src/data/storage', () => ({
   StorageKeys: { pushRegistration: 'push' },
-  getJSON: jest.fn(),
+  getJSON: (...args: unknown[]) => mockRead(...args),
   setJSON: (...args: unknown[]) => mockWrite(...args),
 }));
 jest.mock('@react-native-firebase/app', () => ({
@@ -31,6 +38,10 @@ jest.mock('@react-native-firebase/app', () => ({
   getApp: () => ({}),
 }));
 jest.mock('@react-native-firebase/messaging', () => ({
+  onMessage: (...args: unknown[]) => mockMessage(...args),
+  onNotificationOpenedApp: (...args: unknown[]) => mockOpened(...args),
+  onTokenRefresh: (...args: unknown[]) => mockRefresh(...args),
+  getInitialNotification: () => mockInitial(),
   getMessaging: () => ({}),
   getToken: () => mockToken(),
   deleteToken: () => mockDelete(),
@@ -74,4 +85,32 @@ test('un fallo de persistencia revoca el token recién generado', async () => {
   mockWrite.mockRejectedValue(new Error('Sin espacio'));
   await expect(enablePush()).rejects.toThrow('Sin espacio');
   expect(mockDelete).toHaveBeenCalledTimes(1);
+});
+
+test('recibe mensajes de datos, elimina duplicados y libera los listeners', async () => {
+  mockRead.mockImplementation((key: string) =>
+    Promise.resolve(
+      key === 'push' ? { enabled: true, token: 'device-token' } : [],
+    ),
+  );
+  mockMessage.mockReturnValue(mockUnsubscribe);
+  mockOpened.mockReturnValue(mockUnsubscribe);
+  mockRefresh.mockReturnValue(mockUnsubscribe);
+  const show = jest.fn();
+  const open = jest.fn();
+  const stop = await listenForPush(show, open);
+  const receive = mockMessage.mock.calls[0][1];
+  const reportId = '12345678-1234-1234-1234-123456789abc';
+  await receive({ data: { eventId: 'event-1', reportId } });
+  await receive({ data: { eventId: 'event-1', reportId } });
+  expect(show).toHaveBeenCalledTimes(1);
+  expect(show).toHaveBeenCalledWith(
+    'NexoU',
+    'Tienes una nueva notificación.',
+    reportId,
+  );
+  mockOpened.mock.calls[0][1]({ data: { reportId } });
+  expect(open).toHaveBeenCalledWith(reportId);
+  stop();
+  expect(mockUnsubscribe).toHaveBeenCalledTimes(3);
 });

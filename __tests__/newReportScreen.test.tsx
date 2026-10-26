@@ -1,3 +1,7 @@
+const mockToast = jest.fn();
+jest.mock('../src/components/ToastProvider', () => ({
+  useToast: () => mockToast,
+}));
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import { Alert } from 'react-native';
@@ -14,13 +18,11 @@ jest.mock('../src/context/AuthContext', () => ({
   useAuth: () => ({ user: { id: 'student-1', nombre: 'Ana López' } }),
 }));
 jest.mock('../src/data/reportRepository', () => ({
-  getCatalogs: jest
-    .fn()
-    .mockResolvedValue({
-      areas: [{ id: 1, nombre: 'Edificio A' }],
-      categorias: [{ id: 1, nombre: 'Mobiliario' }],
-      estados: [],
-    }),
+  getCatalogs: jest.fn().mockResolvedValue({
+    areas: [{ id: 1, nombre: 'Edificio A' }],
+    categorias: [{ id: 1, nombre: 'Mobiliario' }],
+    estados: [],
+  }),
   createReport: (...args: unknown[]) => mockCreateReport(...args),
 }));
 jest.mock('react-native-image-picker', () => ({
@@ -98,5 +100,7 @@ test('bloquea pulsaciones duplicadas y conserva los datos si falla el envío', a
     await pending;
   });
   expect(tree.root.findAllByType(FormField)[0].props.value).toBe('Silla rota');
-  expect(Alert.alert).toHaveBeenCalledWith('Error', 'Sin conexión');
+  expect(mockToast).toHaveBeenCalledWith(
+    expect.objectContaining({ kind: 'error', message: 'Sin conexión' }),
+  );
 });

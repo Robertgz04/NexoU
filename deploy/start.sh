@@ -35,13 +35,13 @@ run_api() {
         -v /var/lib/nexou/uploads:/uploads --read-only \
         --tmpfs /tmp:rw,noexec,nosuid,size=64m --cap-drop ALL \
         --security-opt no-new-privileges \
-        --health-cmd='node -e "fetch(\"http://127.0.0.1:3000/ready\").then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"' \
+        --health-cmd='node -e "fetch(\"http://127.0.0.1:4999/ready\").then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"' \
         --health-interval=30s --health-timeout=8s --health-retries=3 \
         "$image"
 }
 ready() {
     for attempt in {1..30}; do
-        if docker exec "$1" node -e 'fetch("http://127.0.0.1:3000/ready").then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))' >/dev/null 2>&1; then
+        if docker exec "$1" node -e 'fetch("http://127.0.0.1:4999/ready").then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))' >/dev/null 2>&1; then
             return 0
         fi
         sleep 2
@@ -63,10 +63,10 @@ if docker container inspect nexou-api >/dev/null 2>&1; then
     docker rename nexou-api nexou-api-previous
 fi
 replacing=true
-run_api nexou-api -p 127.0.0.1:3000:3000
+run_api nexou-api -p 127.0.0.1:4999:4999
 ready nexou-api
-curl --fail --silent --show-error --resolve nexou-api.avorainc.com:443:127.0.0.1 \
-    https://nexou-api.avorainc.com/health
+curl --fail --silent --show-error --resolve nexou.api.avorainc.com:443:127.0.0.1 \
+    https://nexou.api.avorainc.com/health
 replacing=false
 # SQL y fotos permanecen en sus volúmenes. No ejecutar migraciones automáticamente.
 echo "Desplegado: $image"

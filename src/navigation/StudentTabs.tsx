@@ -1,3 +1,4 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useReducedMotion from '../hooks/useReducedMotion';
 import AppIcon from '../components/AppIcon';
 import React from 'react';
@@ -42,6 +43,8 @@ const styles = StyleSheet.create({
  */
 export default function StudentTabs() {
   const reducedMotion = useReducedMotion();
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom, 12);
   return (
     <View style={styles.root}>
       <Tab.Navigator
@@ -51,7 +54,11 @@ export default function StudentTabs() {
           transitionSpec: { animation: 'timing', config: { duration: 180 } },
           tabBarActiveTintColor: colors.accentDark,
           tabBarInactiveTintColor: colors.textMuted,
+          tabBarHideOnKeyboard: true,
           tabBarStyle: {
+            height: 64 + bottomPadding,
+            paddingTop: 8,
+            paddingBottom: bottomPadding,
             backgroundColor: colors.surface,
             borderTopColor: colors.border,
           },

@@ -1,3 +1,4 @@
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import useReducedMotion from '../hooks/useReducedMotion';
 import AppIcon from '../components/AppIcon';
 import React, { useCallback, useState } from 'react';
@@ -78,6 +79,8 @@ const styles = StyleSheet.create({
  */
 export default function StaffTabs() {
   const reducedMotion = useReducedMotion();
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom, 12);
   const [pendientes, setPendientes] = useState(0);
 
   const load = useCallback(async () => {
@@ -104,7 +107,11 @@ export default function StaffTabs() {
           transitionSpec: { animation: 'timing', config: { duration: 180 } },
           tabBarActiveTintColor: colors.accentDark,
           tabBarInactiveTintColor: colors.textMuted,
+          tabBarHideOnKeyboard: true,
           tabBarStyle: {
+            height: 64 + bottomPadding,
+            paddingTop: 8,
+            paddingBottom: bottomPadding,
             backgroundColor: colors.surface,
             borderTopColor: colors.border,
           },

@@ -1,5 +1,8 @@
 package com.nexou
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
 import android.app.Application
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
@@ -22,6 +25,11 @@ class MainApplication : Application(), ReactApplication {
 
   override fun onCreate() {
     super.onCreate()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      val channel = NotificationChannel("nexou_updates", "Actualizaciones de reportes", NotificationManager.IMPORTANCE_HIGH)
+      channel.description = "Avisos sobre reportes y cambios de estado"
+      getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+    }
     loadReactNative(this)
   }
 }

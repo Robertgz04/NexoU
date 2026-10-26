@@ -1,3 +1,4 @@
+import { useToast } from './ToastProvider';
 import React, { useCallback, useRef, useState } from 'react';
 import { Linking, StyleSheet, Switch, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -11,6 +12,7 @@ import PrimaryButton from './PrimaryButton';
 import { colors, spacing } from '../theme';
 
 export default function PushSettings() {
+  const toast = useToast();
   const [configured, setConfigured] = useState(false);
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(true);
@@ -48,6 +50,12 @@ export default function PushSettings() {
     try {
       const next = value ? await enablePush() : await disablePush();
       setEnabled(next.enabled);
+      toast({
+        title: next.enabled
+          ? 'Notificaciones activadas'
+          : 'Notificaciones desactivadas',
+        kind: 'success',
+      });
     } catch (reason) {
       setError(
         reason instanceof Error

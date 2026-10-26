@@ -14,7 +14,7 @@ npm run api:build
 npm run api:dev
 ```
 
-La API escucha en `0.0.0.0:3000`, SQL en `127.0.0.1:3050`. `/health` y `/api/v1/health` son públicos; `/ready` comprueba SQL solo desde loopback. El arranque nunca ejecuta bootstrap ni cambia el esquema. Cada conexión se inicializa con UTF-8, UTC y modo estricto antes de usarla.
+La API escucha en `0.0.0.0:4999`. En este servidor MySQL escucha en `127.0.0.1:3306` y `172.30.80.1:3306` para Docker. `/health` y `/api/v1/health` son públicos; `/ready` comprueba SQL solo desde loopback. El arranque nunca ejecuta bootstrap ni cambia el esquema. Cada conexión se inicializa con UTF-8, UTC y modo estricto antes de usarla.
 
 En desarrollo carga explícitamente el `.env` de la raíz. Para despliegue definir `API_ENV_FILE` como ruta absoluta de un archivo privado; también admite variables del proceso. Completar las variables de [.env.example](../.env.example). `UPLOAD_DIR` se resuelve respecto del archivo de configuración y debe estar fuera de cualquier directorio público. Producción requiere HTTPS mediante el proxy del despliegue; no activar trust proxy sin configurar sus direcciones reales. El límite HTTP en memoria es por proceso: para varias instancias usar un almacén compartido del limitador.
 
@@ -30,7 +30,7 @@ Para crear personal, preparar un JSON privado con `nombre`, `matricula`, `email`
 Get-Content -Raw .local/personal-nuevo.json | npm --prefix backend run staff:create
 ```
 
-La app usa [src/config/api.ts](../src/config/api.ts), exclusivamente configuración pública: `https://nexou-api.avorainc.com/api/v1` para debug y release en todos los dispositivos. No importar el `.env` SQL en Metro. Los tokens se guardan en Keychain/Keystore; reconstruir la app después de instalar estas dependencias. En macOS ejecutar `bundle exec pod install` dentro de `ios/`. Para pruebas con backend local, cambiar explícitamente esa URL. La configuración Docker de producción está en [deploy/README.md](../deploy/README.md).
+La app usa [src/config/api.ts](../src/config/api.ts), exclusivamente configuración pública: `https://nexou.api.avorainc.com/api/v1` para debug y release en todos los dispositivos. No importar el `.env` SQL en Metro. Los tokens se guardan en Keychain/Keystore; reconstruir la app después de instalar estas dependencias. En macOS ejecutar `bundle exec pod install` dentro de `ios/`. Para pruebas con backend local, cambiar explícitamente esa URL. La configuración Docker de producción está en [deploy/README.md](../deploy/README.md).
 
 ## Reportes, fotos y estadísticas
 

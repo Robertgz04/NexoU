@@ -45,8 +45,14 @@ export async function deliverOne(
         body: 'Hay una actualización disponible. Abre la app para consultarla.',
       },
       data: { reportId: job.reporte_id, eventId: String(job.historial_id) },
-      android: { collapseKey: String(job.historial_id) },
-      apns: { headers: { 'apns-collapse-id': String(job.historial_id) } },
+      android: {
+        priority: 'high',
+        notification: { channelId: 'nexou_updates', sound: 'default' },
+      },
+      apns: {
+        headers: { 'apns-priority': '10' },
+        payload: { aps: { sound: 'default' } },
+      },
     });
     await rows(
       "UPDATE push_outbox SET estado='enviado',finalizado_en=UTC_TIMESTAMP(3) WHERE id=?",

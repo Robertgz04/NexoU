@@ -40,4 +40,4 @@ jobs:
             -o ConnectTimeout=20 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 \
             root@62.146.172.2 "deploy $DEPLOY_SHA"
       - name: Verify public API
-        run: curl --fail --silent --show-error --retry 5 --retry-delay 3 https://nexou-api.avorainc.com/health
+        run: curl --fail --silent --show-error --retry 5 --retry-delay 3 https://nexou.api.avorainc.com/health

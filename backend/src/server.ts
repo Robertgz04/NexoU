@@ -11,7 +11,12 @@ server.headersTimeout = 15000;
 let working: Promise<unknown> | null = null;
 const timer = setInterval(() => {
   if (!working)
-    working = deliverOne()
+    working = (async () => {
+      // Drain bursts without imposing a two-second delay per recipient.
+      for (let count = 0; count < 100; count++) {
+        if (!(await deliverOne())) break;
+      }
+    })()
       .catch(() => console.error('No se pudo procesar la cola push.'))
       .finally(() => {
         working = null;

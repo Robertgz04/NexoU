@@ -1,5 +1,7 @@
 # Encender y apagar NexoU en Windows
 
+Para instalar en un celular conectado a la API del servidor, sigue primero la [guía Android](instalar_android.md). Los datos siguientes describen un entorno de desarrollo anterior; configura explícitamente `API_PORT=3000` en tu `.env` si deseas reproducirlo.
+
 Esta guía corresponde al entorno local actual: proyecto en `C:\Users\bdavi\Documents\NexoU`, MariaDB de XAMPP en el puerto **3050**, API en **3000**, Metro en **8081** y emulador Android **Pixel_10**. Los comandos se ejecutan en PowerShell.
 
 ## 1. Encender la base de datos

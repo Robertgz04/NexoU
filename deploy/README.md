@@ -1,88 +1,61 @@
-# Despliegue en el servidor
+# Despliegue en este servidor
 
-API: https://nexou-api.avorainc.com/api/v1. Salud pública: /health.
-Nginx termina HTTPS y comunica con 127.0.0.1:3000. /ready se bloquea en Nginx.
-Node 24 y MariaDB 10.11 corren en contenedores independientes, con reinicio automático.
-SQL no publica puertos. Red nexou-private: 172.30.80.0/24; el proxy confiable es 172.30.80.1.
-Nginx sobrescribe X-Forwarded-For para evitar suplantación. No cambiar TRUST_PROXY sin revisar la red.
+API pública: https://nexou.api.avorainc.com/api/v1. Salud: `/health`.
+DNS: registro A `nexou.api` → `13.140.225.51`.
+Nginx termina HTTPS y reenvía a `127.0.0.1:4999`. `/ready` está bloqueado públicamente.
+Certbot renueva el certificado automáticamente.
 
-Configuración privada: /etc/nexou/api.env y /etc/nexou/db.env (root, 0600).
-Datos SQL: volumen Docker nexou-db-data. Fotos: /var/lib/nexou/uploads.
-El dump database/nexou.sql se importó una vez, conservando definidores y cuentas.
-La API usa nexou_runtime con permisos de ejecución limitados; nexou_app@localhost
-es el definidor de la rutina. Los triggers se importaron como root.
+La API usa Node 24 en el contenedor `nexou-api`, con reinicio automático,
+puerto interno 4999 y red `nexou-private` (`172.30.80.0/24`).
+Nginx sobrescribe X-Forwarded-For; TRUST_PROXY es `172.30.80.1`.
+Fotos privadas: `/var/lib/nexou/uploads`, montadas en `/uploads`.
 
-Actualizar API: sudo ./deploy/start.sh (compila y prueba antes de reemplazar el contenedor).
-Estado: docker ps; docker logs --tail 100 nexou-api.
-Verificar SQL: docker exec nexou-api node -e 'fetch("http://127.0.0.1:3000/ready").then(async r=>console.log(r.status,await r.text()))'.
-Mantenimiento: docker exec nexou-api node dist/storage/maintenance.js.
-Respaldar: sudo /usr/local/sbin/nexou-backup.
-Cron /etc/cron.d/nexou: respaldo diario 08:15 UTC y limpieza 08:35 UTC.
-Respaldos SQL privados: /var/lib/nexou/backups, retención 14 días.
-Se respaldan también las fotos en archivos -uploads.tar.gz. Conviene copiar los respaldos fuera del servidor.
-Certbot renueva automáticamente; hook valida y recarga Nginx.
+## MySQL general del servidor
 
-Restaurar primero en una base aislada con mariadb como administrador: crear base,
-importar el gzip descomprimido con rutinas y triggers, y verificar conteos.
-Nunca sobrescribir la base activa sin respaldo y una ventana autorizada.
+MySQL 8.4 está instalado como servicio `mysql`, independiente de la API y disponible
+para otras bases del servidor. Solo escucha en loopback y en el gateway privado
+Docker `172.30.80.1:3306`; no publica SQL en la interfaz de Internet.
+El servicio arranca después de Docker para que exista esa interfaz.
 
-Push está deshabilitado hasta configurar credenciales Firebase privadas.
+Se importó `database/nexou.sql` una vez a `nexou`, conservando datos, rutinas,
+triggers y vistas. No se reimporta durante despliegues.
+La cuenta `nexou_runtime@172.30.80.0/255.255.255.0` tiene SELECT, INSERT, UPDATE,
+DELETE y EXECUTE únicamente sobre `nexou.*`, sin permisos globales ni GRANT OPTION.
+El definidor `nexou_app@localhost` tiene acceso SELECT/UPDATE a esa base y login
+bloqueado. La administración local usa `sudo mysql` mediante socket.
 
-Auditoría al desplegar: npm audit --omit=dev encontró dos alertas moderadas,
-en uuid (<11.1.1) y gaxios, transitivas de Firebase Admin. Push está deshabilitado.
-Revisar una actualización compatible y repetir pruebas antes de activar Firebase.
+Credenciales: `/etc/nexou/api.env`, root 0600; no se incluyen en Git ni en la app.
+`.env.example` documenta los valores públicos de despliegue.
+DB_HOST=`172.30.80.1`, DB_PORT=`3306`, DB_NAME=`nexou`, DB_USER=`nexou_runtime`.
+Cambiar un archivo `.env` del checkout no modifica el contenedor.
 
-## GitHub Actions
+## Actualización y verificación
 
-Cada push a `master` (también merges de PR) ejecuta `.github/workflows/deploy-api.yml`.
-Un commit guardado solo en el equipo no dispara despliegue: hay que hacer push.
-También admite ejecución manual desde Actions, seleccionando `master`.
-La app compilada usa la API pública en debug y release; un cambio de código móvil
-requiere compilar/distribuir la app de nuevo, no actualiza aplicaciones ya instaladas.
+Desde este checkout: `sudo ./deploy/start.sh`.
+Compila y prueba antes de reemplazar la API, comprueba SQL y HTTPS, y restaura
+el contenedor anterior si falla el reemplazo. No modifica el esquema.
 
-Preparación del servidor ya realizada:
-- Clave exclusiva de Actions: `/etc/nexou/github-actions-key` (privada, no subir a Git).
-- Su clave pública está autorizada con `restrict` y un comando forzado: no permite
-  terminal interactiva, túneles ni comandos arbitrarios.
-- Comando instalado: `/usr/local/sbin/nexou-deploy`, fuente en `deploy/remote-deploy.sh`.
-- Identidad SSH del servidor fijada en `deploy/known_hosts`.
-- Checkout de producción: `/opt/nexou/repository`; la carpeta de trabajo del IDE
-  conserva los cambios locales. Último SHA publicado: `/opt/nexou/deployed-sha`.
+```sh
+docker ps
+docker logs --tail 100 nexou-api
+docker exec nexou-api node -e 'fetch("http://127.0.0.1:4999/ready").then(async r=>console.log(r.status,await r.text()))'
+curl --fail https://nexou.api.avorainc.com/health
+sudo /usr/local/sbin/nexou-backup
+```
 
-Activación única por un administrador del repositorio:
-1. Abrir https://github.com/Robertgz04/NexoU/settings/secrets/actions.
-2. Crear el repository secret `NEXOU_DEPLOY_SSH_KEY`, cuyo valor es el contenido
-   completo de `/etc/nexou/github-actions-key`, incluyendo BEGIN/END y saltos de línea.
-3. Subir estos cambios a `master` y revisar el job `Deploy NexoU API` en Actions.
+Los respaldos diarios quedan en `/var/lib/nexou/backups`, con retención de 14 días;
+incluyen SQL con rutinas y triggers y fotos privadas. Cron: `/etc/cron.d/nexou`.
+El respaldo debe copiarse fuera del servidor para recuperación ante pérdida del host.
+Nunca restaurar sobre una base activa sin respaldo previo y autorización.
+Push permanece deshabilitado hasta configurar Firebase.
 
-El servidor descarga `master` directamente del repositorio público por HTTPS.
-Si el repo se vuelve privado, configurar una deploy key de lectura en el servidor.
-Las ejecuciones se serializan; un SHA que ya fue superado se omite para no revertir
-una versión reciente. Compilación, pruebas unitarias y readiness SQL ocurren antes
-de parar la API anterior. El cambio de contenedor puede causar una pausa breve.
-Si falla el arranque o la comprobación HTTPS, se restaura el contenedor anterior.
-No reinicia MariaDB/Nginx ni importa de nuevo el dump, ni aplica migraciones SQL.
-Una modificación de esquema requiere migración planificada por separado.
-El contenedor anterior queda detenido como `nexou-api-previous` hasta el próximo despliegue.
+## App móvil y GitHub Actions
 
-El workflow puede ejecutar código de quienes tengan permiso para subir a `master`;
-los cambios de la API y scripts deben revisarse como código de producción.
-Si cambia `deploy/remote-deploy.sh`, actualizar también su copia instalada:
-`sudo install -m 700 deploy/remote-deploy.sh /usr/local/sbin/nexou-deploy`.
+`src/config/api.ts` apunta a la API pública para debug y release.
+Es necesario recompilar y distribuir la app para actualizar instalaciones existentes.
+No se incluyen credenciales MySQL en la app.
 
-## .env y acceso a SQL
-
-`.env.example` describe el entorno **dentro de Docker en este servidor**.
-El `.env` local del servidor contiene las mismas variables que `/etc/nexou/api.env`
-y está excluido de Git; el contenedor usa el archivo privado de `/etc/nexou`.
-Cambiar `.env` por sí solo no cambia el contenedor: editar `/etc/nexou/api.env`
-y desplegar de nuevo. Credenciales y fotos no se sobrescriben con un push.
-
-`DB_HOST=nexou-db`, `DB_PORT=3306`, `DB_NAME=nexou`, `DB_USER=nexou_runtime`.
-La contraseña real solo está en archivos privados. Esta cuenta no puede migrar
-el esquema. La base está en línea para la API, sin puerto MySQL público.
-Fuera de esa red Docker el nombre `nexou-db` no resuelve. Quien compile la app
-solo necesita el repo y acceso HTTPS, sin `.env` ni credenciales SQL.
-Para desarrollar un backend local, usar SQL local y cambiar host/puerto/usuario,
-`NODE_ENV=development`, `UPLOAD_DIR=.local/uploads` y `TRUST_PROXY=`.
-No ejecutar las migraciones de desarrollo contra la base de producción.
+El workflow `.github/workflows/deploy-api.yml` comprueba el dominio nuevo.
+La automatización SSH de Actions requiere configurar por separado su clave,
+checkout y comando forzado en este servidor; ver `deploy/remote-deploy.sh`.
+Los cambios locales no disparan Actions hasta publicarlos en el repositorio.

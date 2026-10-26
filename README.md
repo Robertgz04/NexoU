@@ -1,5 +1,7 @@
 # NexoU — App Móvil 📱
 
+Para compilar una APK e instalarla en tu celular usando la API del servidor: [guía Android](docs/instalar_android.md).
+
 Para iniciar la app Android, Metro, la API y MariaDB en este equipo: [guía de arranque local](docs/guia_arranque_local.md).
 
 Aplicación móvil para **registrar y consultar reportes de problemas dentro de una universidad**. Desarrollada con **React Native + Android Studio** para la asignatura _Desarrollo Móvil Integral_ (Ingeniería en Desarrollo y Gestión de Software, UTM / Extensión de la UTSC).
@@ -115,7 +117,7 @@ Las contraseñas permanecen en `.local/cuentas-iniciales.json`; no se incluyen e
 El registro público permite solo estudiantes; personal se provisiona por comando administrativo.
 No se importan automáticamente los usuarios/reportes locales anteriores.
 
-La app usa `https://nexou-api.avorainc.com/api/v1` en debug y release,
+La app usa `https://nexou.api.avorainc.com/api/v1` en debug y release,
 incluidos emuladores y teléfonos físicos. La URL está en [src/config/api.ts](src/config/api.ts).
 No hace falta `.env` para compilar la app ni compartir credenciales SQL.
 En macOS instalar los pods para iOS.

@@ -6,6 +6,7 @@ export interface PushRegistration {
   enabled: boolean;
   token: string | null;
 }
+const openedInitialMessages = new Set<string>();
 const listeners = new Set<() => void>();
 export function onPushRegistrationChange(listener: () => void) {
   listeners.add(listener);
@@ -103,30 +104,42 @@ export async function listenForPush(
       seen.add(eventId);
       await setJSON(key, [...previous, eventId].slice(-100)).catch(() => {});
     }
-    if (message.notification)
-      onMessage(
-        message.notification.title ?? 'NexoU',
-        message.notification.body ?? 'Tienes una nueva notificación.',
-        validReportId(message.data?.reportId),
-      );
+    onMessage(
+      message.notification?.title ?? 'NexoU',
+      message.notification?.body ?? 'Tienes una nueva notificación.',
+      validReportId(message.data?.reportId),
+    );
   });
   const openedSubscription = api.onNotificationOpenedApp(messaging, message => {
     const id = validReportId(message.data?.reportId);
     if (id) onOpen?.(id);
   });
-  const initial = await api.getInitialNotification(messaging).catch(() => null);
-  const initialId = validReportId(initial?.data?.reportId);
-  if (initialId) onOpen?.(initialId);
   const tokenSubscription = api.onTokenRefresh(messaging, async token => {
     const current = await getPushRegistration();
     if (current.enabled) {
-      await linkDevice(token).catch(() => {});
-      await setJSON(StorageKeys.pushRegistration, {
-        enabled: true,
-        token,
-      }).catch(() => {});
+      try {
+        await linkDevice(token);
+        await setJSON(StorageKeys.pushRegistration, { enabled: true, token });
+      } catch {
+        // Keep the last confirmed registration; reconnect will retry.
+      }
     }
   });
+  const initial = await api.getInitialNotification(messaging).catch(() => null);
+  const initialId = validReportId(initial?.data?.reportId);
+  const initialKey = initial?.messageId ?? initialId;
+  if (initialId && initialKey && !openedInitialMessages.has(initialKey)) {
+    openedInitialMessages.add(initialKey);
+    onOpen?.(initialId);
+  }
+  // Tokens can rotate while the app is closed. Reconcile on every connection.
+  api
+    .getToken(messaging)
+    .then(async token => {
+      await linkDevice(token);
+      await setJSON(StorageKeys.pushRegistration, { enabled: true, token });
+    })
+    .catch(() => {});
   return () => {
     messageSubscription();
     tokenSubscription();

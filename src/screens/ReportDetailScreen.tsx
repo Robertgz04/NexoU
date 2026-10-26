@@ -1,7 +1,7 @@
+import { useToast } from '../components/ToastProvider';
 import React, { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -59,6 +59,7 @@ function InfoRow({
 export default function ReportDetailScreen() {
   const route = useRoute<DetailRoute>();
   const navigation = useNavigation();
+  const toast = useToast();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const [report, setReport] = useState<Report | null>(null);
@@ -113,17 +114,20 @@ export default function ReportDetailScreen() {
       );
       setReport(updated);
       setStatusNote('');
-      Alert.alert(
-        'Estado actualizado',
-        'El reporte ahora está marcado como: ' + statusMeta(estado).label + '.',
-      );
+      toast({
+        title: 'Estado actualizado',
+        message:
+          'El reporte ahora está marcado como: ' +
+          statusMeta(estado).label +
+          '.',
+        kind: 'success',
+      });
     } catch (error) {
-      Alert.alert(
-        'Error',
-        error instanceof Error
-          ? error.message
-          : 'No se pudo actualizar el estado.',
-      );
+      toast({
+        title: 'No se pudo actualizar el estado',
+        message: error instanceof Error ? error.message : 'Intenta de nuevo.',
+        kind: 'error',
+      });
     } finally {
       savingLock.current = false;
       setSaving(false);
