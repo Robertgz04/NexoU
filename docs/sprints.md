@@ -3,16 +3,16 @@
 Este documento resume los 9 Sprints definidos en el plan de trabajo de **NexoU**.  
 Cada Sprint tiene una duración de **1 semana** y busca producir un incremento verificable de la aplicación.
 
-## Seguimiento del avance — corte al 6 de octubre de 2026
+## Seguimiento del avance — actualización al 9 de octubre de 2026
 
-**Sprint actual por calendario: Sprint 2 (5–9 de octubre).** Su alcance funcional está implementado; queda pendiente documentar la aceptación y el cierre conforme a la Definition of Done del [plan de trabajo](fuentes/plan_de_trabajo.txt), sección 7. Las fechas originales se conservan aunque existan entregables adelantados.
+**Sprint actual por calendario: Sprint 2 (5–9 de octubre).** La aplicación funciona y compila correctamente, según la confirmación del responsable del proyecto del 9 de octubre de 2026. El entregable del Sprint 2 está terminado: registro, inicio de sesión, validaciones, sesiones, roles y navegación principal operativos. Solo resta anexar las capturas de evidencia al reporte semanal. Las fechas originales del plan se conservan.
 
 ### Estado por Sprint
 
 | Sprint | Estado del entregable al corte | Pendiente para declarar cierre |
 |---|---|---|
 | 1 | Base técnica implementada: Git, arquitectura, pantallas de autenticación y modelo SQL documentado. | Vincular evidencias de aceptación, revisión de otro integrante y Review/Retrospective. |
-| 2 | Alcance funcional implementado: registro, login, validaciones, sesiones, roles y navegación. APK debug disponible. | Registrar prueba manual de registro/login y navegación por ambos roles sobre la versión actual; revisión del equipo y cierre. |
+| 2 | Entregable funcional terminado: registro, login, validaciones, sesiones, roles y navegación operativos. La aplicación funciona y compila correctamente, según confirmación del responsable al 09/10. | Anexar capturas de registro, inicio de sesión y navegación por ambos roles al reporte semanal. |
 | 3 | Implementación adelantada: formulario, catálogos, validaciones y persistencia mediante API/MariaDB. | Revalidar creación sin fotografía contra SQL y registrar el flujo en dispositivo/emulador. |
 | 4 | Implementación adelantada: cámara/galería, carga privada de evidencia, Mis reportes y detalle. | Certificar cámara y galería en Android, subida al servidor y consulta posterior de la imagen/estado. |
 | 5 | Consolidación parcial: suites automatizadas, sesiones revocables y autorización en API. | Revalidar integración SQL, demostrar el flujo completo con foto y adjuntar evidencia del primer hito. |
@@ -24,18 +24,21 @@ Cada Sprint tiene una duración de **1 semana** y busca producir un incremento v
 ### Cómo interpretar el progreso
 
 - **Cobertura de implementación: 8/8 funcionalidades F01–F08 (100 % con código integrado)**, identificables en [README](../README.md), pantallas, repositorios HTTP y módulos del backend. Este indicador no equivale a aceptación final ni certifica todos los criterios de cada función.
-- **Avance respecto al calendario:** autenticación del Sprint 2 implementada y alcance funcional adelantado hasta el Sprint 7; el trabajo restante se concentra en validación, estabilización y entrega.
-- **Cierre formal:** esta revisión no acredita ningún cierre completo con todas sus evidencias. No se calcula un porcentaje global de proyecto ni se cuentan Sprints cerrados a partir de código existente: el plan no asigna pesos a las tareas y faltan registros de aceptación/revisión.
+- **Avance respecto al calendario:** entregable de autenticación del Sprint 2 terminado y funcional; solo falta incorporar sus capturas al reporte. El alcance de los demás Sprints conserva su calendario y sus propios criterios de entrega.
+- **Estado del Sprint 2:** trabajo funcional terminado y compilación correcta, confirmados por el responsable del proyecto. El reporte está preparado para incorporar las capturas. Esta actualización no registra reuniones, revisiones de código ni cierres de otros Sprints.
 
-### Evidencia de esta revisión
+### Confirmación actual y antecedentes de verificación
+
+- **9 de octubre de 2026:** el responsable del proyecto confirma que la aplicación funciona y compila correctamente. Se actualiza el Sprint 2 a entregable funcional terminado; únicamente quedan sus capturas de evidencia.
+- Los resultados siguientes corresponden a la revisión del **6 de octubre de 2026**; se conservan como antecedentes y no representan una nueva ejecución de pruebas.
 
 - `npm test -- --runInBand`: **18 suites y 65 pruebas móviles aprobadas**.
 - `npm --prefix backend test`: **6 pruebas aprobadas, 1 integración SQL omitida** en la ejecución normal.
 - `npx tsc --noEmit` y `npm --prefix backend run build`: sin errores.
 - `npm run lint`: **0 errores y 4 advertencias**.
 - APK debug encontrada en `android/app/build/outputs/apk/debug/app-debug.apk`, con modificación del 6 de octubre de 2026. Su presencia no certifica los flujos manuales.
-- Integración SQL intentada con `RUN_DB_TESTS=true`: **falló al preparar/limpiar la base aislada con el administrador local**. No se obtuvo una validación SQL satisfactoria en esta revisión; resolver acceso/disponibilidad del entorno y repetirla.
-- [backend/README](../backend/README.md) registra verificaciones anteriores de login real, integración SQL y Android. Se conservan como antecedente; no sustituyen el resultado actual ni certifican cámara/galería.
+- Integración SQL intentada con `RUN_DB_TESTS=true`: **falló al preparar/limpiar la base aislada con el administrador local**. Fue una incidencia del entorno de pruebas de ese corte. La confirmación funcional actual no constituye una nueva ejecución de esa prueba SQL.
+- [backend/README](../backend/README.md) registra verificaciones anteriores de login real, integración SQL y Android. Se conservan como antecedentes de verificación técnica.
 
 ### Criterio de actualización y cierre
 
@@ -73,6 +76,21 @@ Completar la autenticación funcional de la aplicación. Se implementará el reg
 
 ### Meta de entregable
 Entregar una **aplicación ejecutable** con **registro e inicio de sesión funcionales**, manejo básico de roles y **navegación principal operativa**.
+
+### Resultado al 9 de octubre de 2026
+
+**Entregable funcional terminado.** El registro de estudiantes, el inicio de sesión con validaciones, el manejo de sesiones y roles, la redirección al panel correspondiente y la navegación principal funcionan correctamente. La aplicación compila, según la confirmación del responsable del proyecto.
+
+| Integrante | Área de trabajo | Responsabilidad en el Sprint 2 |
+|---|---|---|
+| Brayan David Casas Morales | Desarrollo | Desarrollo de autenticación y validaciones, e integración del registro e inicio de sesión. |
+| Roberto Carlos De La Cruz Gonzalez | Desarrollo | Desarrollo de sesiones, roles y navegación, e integración de la aplicación para compilación. |
+| Devany Guadalupe Zapata Chavez | UI y pruebas | Interfaz de registro e inicio de sesión, revisión visual y pruebas de los flujos de autenticación y navegación. |
+
+**Reporte semanal:** [NexoU Sprint 2](sprints/NexoU_Sprint2.docx). La distribución de responsabilidades corresponde a la indicada por el responsable del proyecto; no se asignan commits individuales.
+
+**Único pendiente del reporte:** insertar capturas de registro e inicio de sesión, y del acceso y navegación como estudiante y personal. Las capturas complementan la evidencia del entregable terminado.
+
 
 ---
 
