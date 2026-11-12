@@ -22,9 +22,8 @@ import StatTiles from '../../components/StatTiles';
 import type { StatItem } from '../../components/StatTiles';
 import StatusBadge from '../../components/StatusBadge';
 import { SCREEN_BACKGROUNDS } from '../../constants/backgrounds';
-import { CATEGORIES } from '../../constants/catalog';
 import { useAuth } from '../../context/AuthContext';
-import { getReportsByOwner, getSummary } from '../../data/reportRepository';
+import { getReportsByOwner, getSummary, getCatalogs } from '../../data/reportRepository';
 import type { RootStackParamList } from '../../navigation/types';
 import { colors, radius, shadow, spacing } from '../../theme';
 import type {
@@ -65,6 +64,7 @@ export default function HomeScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [reports, setReports] = useState<Report[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [summary, setSummary] = useState<ReportSummary | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -74,12 +74,14 @@ export default function HomeScreen() {
       return;
     }
     try {
-      const [data, counts] = await Promise.all([
+      const [data, counts, catalog] = await Promise.all([
         getReportsByOwner(user.id),
         getSummary(true),
+        getCatalogs(),
       ]);
       setReports(data);
       setSummary(counts);
+      setCategories(catalog.categorias.map(category => category.nombre));
       setLoadError(false);
     } catch {
       setLoadError(true);
@@ -280,8 +282,8 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.grid}>
-              {CATEGORIES.map(cat => {
-                const meta = CATEGORY_META[cat];
+              {categories.map(cat => {
+                const meta = CATEGORY_META[cat] || CATEGORY_META.Otros;
                 return (
                   <TouchableOpacity
                     key={cat}

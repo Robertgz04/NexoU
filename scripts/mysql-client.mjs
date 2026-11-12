@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-loadEnvFile(resolve('.env'));
+loadEnvFile(resolve(process.env.API_ENV_FILE || '.env'));
 const required = ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD'];
 for (const key of required) {
   if (!process.env[key] || process.env[key] === 'CAMBIA_ESTA_CLAVE') {

@@ -221,7 +221,7 @@ export default function StatisticsScreen() {
                   <View key={item.categoria} style={styles.category}>
                     <View style={styles.row}>
                       <AppIcon
-                        name={CATEGORY_ICONS[item.categoria]}
+                        name={CATEGORY_ICONS[item.categoria] || 'Tag'}
                         size={20}
                         color={colors.primary}
                       />
@@ -235,7 +235,8 @@ export default function StatisticsScreen() {
                           styles.bar,
                           {
                             width: `${(item.value / maxCategoria) * 100}%`,
-                            backgroundColor: CATEGORY_COLORS[item.categoria],
+                            backgroundColor:
+                              CATEGORY_COLORS[item.categoria] || colors.primary,
                           },
                         ]}
                       />

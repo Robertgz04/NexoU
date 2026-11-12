@@ -20,13 +20,7 @@ export interface ReportStatusUpdate {
 }
 
 /** Categorías de incidencia (F04). */
-export type Category =
-  | 'Mobiliario'
-  | 'Electricidad'
-  | 'Agua'
-  | 'Limpieza'
-  | 'Equipos'
-  | 'Otros';
+export type Category = string;
 
 /** Usuario autenticado (F01/F02). */
 export interface User {
@@ -35,6 +29,7 @@ export interface User {
   matricula: string;
   email: string;
   rol: Role;
+  isAdmin?: boolean;
   createdAt: string;
 }
 

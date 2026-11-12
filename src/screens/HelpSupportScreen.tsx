@@ -1,6 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { getInstitution, type Institution } from '../data/adminRepository';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
 import AppIcon from '../components/AppIcon';
@@ -9,7 +10,6 @@ import MotionTouchable from '../components/MotionTouchable';
 import PrimaryButton from '../components/PrimaryButton';
 import { colors, radius, spacing } from '../theme';
 
-const SUPPORT_EMAIL = 'soporte.nexou@universidad.edu';
 const QUESTIONS = [
   {
     id: 'photo',
@@ -47,13 +47,38 @@ export default function HelpSupportScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const [institution, setInstitution] = useState<Institution | null>(null);
+  const [institutionError, setInstitutionError] = useState(false);
+  const loadInstitution = useCallback(
+    async (isActive: () => boolean = () => true) => {
+      try {
+        const data = await getInstitution();
+        if (isActive()) {
+          setInstitution(data);
+          setInstitutionError(false);
+        }
+      } catch {
+        if (isActive()) setInstitutionError(true);
+      }
+    },
+    [],
+  );
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      loadInstitution(() => active);
+      return () => {
+        active = false;
+      };
+    }, [loadInstitution]),
+  );
   const [expanded, setExpanded] = useState<string | null>(null);
   const [openingMail, setOpeningMail] = useState(false);
   const [mailError, setMailError] = useState<string | null>(null);
   const mailLock = useRef(false);
   const student = user?.rol === 'estudiante';
   const contact = async () => {
-    if (mailLock.current) return;
+    if (mailLock.current || !institution) return;
     mailLock.current = true;
     setOpeningMail(true);
     setMailError(null);
@@ -63,7 +88,7 @@ export default function HelpSupportScreen() {
     );
     try {
       await Linking.openURL(
-        `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`,
+        `mailto:${institution.correo_soporte}?subject=${subject}&body=${body}`,
       );
     } catch {
       setMailError(
@@ -149,12 +174,27 @@ export default function HelpSupportScreen() {
         <Text accessibilityRole="header" style={styles.sectionTitle}>
           Contactar a soporte
         </Text>
+        {institutionError ? (
+          <>
+            <Text accessibilityLiveRegion="polite" style={styles.error}>
+              No pudimos actualizar los datos de soporte.
+            </Text>
+            <PrimaryButton
+              title="Reintentar datos de soporte"
+              variant="outline"
+              onPress={() => loadInstitution()}
+            />
+          </>
+        ) : null}
+        {institution ? (
+          <Text style={styles.contactTitle}>{institution.nombre}</Text>
+        ) : null}
         <View style={styles.contactRow}>
           <AppIcon name="Mail" size={24} color={colors.primary} />
           <View style={styles.contactBody}>
             <Text style={styles.contactTitle}>Correo de soporte</Text>
             <Text selectable style={styles.text}>
-              {SUPPORT_EMAIL}
+              {institution?.correo_soporte || 'Cargando contacto…'}
             </Text>
           </View>
         </View>
@@ -166,6 +206,7 @@ export default function HelpSupportScreen() {
           title="Escribir a soporte"
           onPress={contact}
           loading={openingMail}
+          disabled={!institution}
           style={styles.contactButton}
         />
         <Text style={styles.caption}>
@@ -182,7 +223,7 @@ export default function HelpSupportScreen() {
           <View style={styles.contactBody}>
             <Text style={styles.contactTitle}>Atención presencial</Text>
             <Text selectable style={styles.text}>
-              Ventanilla de Atención Universitaria, Edificio Central.
+              {institution?.ubicacion_soporte || 'Cargando ubicación…'}
             </Text>
           </View>
         </View>

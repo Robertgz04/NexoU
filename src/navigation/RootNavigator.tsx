@@ -22,6 +22,11 @@ import StudentTabs from './StudentTabs';
 import StaffTabs from './StaffTabs';
 import type { RootStackParamList } from './types';
 import PrimaryButton from '../components/PrimaryButton';
+import {
+  AdministrationScreen,
+  AdminCatalogScreen,
+  AdminInstitutionScreen,
+} from '../screens/admin/AdministrationScreens';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -68,6 +73,30 @@ export default function RootNavigator() {
             component={user.rol === 'estudiante' ? StudentTabs : StaffTabs}
             options={{ headerShown: false }}
           />
+          {user.rol === 'personal' && user.isAdmin ? (
+            <Stack.Group>
+              <Stack.Screen
+                name="Administration"
+                component={AdministrationScreen}
+                options={{ title: 'Administración' }}
+              />
+              <Stack.Screen
+                name="AdminCatalog"
+                component={AdminCatalogScreen}
+                options={({ route }) => ({
+                  title:
+                    route.params.kind === 'areas'
+                      ? 'Zonas de la institución'
+                      : 'Categorías de incidencias',
+                })}
+              />
+              <Stack.Screen
+                name="AdminInstitution"
+                component={AdminInstitutionScreen}
+                options={{ title: 'Datos de la institución' }}
+              />
+            </Stack.Group>
+          ) : null}
           <Stack.Screen
             name="HelpSupport"
             component={HelpSupportScreen}

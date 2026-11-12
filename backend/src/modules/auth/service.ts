@@ -18,6 +18,7 @@ export interface Account extends RowDataPacket {
   password_hash: string;
   password_algoritmo: string;
   rol: 'estudiante' | 'personal';
+  es_admin?: number;
   activo: number;
   creado_en: string;
 }
@@ -27,6 +28,7 @@ export const publicUser = (u: Account) => ({
   matricula: u.matricula,
   email: u.email,
   rol: u.rol,
+  isAdmin: u.rol === 'personal' && Boolean(u.es_admin),
   createdAt: isoDate(u.creado_en),
 });
 export const tokenHash = (token: string) =>

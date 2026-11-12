@@ -140,7 +140,11 @@ export default function ProfileScreen() {
                   !isEstudiante && { color: colors.primaryDark },
                 ]}
               >
-                {isEstudiante ? 'Estudiante' : 'Personal universitario'}
+                {isEstudiante
+                  ? 'Estudiante'
+                  : user.isAdmin
+                  ? 'Personal administrador'
+                  : 'Personal universitario'}
               </Text>
             </View>
 
@@ -254,6 +258,16 @@ export default function ProfileScreen() {
             onPress={() => navigation.navigate('HelpSupport')}
           />
         </View>
+        {!isEstudiante && user.isAdmin ? (
+          <View style={styles.group}>
+            <MenuRow
+              icon="Settings"
+              title="Administración de la institución"
+              subtitle="Gestiona zonas, categorías y datos de tu escuela"
+              onPress={() => navigation.navigate('Administration')}
+            />
+          </View>
+        ) : null}
         <View style={styles.sessionGroup}>
           <MenuRow
             icon="LogOut"

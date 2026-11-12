@@ -73,7 +73,7 @@ test(
         ['scripts/migrate-mysql.mjs'],
         { cwd: project, env: process.env, encoding: 'utf8', windowsHide: true },
       );
-      assert.equal(migration.status, 0, 'Migrador de pruebas falló.');
+      assert.equal(migration.status, 0, `Migrador de pruebas falló: ${migration.stderr}`);
       const { app } = await import('../src/app.js');
       const { pool, rows, connection, strictMode } = await import(
         '../src/db/pool.js'
@@ -509,6 +509,199 @@ test(
       assert.equal(week.areaTop?.area, catalog.areas[0].nombre);
       assert.equal(week.categories.filter(c => c.value === 0).length, 5);
       assert.deepEqual(week.serie, year.serie);
+      // Administración: el permiso se consulta en servidor en cada petición.
+      assert.equal(
+        (await request.get('/api/v1/admin/catalogs/areas')).status,
+        401,
+      );
+      for (const token of [first.token, staff.token]) {
+        assert.equal(
+          (
+            await request
+              .get('/api/v1/admin/catalogs/areas')
+              .set('Authorization', bearer(token))
+          ).status,
+          403,
+        );
+        assert.equal(
+          (
+            await request
+              .put('/api/v1/admin/institution')
+              .set('Authorization', bearer(token))
+              .send({})
+          ).status,
+          403,
+        );
+      }
+      assert.equal(first.user.isAdmin, false);
+      assert.equal(staff.user.isAdmin, false);
+      assert.equal(
+        (
+          await request
+            .patch('/api/v1/users/me')
+            .set('Authorization', bearer(staff.token))
+            .send({ ...input, isAdmin: true })
+        ).status,
+        400,
+      );
+      await rows('UPDATE usuarios SET es_admin=1 WHERE id=?', [staff.user.id]);
+      assert.equal(
+        (
+          await request
+            .get('/api/v1/auth/me')
+            .set('Authorization', bearer(staff.token))
+        ).body.isAdmin,
+        true,
+      );
+      const institutionData = {
+        nombre: 'Escuela de prueba',
+        correo_soporte: 'soporte@escuela.example',
+        ubicacion_soporte: 'Edificio B',
+      };
+      assert.equal(
+        (
+          await request
+            .put('/api/v1/admin/institution')
+            .set('Authorization', bearer(staff.token))
+            .send(institutionData)
+        ).status,
+        200,
+      );
+      assert.deepEqual(
+        (
+          await request
+            .get('/api/v1/institution')
+            .set('Authorization', bearer(first.token))
+        ).body,
+        institutionData,
+      );
+      for (const kind of ['areas', 'categorias']) {
+        const endpoint = `/api/v1/admin/catalogs/${kind}`;
+        const data = {
+          nombre: 'Opción personalizada',
+          orden: 10,
+          activo: true,
+        };
+        const created = await request
+          .post(endpoint)
+          .set('Authorization', bearer(staff.token))
+          .send(data);
+        assert.equal(created.status, 201);
+        assert.equal(
+          (
+            await request
+              .post(endpoint)
+              .set('Authorization', bearer(staff.token))
+              .send(data)
+          ).status,
+          409,
+        );
+        assert.equal(
+          (
+            await request
+              .post(endpoint)
+              .set('Authorization', bearer(staff.token))
+              .send({ ...data, nombre: ' ', orden: -1 })
+          ).status,
+          400,
+        );
+        assert.equal(
+          (
+            await request
+              .put(`${endpoint}/65535`)
+              .set('Authorization', bearer(staff.token))
+              .send(data)
+          ).status,
+          404,
+        );
+        assert.equal(
+          (
+            await request
+              .get('/api/v1/catalogs')
+              .set('Authorization', bearer(first.token))
+          ).body[kind].some((v: any) => v.id === created.body.id),
+          true,
+        );
+        assert.equal(
+          (
+            await request
+              .put(`${endpoint}/${created.body.id}`)
+              .set('Authorization', bearer(staff.token))
+              .send({ ...data, activo: false })
+          ).status,
+          200,
+        );
+        assert.equal(
+          (
+            await request
+              .get('/api/v1/catalogs')
+              .set('Authorization', bearer(first.token))
+          ).body[kind].some((v: any) => v.id === created.body.id),
+          false,
+        );
+        assert.equal(
+          (
+            await request
+              .get(endpoint)
+              .set('Authorization', bearer(staff.token))
+          ).body.find((v: any) => v.id === created.body.id).activo,
+          false,
+        );
+        assert.equal(
+          (
+            await request
+              .put(`${endpoint}/${created.body.id}`)
+              .set('Authorization', bearer(staff.token))
+              .send(data)
+          ).status,
+          200,
+        );
+      }
+      // Desactivar una zona usada no elimina el historial ni su detalle.
+      const originalArea = catalog.areas[0];
+      await request
+        .put(`/api/v1/admin/catalogs/areas/${originalArea.id}`)
+        .set('Authorization', bearer(staff.token))
+        .send({ nombre: originalArea.nombre, orden: 0, activo: false })
+        .expect(200);
+      assert.ok(
+        (
+          await request
+            .get('/api/v1/reports')
+            .set('Authorization', bearer(first.token))
+        ).body.items.some((r: any) => r.area === originalArea.nombre),
+      );
+      assert.equal(
+        (
+          await request
+            .post('/api/v1/reports')
+            .set('Authorization', bearer(first.token))
+            .send({
+              titulo: 'Zona desactivada',
+              descripcion: 'No se admite',
+              areaId: originalArea.id,
+              categoriaId: catalog.categorias[0].id,
+            })
+        ).status,
+        400,
+      );
+      await rows('UPDATE usuarios SET es_admin=0 WHERE id=?', [staff.user.id]);
+      assert.equal(
+        (
+          await request
+            .get('/api/v1/admin/catalogs/areas')
+            .set('Authorization', bearer(staff.token))
+        ).status,
+        403,
+      );
+      assert.equal(
+        (
+          await request
+            .get('/api/v1/auth/me')
+            .set('Authorization', bearer(staff.token))
+        ).body.isAdmin,
+        false,
+      );
       await rows('UPDATE usuarios SET activo=0 WHERE id=?', [second.user.id]);
       assert.equal(
         (

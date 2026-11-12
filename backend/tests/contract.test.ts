@@ -11,7 +11,7 @@ test('OpenAPI publica los endpoints y resuelve todos los contratos referenciados
       (sum: number, p: any) => sum + Object.keys(p).length,
       0,
     ),
-    17,
+    22,
   );
   function walk(value: unknown) {
     if (!value || typeof value !== 'object') return;

@@ -6,9 +6,21 @@ import MenuRow from '../src/components/MenuRow';
 import MotionTouchable from '../src/components/MotionTouchable';
 import PrimaryButton from '../src/components/PrimaryButton';
 const mockNavigate = jest.fn();
+jest.mock('../src/data/adminRepository', () => ({
+  getInstitution: jest
+    .fn()
+    .mockResolvedValue({
+      nombre: 'Universidad',
+      correo_soporte: 'soporte.nexou@universidad.edu',
+      ubicacion_soporte:
+        'Ventanilla de Atención Universitaria, Edificio Central.',
+    }),
+}));
 let mockRole = 'estudiante';
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: mockNavigate }),
+  useFocusEffect: (effect: () => void) =>
+    require('react').useEffect(effect, []),
 }));
 jest.mock('../src/context/AuthContext', () => ({
   useAuth: () => ({ user: { rol: mockRole } }),

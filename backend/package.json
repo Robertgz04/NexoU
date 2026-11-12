@@ -12,6 +12,7 @@
     "start": "node dist/server.js",
     "test": "tsx --test tests/*.test.ts",
     "staff:create": "tsx src/modules/users/provision.ts",
+    "staff:admin": "tsx src/modules/users/admin.ts",
     "maintenance": "tsx src/storage/maintenance.ts",
     "test:integration": "tsx --test tests/integration.test.ts"
   },

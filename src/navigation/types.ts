@@ -28,6 +28,9 @@ export type RootStackParamList = {
   HelpSupport: undefined;
   Settings: undefined;
   PersonalData: undefined;
+  Administration: undefined;
+  AdminCatalog: { kind: 'areas' | 'categorias' };
+  AdminInstitution: undefined;
   ReportDetail: { reportId: string };
 };
 

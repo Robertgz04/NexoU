@@ -1,5 +1,44 @@
 # Encender y apagar NexoU en Windows
 
+La app vuelve a apuntar al servidor HTTPS en debug y release. El entorno local
+descrito abajo se conserva para futuras pruebas; para utilizarlo hay que cambiar
+temporalmente `API_BASE_URL` en `src/config/api.ts` a la URL local indicada.
+
+## Entorno de pruebas local — 12 de noviembre de 2026
+
+Durante la revisión se usó `http://10.0.2.2:3000/api/v1` en Android.
+La URL publicada es `https://nexou.api.avorainc.com/api/v1`.
+La configuración privada local está en `.env.local`, separada del `.env` del servidor.
+
+Para esta revisión se preparó una instancia independiente de MariaDB en
+`.local/mysql-dev`, puerto **33079**, con las migraciones 001–007 y una copia de
+las dos cuentas de `.local/cuentas-iniciales.json`. La cuenta de personal tiene
+administración habilitada **solo en esta base local**. No se copiaron reportes
+del servidor. Las pruebas push quedan desactivadas en este entorno.
+
+Para volver a encender esta instancia y la API desde la raíz del proyecto:
+
+```powershell
+$taskDatabase = Join-Path $PWD '.local/mysql-dev'
+Start-Process -FilePath 'C:/xampp/mysql/bin/mysqld.exe' -ArgumentList @(
+  '--no-defaults', ('--datadir="' + $taskDatabase + '"'),
+  '--port=33079', '--bind-address=127.0.0.1'
+) -WindowStyle Hidden
+$env:API_ENV_FILE = Join-Path $PWD '.env.local'
+npm run api:dev
+```
+
+No iniciar otra instancia si el puerto ya está ocupado. Para aplicar futuras
+migraciones locales, definir igualmente `API_ENV_FILE` antes de `npm run db:migrate`.
+Metro y Android se inician con los pasos 4–5 de abajo. La comprobación de salud
+local sigue siendo `http://127.0.0.1:3000/ready`.
+
+Los procesos iniciados para esta revisión escriben sus registros en
+`.local/api-local.log`, `.local/api-local-error.log`, `.local/metro-local.log`
+y `.local/metro-local-error.log`.
+
+## Referencia del entorno anterior con XAMPP
+
 Para instalar en un celular conectado a la API del servidor, sigue primero la [guía Android](instalar_android.md). Los datos siguientes describen un entorno de desarrollo anterior; configura explícitamente `API_PORT=3000` en tu `.env` si deseas reproducirlo.
 
 Esta guía corresponde al entorno local actual: proyecto en `C:\Users\bdavi\Documents\NexoU`, MariaDB de XAMPP en el puerto **3050**, API en **3000**, Metro en **8081** y emulador Android **Pixel_10**. Los comandos se ejecutan en PowerShell.

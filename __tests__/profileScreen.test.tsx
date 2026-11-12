@@ -10,6 +10,7 @@ const mockNavigate = jest.fn();
 const mockLogout = jest.fn();
 const mockReports = jest.fn();
 let mockRole = 'estudiante';
+let mockAdmin = false;
 const mockUser = {
   id: 'student-1',
   nombre: 'Ana María López Hernández con un nombre largo',
@@ -22,7 +23,10 @@ jest.mock('@react-navigation/native', () => ({
     require('react').useEffect(effect, []),
 }));
 jest.mock('../src/context/AuthContext', () => ({
-  useAuth: () => ({ user: { ...mockUser, rol: mockRole }, logout: mockLogout }),
+  useAuth: () => ({
+    user: { ...mockUser, rol: mockRole, isAdmin: mockAdmin },
+    logout: mockLogout,
+  }),
 }));
 jest.mock('../src/data/reportRepository', () => ({
   getSummary: async (...args: unknown[]) => {
@@ -47,6 +51,7 @@ jest.mock('react-native-safe-area-context', () => ({
 let tree: renderer.ReactTestRenderer;
 beforeEach(() => {
   mockRole = 'estudiante';
+  mockAdmin = false;
   mockReports.mockResolvedValue([
     { estado: 'revision' },
     { estado: 'pendiente' },
@@ -63,6 +68,25 @@ async function mount() {
     tree = renderer.create(<ProfileScreen />);
   });
 }
+
+test('muestra administración únicamente al personal administrador', async () => {
+  mockRole = 'personal';
+  await mount();
+  expect(
+    tree.root
+      .findAllByType(MenuRow)
+      .some(node => node.props.title === 'Administración de la institución'),
+  ).toBe(false);
+  act(() => tree.unmount());
+  mockAdmin = true;
+  await mount();
+  const menu = tree.root
+    .findAllByType(MenuRow)
+    .find(node => node.props.title === 'Administración de la institución')!;
+  expect(menu).toBeTruthy();
+  act(() => menu.props.onPress());
+  expect(mockNavigate).toHaveBeenCalledWith('Administration');
+});
 
 test('mantiene nombre y correo completos y la navegación del estudiante', async () => {
   await mount();

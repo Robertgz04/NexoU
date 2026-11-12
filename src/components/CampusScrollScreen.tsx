@@ -22,6 +22,9 @@ interface Props {
   children: React.ReactNode;
   keyboard?: boolean;
   refreshControl?: ScrollViewProps['refreshControl'];
+  scrollRef?: React.RefObject<React.ComponentRef<
+    typeof Animated.ScrollView
+  > | null>;
 }
 
 /** Full-width campus and curved sheet driven by one native scroll signal. */
@@ -32,6 +35,7 @@ export default function CampusScrollScreen({
   children,
   keyboard = false,
   refreshControl,
+  scrollRef,
 }: Props) {
   const { height } = useWindowDimensions();
   const [viewportHeight, setViewportHeight] = useState(height);
@@ -90,6 +94,7 @@ export default function CampusScrollScreen({
         keyboardVerticalOffset={insets.top}
       >
         <Animated.ScrollView
+          ref={scrollRef}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           refreshControl={refreshControl}

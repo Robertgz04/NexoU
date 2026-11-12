@@ -42,3 +42,13 @@ export const role =
       );
     next();
   };
+
+export const admin: RequestHandler = (_req, res, next) => {
+  if (res.locals.user.rol !== 'personal' || !res.locals.user.es_admin)
+    throw new ApiError(
+      403,
+      'FORBIDDEN',
+      'Solo el personal administrador puede gestionar la institución.',
+    );
+  next();
+};

@@ -1,4 +1,4 @@
-// Configuración pública compartida por builds de desarrollo y producción.
+// Desarrollo y producción usan la API publicada.
 // La app no necesita .env ni acceso directo a la base de datos.
 export const API_BASE_URL = 'https://nexou.api.avorainc.com/api/v1';
 export const HTTP_TIMEOUT_MS = 15000;

@@ -11,7 +11,7 @@ const password = string({minLength:6,description:'Máximo 72 bytes UTF-8 (bcrypt
 const personal = {nombre:string({minLength:1,maxLength:150}),matricula:string({maxLength:30,pattern:'^[a-z0-9][a-z0-9._-]{0,29}$'}),email:string({format:'email',maxLength:254,description:'Exactamente matrícula normalizada + @virtual.utsc.edu.mx.'})};
 const schemas={
   Error:object({error:object({code:string(),message:string(),fields:{type:'object',additionalProperties:string()}},['code','message']),requestId:string({format:'uuid'})}),
-  User:object({id,nombre:string(),matricula:string(),email:string({format:'email'}),rol:string({enum:['estudiante','personal']}),createdAt:date}),
+  User:object({id,nombre:string(),matricula:string(),email:string({format:'email'}),rol:string({enum:['estudiante','personal']}),isAdmin:{type:'boolean'},createdAt:date}),
   AuthResult:object({token:string({description:'Token opaco de 32 bytes; guardar en Keychain/Keystore.'}),expiresAt:date,user:ref('User')}),
   Register:object({...personal,password,rol:string({enum:['estudiante']})},[...Object.keys(personal),'password']),
   Login:object({email:string({format:'email'}),password}),
@@ -31,6 +31,10 @@ for (const [name,item] of [['ReportPage','Report'],['NoticePage','Notice']]) sch
 const json = schema => ({'application/json':{schema}});
 const errorResponses = Object.fromEntries([400,401,403,404,409,413,429,500].map(code=>[code,{description:({400:'Entrada inválida',401:'Sesión ausente/expirada',403:'Sin permiso',404:'Recurso inexistente o inaccesible',409:'Duplicado',413:'Carga excesiva',429:'Límite de solicitudes',500:'Error interno'})[code],content:json(ref('Error'))}]));
 const paths={};
+schemas.Institution=object({nombre:string({minLength:1,maxLength:150}),correo_soporte:string({format:'email',maxLength:254}),ubicacion_soporte:string({minLength:1,maxLength:300})});
+schemas.AdminCatalogInput=object({nombre:string({minLength:1,maxLength:100,description:'Máximo 50 caracteres para categorías.'}),orden:{type:'integer',minimum:0,maximum:65535},activo:{type:'boolean'}});
+schemas.AdminCatalogEntry=object({id:{type:'integer',minimum:1},...schemas.AdminCatalogInput.properties});
+schemas.AdminCatalogList=array(ref('AdminCatalogEntry'));
 function operation(path,method,summary,{response,body,publicAccess=false,code=200,multipart=false,parameters=[],description=''}={}) {
   paths[path] ||= {};
   paths[path][method]={summary,description,security:publicAccess?[]:[{bearerAuth:[]}],parameters,
@@ -46,6 +50,13 @@ operation('/auth/logout','post','Revocar sesión actual',{body:'Logout',code:204
 operation('/auth/me','get','Usuario activo de la sesión',{response:'User'});
 operation('/users/me','patch','Editar datos personales',{body:'PersonalData',response:'User',description:'Contraseña actual obligatoria cuando cambia el correo; matrícula y correo deben coincidir.'});
 operation('/catalogs','get','Catálogos activos y estados',{response:'Catalogs'});
+operation('/institution','get','Datos públicos para la comunidad autenticada',{response:'Institution'});
+operation('/admin/institution','put','Actualizar institución',{body:'Institution',response:'Institution',description:'Solo personal con isAdmin. Una institución por instalación.'});
+const kindParam={in:'path',name:'kind',required:true,schema:string({enum:['areas','categorias']})};
+const catalogIdParam={in:'path',name:'id',required:true,schema:{type:'integer',minimum:1,maximum:65535}};
+operation('/admin/catalogs/{kind}','get','Consultar catálogo completo',{response:'AdminCatalogList',parameters:[kindParam],description:'Solo administradores; incluye opciones inactivas.'});
+operation('/admin/catalogs/{kind}','post','Crear zona o categoría',{body:'AdminCatalogInput',response:'AdminCatalogEntry',code:201,parameters:[kindParam],description:'Solo administradores.'});
+operation('/admin/catalogs/{kind}/{id}','put','Editar, ordenar, activar o desactivar opción',{body:'AdminCatalogInput',response:'AdminCatalogEntry',parameters:[kindParam,catalogIdParam],description:'Solo administradores. No elimina reportes asociados. Renombrar cambia el nombre mostrado en reportes existentes.'});
 operation('/reports','post','Crear reporte pendiente',{body:'CreateReport',response:'Report',code:201,multipart:true,description:'Solo estudiantes. El servidor determina autor, UUID, folio y fechas. También admite JSON sin foto.'});
 paths['/reports'].post.requestBody.content['application/json']={schema:object(Object.fromEntries(Object.entries(schemas.CreateReport.properties).filter(([name])=>name!=='photo')))};
 operation('/reports','get','Reportes autorizados paginados',{response:'ReportPage',parameters:[...paging,query('estado',status),query('own',{type:'boolean'},'Forzar propios incluso para personal.'),query('areaId',{type:'integer',minimum:1}),query('categoriaId',{type:'integer',minimum:1}),query('area',string({maxLength:100})),query('search',string({maxLength:80}))],description:'Orden descendente (creado_en,id). Estudiante solo propios; personal listado general.'});

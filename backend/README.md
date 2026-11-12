@@ -71,3 +71,9 @@ La integración requiere el administrador local `root` de XAMPP sin contraseña 
 Verificado el 6 de octubre de 2026: TypeScript móvil/backend y lint móvil; 65 pruebas móviles y 7 pruebas backend, incluida integración SQL aislada. Login real de ambas cuentas iniciales, validación SQL ampliada y segunda ejecución del migrador sin pendientes. Android `assembleDebug` completado, APK instalada en el emulador y conectividad `10.0.2.2:3000` comprobada. Bundle Android de producción generado y comprobado sin credenciales SQL ni hashes de usuario. No se certificaron todavía cámara/galería, dos dispositivos físicos, iOS ni entrega real FCM/APNs.
 
 Referencias: [Express 5](https://expressjs.com/en/guide/migrating-5/), [mysql2](https://sidorares.github.io/node-mysql2/docs), [Keychain](https://oblador.github.io/react-native-keychain/docs/usage/), [interacción FCM móvil](https://rnfirebase.io/messaging/notifications), [Firebase Admin](https://firebase.google.com/docs/cloud-messaging/send/admin-sdk).
+
+## Administración institucional
+
+La migración 007 y los endpoints `/admin/*` permiten gestionar zonas,
+categorías y datos de la escuela desde la app. Requieren personal con permiso
+de administrador. Consulta [preparación y alcance](../docs/administracion.md).
